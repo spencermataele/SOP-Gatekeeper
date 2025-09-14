@@ -17,17 +17,17 @@ public class SopService {
     public SopService(SopRepository sopRepository) {
         this.sopRepository = sopRepository;
     }
-    /*** FIXME define toDTO ***/
+
     @Transactional(readOnly = true)
     public List<SopDto> list() {
         return sopRepository.findAll().stream().map(this::toDto).toList();
     }
-    /*** FIXME define findOrThrow ***/
+
     @Transactional(readOnly = true)
     public SopDto get(Integer id) {
         return toDto(findOrThrow(id));
     }
-    /*** FIXME define apply ***/
+
     public SopDto create(SopDto dto) {
         Sop entity = new Sop();
         apply(dto, entity);
