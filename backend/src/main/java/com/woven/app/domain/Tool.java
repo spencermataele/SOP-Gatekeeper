@@ -8,11 +8,12 @@ import jakarta.validation.constraints.NotBlank;
 public class Tool {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int tool_id;
+    @Column(name = "tool_id")
+    private int toolId;
 
     @NotBlank
-    @Column(nullable = false, length = 255)
-    private String tool_name;
+    @Column(name = "tool_name", nullable = false, length = 255)
+    private String toolName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sop_id", nullable = false)
@@ -20,20 +21,20 @@ public class Tool {
 
 
     /* Getters and Setters */
-    public int getTool_id() {
-        return tool_id;
+    public int getToolId() {
+        return toolId;
     }
 
-    public void setTool_id(int tool_id) {
-        this.tool_id = tool_id;
+    public void setToolId(int tool_id) {
+        this.toolId = tool_id;
     }
 
-    public String getTool_name() {
-        return tool_name;
+    public String getToolName() {
+        return toolName;
     }
 
-    public void setTool_name(String tool_name) {
-        this.tool_name = tool_name;
+    public void setToolName(String tool_name) {
+        this.toolName = tool_name;
     }
 
     public Sop getSop() {
