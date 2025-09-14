@@ -53,13 +53,14 @@ public record SopDto(
         @Size(max = 255)
         String sopLocationPath,
 
-        @NotBlank
-        String sopDetails,  // LONGTEXT column, holds body text (Markdown/Plain Text)
+        Instant createdTimestamp,
+        Instant updatedTimestamp,
 
         @NotNull
         Float versionId,
 
-        Instant createdTimestamp,
-        Instant updatedTimestamp
+        @NotBlank
+        String sopDetails  // LONGTEXT column, holds body text (Markdown/Plain Text)
+
 ) {}
 

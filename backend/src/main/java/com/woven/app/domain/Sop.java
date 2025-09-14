@@ -78,11 +78,11 @@ public class Sop {
     @NotNull
     @Column(name = "version_id", nullable = false)
     private Float versionId;
-
+    /* MVP will not include description
     @Lob
     @Column(name = "sop_description", columnDefinition = "LONGTEXT", nullable = false)
     private String sopDescription;
-
+    */
     @Lob
     @Column(name = "sop_details", columnDefinition = "LONGTEXT", nullable = false)
     private String sopDetails;
@@ -236,6 +236,7 @@ public class Sop {
         this.versionId = version_id;
     }
 
+    /* MVP will not include description
     public String getSopDescription() {
         return sopDescription;
     }
@@ -243,7 +244,7 @@ public class Sop {
     public void setSopDescription(String sopDescription) {
         this.sopDescription = sopDescription;
     }
-
+    */
     public String getSopDetails() {
         return sopDetails;
     }
