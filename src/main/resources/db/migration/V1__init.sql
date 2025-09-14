@@ -1,0 +1,17 @@
+CREATE TABLE sop (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    department VARCHAR(128),
+    process_owner VARCHAR(128),
+    version VARCHAR(32),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sop_attribute (
+     id BIGINT PRIMARY KEY AUTO_INCREMENT,
+     sop_id BIGINT NOT NULL,
+     name VARCHAR(128) NOT NULL,
+     value TEXT,
+     CONSTRAINT fk_sop_attr_sop FOREIGN KEY (sop_id) REFERENCES sop(id)
+);
