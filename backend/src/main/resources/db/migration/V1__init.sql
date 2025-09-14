@@ -17,7 +17,7 @@ CREATE TABLE sop (
     updated_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
     version_id FLOAT NOT NULL,
     sop_details LONGTEXT NOT NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 CREATE TABLE sop_attribute (
@@ -26,4 +26,4 @@ CREATE TABLE sop_attribute (
     name VARCHAR(128) NOT NULL,
     value TEXT,
     CONSTRAINT fk_sop_attr_sop FOREIGN KEY (sop_id) REFERENCES sop(id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
