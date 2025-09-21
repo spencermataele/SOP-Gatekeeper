@@ -2,10 +2,21 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.example</groupId>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.woven</groupId>
     <artifactId>woven1</artifactId>
     <version>0.1.0</version>
     <packaging>pom</packaging>
+
+    <name>woven1 (parent)</name>
+    <description>Parent aggregator for Woven1 modules</description>
 
     <modules>
         <module>frontend</module>

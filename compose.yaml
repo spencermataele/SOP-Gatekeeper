@@ -1,34 +1,44 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: woven1-app:latest
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:mysql://db:3306/woven?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-woven}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-woven}
+      ports:
+        - "8080:8080"
+      depends_on:
+        db:
+          condition: service_healthy
+      healthcheck:
+        test: [ "CMD", "curl", "-fsS", "http://localhost:8080/actuator/health" ]
+        interval: 10s
+        timeout: 3s
+        retries: 10
+
   db:
     image: mysql:8.4
+    container_name: woven1-db
     environment:
-      MYSQL_DATABASE: woven
-      MYSQL_USER: woven
-      MYSQL_PASSWORD: woven
-      MYSQL_ROOT_PASSWORD: root
-    ports: ["3306:3306"]
-    command: ["--default-authentication-plugin=mysql_native_password","--character-set-server=utf8mb4","--collation-server=utf8mb4_0900_ai_ci"]
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -proot"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-woven}
+      MYSQL_USER: ${MYSQL_USER:-woven}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-woven}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      ports:
+        - "3306:3306"
+      volumes:
+        - dbdata:/var/lib/mysql
+      healthcheck:
+        test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}" ]
+        interval: 10s
+        timeout: 3s
+        retries: 10
+
     volumes:
-      - dbdata:/var/lib/mysql
-
-
-  api:
-    build: ./backend
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/woven?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: woven
-      SPRING_DATASOURCE_PASSWORD: woven
-    ports: ["8080:8080"]
-    depends_on:
-      db:
-        condition: service_healthy
-
-
-volumes:
-  dbdata:
+      dbdata:
