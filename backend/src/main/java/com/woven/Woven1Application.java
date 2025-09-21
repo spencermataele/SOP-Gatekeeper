@@ -1,4 +1,4 @@
-package com.woven.app;
+package com.woven;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
