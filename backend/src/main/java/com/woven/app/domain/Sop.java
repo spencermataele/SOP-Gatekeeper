@@ -3,7 +3,6 @@ package com.woven.app.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.hibernate.type.descriptor.jdbc.JsonAsStringJdbcType;
 
 import java.time.Instant;
 import java.util.ArrayList;
