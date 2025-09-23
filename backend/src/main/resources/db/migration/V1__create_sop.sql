@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS sop (
+   sop_id INT PRIMARY KEY AUTO_INCREMENT,
+   title VARCHAR(255) NOT NULL,
+   author_id INT NOT NULL,
+   org_id INT NOT NULL,
+   org_group_id INT NOT NULL,
+   department_id INT NOT NULL,
+   dept_subgroup_id INT NOT NULL,
+   current_process_owner_id INT NOT NULL,
+   current_process_owner_position_id INT NOT NULL,
+   process_id INT NOT NULL,
+   process_name VARCHAR(255) NOT NULL,
+   process_family_id INT NOT NULL,
+   parent_process_id INT NOT NULL,
+   sop_location_path VARCHAR(255) NOT NULL,
+   created_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   updated_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   version_id VARCHAR(255) NOT NULL,
+   sop_details LONGTEXT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

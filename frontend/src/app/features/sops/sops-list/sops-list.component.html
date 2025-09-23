@@ -1,1 +1,42 @@
-<p>sops-list works!</p>
+<!-- FIXME define class -->
+<div class="container">
+  <h2>SOPs</h2>
+
+  <div *ngIf="loading">Loading...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <!-- FIXME define class -->
+  <div class="toolbar">
+    <button (click)="create()">New SOP</button>
+    <button (click)="refresh()">Refresh</button>
+  </div>
+  <!-- FIXME style -->
+  <table *ngIf="!loading && sops?.length" border="1" cellpadding="6" cellspacing="0">
+    <thead>
+      <tr>
+        <th>SOP ID</th>
+        <th>Title</th>
+        <th>Process</th>
+        <th>Process Owner</th>
+        <th>Version</th>
+        <th>Last Update</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of sops; trackBy: trackByID">
+        <td>{{ s.sopId }}</td>
+        <td>{{ s.title }}</td>
+        <td>{{ s.processName }}</td>
+        <td>{{ s.currentProcessOwnerId }}</td>
+        <td>{{ s.versionId }}</td>
+        <td>{{ s.updatedTimestamp | date:'short' }}</td>
+        <td>
+          <button (click)="edit(s)">Edit</button>
+          <button (click)="delete(s)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!loading && sops?.length">No SOPs created yet.  Let's get started!</p>
+</div>

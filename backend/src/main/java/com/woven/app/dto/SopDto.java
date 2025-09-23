@@ -56,8 +56,9 @@ public record SopDto(
         Instant createdTimestamp,
         Instant updatedTimestamp,
 
-        @NotNull
-        Float versionId,
+        @NotBlank
+        @Size(max = 255)
+        String versionId,
 
         @NotBlank
         String sopDetails  // LONGTEXT column, holds body text (Markdown/Plain Text)

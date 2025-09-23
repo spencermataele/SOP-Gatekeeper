@@ -74,9 +74,9 @@ public class Sop {
     @Column(name = "updated_timestamp", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private Instant updatedTimestamp;
 
-    @NotNull
-    @Column(name = "version_id", nullable = false)
-    private Float versionId;
+    @NotBlank
+    @Column(name = "version_id", nullable = false, length = 255)
+    private String versionId;
     /* MVP will not include description
     @Lob
     @Column(name = "sop_description", columnDefinition = "LONGTEXT", nullable = false)
@@ -227,11 +227,11 @@ public class Sop {
         this.updatedTimestamp = updated_timestamp;
     }
 
-    public Float getVersion_id() {
+    public String getVersion_id() {
         return versionId;
     }
 
-    public void setVersion_id(Float version_id) {
+    public void setVersion_id(String version_id) {
         this.versionId = version_id;
     }
 
