@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {SopService} from "../services/sop.service";
 import {Sop} from "../models/sop.model";
@@ -8,7 +8,7 @@ import {Sop} from "../models/sop.model";
 @Component({
   selector: 'app-sops-form',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './sops-form.component.html',
   styleUrls: ['./sops-form.component.css']
 })

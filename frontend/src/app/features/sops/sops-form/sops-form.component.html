@@ -1,1 +1,56 @@
-<p>sops-form works!</p>
+<div class="container">
+  <h2>{{ id ? 'Edit SOP' : 'Create SOP' }}</h2>
+
+  <div *ngIf="loading">Loading…</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" *ngIf="!loading">
+    <fieldset>
+      <legend>General</legend>
+      <label>Title
+        <input type="text" formControlName="title" />
+      </label>
+      <label>Version
+        <input type="number" step="0.1" formControlName="versionId" />
+      </label>
+      <label>SOP Location Path
+        <input type="text" formControlName="sopLocationPath" />
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Ownership</legend>
+      <label>Author ID <input type="number" formControlName="authorId" /></label>
+      <label>Current Process Owner ID <input type="number" formControlName="currentProcessOwnerId" /></label>
+      <label>Process Owner Position ID <input type="number" formControlName="currentProcessOwnerPositionId" /></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Organization</legend>
+      <label>Org ID <input type="number" formControlName="orgId" /></label>
+      <label>Org Group ID <input type="number" formControlName="orgGroupId" /></label>
+      <label>Department ID <input type="number" formControlName="departmentId" /></label>
+      <label>Dept Subgroup ID <input type="number" formControlName="deptSubgroupId" /></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Process</legend>
+      <label>Process ID <input type="number" formControlName="processId" /></label>
+      <label>Process Name <input type="text" formControlName="processName" /></label>
+      <label>Process Family ID <input type="number" formControlName="processFamilyId" /></label>
+      <label>Parent Process ID <input type="number" formControlName="parentProcessId" /></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Details</legend>
+      <label for="sopDetails">SOP Details</label>
+      <textarea id="sopDetails" formControlName="sopDetails" rows="14" placeholder="Write the SOP body here (Markdown or plain text)"></textarea>
+    </fieldset>
+
+    <div class="actions">
+      <button type="submit">Save</button>
+      <button type="button" (click)="cancel()">Cancel</button>
+    </div>
+  </form>
+</div>
+
