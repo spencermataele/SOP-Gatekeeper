@@ -15,6 +15,6 @@ export interface Sop {
   sopLocationPath: string;
   createdTimestamp?: string;
   updatedTimestamp?: string;
-  versionId: number;    // Float on backend, number here
-  sopDetails: string;   // LONGTEXT body text (Markdown/plain)
+  versionId: number;
+  sopDetails: string;
 }
