@@ -1,7 +1,9 @@
 package com.woven.app.web;
 
 import com.woven.app.domain.ProcessOwner;
+import com.woven.app.dto.ProcessOwnerCreateDto;
 import com.woven.app.service.ProcessOwnerService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,11 +28,11 @@ public class ProcessOwnerController {
         return processOwnerService.get(id); }
 
     @PostMapping
-    public ProcessOwner create(@RequestBody ProcessOwner po) {
+    public ProcessOwner create(@Valid @RequestBody ProcessOwnerCreateDto po) {
         return processOwnerService.create(po); }
 
     @PutMapping("/{id}")
-    public ProcessOwner update(@PathVariable Integer id, @RequestBody ProcessOwner po) {
+    public ProcessOwner update(@PathVariable Integer id,@Valid @RequestBody ProcessOwnerCreateDto po) {
         return processOwnerService.update(id, po);
     }
 

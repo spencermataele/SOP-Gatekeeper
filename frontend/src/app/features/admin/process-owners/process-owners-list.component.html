@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<div class="container">
+  <h2>Process Owners</h2>
+
+  <div *ngIf="loading">Loading…</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div class="toolbar">
+    <input placeholder="Search…" [(ngModel)]="q">
+    <button (click)="create()">New</button>
+    <button (click)="refresh()">Refresh</button>
+  </div>
+
+  <table *ngIf="!loading && filtered().length" border="1" cellpadding="6" cellspacing="0">
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Position Id</th>
+      <th>Parent</th>
+      <th>Created</th>
+      <th>Updated</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let o of filtered()">
+      <td>{{ o.processOwnerId }}</td>
+      <td>{{ o.name }}</td>
+      <td>{{ o.positionId }}</td>
+      <td>{{ o.parent?.name || '-' }}</td>
+      <td>{{ o.createdTimestamp | date:'short' }}</td>
+      <td>{{ o.lastUpdatedTimestamp | date:'short' }}</td>
+      <td>
+        <button (click)="remove(o)">Delete</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!loading && !filtered().length">No owners yet.</p>
+</div>
+</html>

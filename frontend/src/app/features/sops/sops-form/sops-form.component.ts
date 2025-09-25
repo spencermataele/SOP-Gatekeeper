@@ -1,14 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {SopService} from "../services/sop.service";
 import {Sop} from "../models/sop.model";
+import {ProcessOwner} from "../models/process-owner.model";
+import {ProcessOwnerService} from "../services/process-owner.service";
 
 @Component({
   selector: 'app-sops-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './sops-form.component.html',
   styleUrls: ['./sops-form.component.css']
 })
@@ -17,17 +19,19 @@ export class SopsFormComponent implements OnInit {
   id?: number;
   loading = false;
   error?: string;
+  owners: ProcessOwner[] = [];
 
   constructor(
     private formbuilder: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private sopService: SopService
+    private sopService: SopService,
+    private processOwnerService: ProcessOwnerService
   ) { }
 
   ngOnInit(): void {
     this.form = this.formbuilder.group({
-      title: ["", [Validators.required, Validators.maxLength(255)]],
+      title: ['', [Validators.required, Validators.maxLength(255)]],
       authorId: [null, [Validators.required]],
       orgId: [null, [Validators.required]],
       orgGroupId: [null, [Validators.required]],
@@ -39,26 +43,30 @@ export class SopsFormComponent implements OnInit {
       processName: [null, [Validators.required]],
       processFamilyId: [null, [Validators.required]],
       parentProcessId: [null, [Validators.required]],
-      sopLocationPath: ["", [Validators.required, Validators.maxLength(255)]],
+      sopLocationPath: ['', [Validators.required, Validators.maxLength(255)]],
       versionId: [1, [Validators.required]],
-      sopDetails: [null, [Validators.required]],
+      sopDetails: ['', [Validators.required]],
     });
 
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam && idParam !== 'new') {
-      this.id = Number(idParam);
-      this.loading = true;
-      this.sopService.get(this.id).subscribe({
-        next: sop => {
-          this.form.patchValue({
-            ...sop,
-            versionId: Number(sop.versionId ?? 1)
-          });
-          this.loading = false;
-        },
-        error: () => { this.error = 'Failed to load SOPs.'; this.loading = false; }
-      });
-    }
+    this.processOwnerService.list().subscribe({
+      next: (rows: any[]) => {
+        this.owners = rows;
+
+        // If we came back from create page with ownerId, preselect it
+        const ownerIdParam = this.route.snapshot.queryParamMap.get('ownerId');
+        if (ownerIdParam) {
+          const ownerId = Number(ownerIdParam);
+          if (ownerId) {
+            this.form.patchValue({
+              currentProcessOwnerId: ownerId,
+              // we don’t know positionId unless we look it up:
+              currentProcessOwnerPositionId: rows.find((r: { processOwnerId: number; }) => r.processOwnerId === ownerId)?.positionId ?? this.form.value.currentProcessOwnerPositionId
+            });
+          }
+        }
+      },
+      error: () => (this.error = 'Failed to load process owners')
+    });
   }
 
   private coerceNumbers(raw: any): any {
@@ -84,13 +92,13 @@ export class SopsFormComponent implements OnInit {
       :this.sopService.create(payload);
 
     req.subscribe({
-      next: () => this.router.navigate(['/api/sops']), /* FIXME verify api is needed */
+      next: () => this.router.navigate(['/sops']), /* FIXME verify api is needed */
       error: () => { this.error = "Failed to update SOPs."; this.loading = false; }
     });
   }
 
   cancel(): void {
-    this.router.navigate(['/api/sops']); /* FIXME verify api is needed */
+    this.router.navigate(['/sops']); /* FIXME verify api is needed */
   }
 
 }

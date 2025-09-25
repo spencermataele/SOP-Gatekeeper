@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<div class="container">
+  <h2>Create Process Owner</h2>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <label>Name
+      <input type="text" formControlName="processOwnerName">
+    </label>
+    <div class="error" *ngIf="form.get('processOwnerName')?.touched && form.get('processOwnerName')?.invalid">
+      Name is required (max 255).
+    </div>
+
+    <label>Position ID
+      <input type="number" formControlName="processOwnerPositionId">
+    </label>
+
+    <label>Parent Owner (optional)
+      <select formControlName="parent_process_owner_id">
+        <option [ngValue]="null">-- none --</option>
+        <option *ngFor="let o of owners" [ngValue]="o.processOwnerId">
+          {{ o.name }}
+        </option>
+      </select>
+    </label>
+
+    <div class="actions">
+      <button type="submit" [disabled]="form.invalid || loading">Save</button>
+      <button type="button" (click)="cancel()">Cancel</button>
+    </div>
+  </form>
+</div>
+</html>

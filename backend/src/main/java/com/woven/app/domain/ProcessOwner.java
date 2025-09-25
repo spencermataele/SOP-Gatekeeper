@@ -16,10 +16,10 @@ public class ProcessOwner {
     private Integer processOwnerId;
 
     @Column(name = "process_owner_name", nullable = false, length = 255)
-    private String processOwnerName;
+    private String name;
 
     @Column(name = "process_owner_position_id", nullable = false)
-    private Integer processOwnerPositionId;
+    private Integer positionId;
 
     @Column(name = "created_timestamp", nullable = false, updatable = false,
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")

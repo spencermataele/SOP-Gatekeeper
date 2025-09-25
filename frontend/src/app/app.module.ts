@@ -3,13 +3,17 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
-import {SopsListComponent} from "./features/sops/sops-list/sops-list.component";
-import {SopsFormComponent} from "./features/sops/sops-form/sops-form.component";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import { SopsListComponent } from "./features/sops/sops-list/sops-list.component";
+import { SopsFormComponent } from "./features/sops/sops-form/sops-form.component";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { ProcessOwnersListComponent } from "./features/admin/process-owners/process-owners-list.component";
+import { ProcessOwnerFormComponent} from "./features/admin/process-owners/process-owner-form.component";
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ProcessOwnersListComponent,
+    ProcessOwnerFormComponent
   ],
   imports: [
     BrowserModule,
