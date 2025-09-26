@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<section class="admin-home">
+  <header class="admin-header">
+    <h2>Administrator</h2>
+    <p class="subtitle">
+      Manage reference data used across SOPs. These values change rarely and are controlled here.
+    </p>
+  </header>
+
+  <div class="cards">
+    <a class="card" [routerLink]="['/admin/orgs']">
+      <h3>Organizations</h3>
+      <p>Create orgs and see their org groups.</p>
+      <span class="cta">Open Orgs →</span>
+    </a>
+
+    <a class="card" [routerLink]="['/admin/org-groups']">
+      <h3>Org Groups</h3>
+      <p>Create org groups and see their departments.</p>
+      <span class="cta">Open Org Groups →</span>
+    </a>
+
+    <a class="card" [routerLink]="['/admin/departments']">
+      <h3>Departments</h3>
+      <p>Create departments and see their subgroups.</p>
+      <span class="cta">Open Departments →</span>
+    </a>
+
+    <a class="card" [routerLink]="['/admin/dept-subgroups']">
+      <h3>Dept Subgroups</h3>
+      <p>Create dept subgroups.</p>
+      <span class="cta">Open Subgroups →</span>
+    </a>
+  </div>
+
+  <footer class="admin-footer">
+    <p>
+      Tip: Changes here affect dropdowns and defaults in SOP forms (e.g., Org → Group → Department → Subgroup).
+    </p>
+  </footer>
+
+  <div class="cards">
+    <a class="card" [routerLink]="['/admin/process-owners']">
+      <h3>Process Owners</h3>
+      <p>Add process owners here.</p>
+      <span class="cta">Open Process Owners →</span>
+    </a>
+  </div>
+</section>
+</html>

@@ -5,7 +5,7 @@ import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {SopService} from "../services/sop.service";
 import {Sop} from "../models/sop.model";
 import {ProcessOwner} from "../models/process-owner.model";
-import {ProcessOwnerService} from "../services/process-owner.service";
+import {ProcessOwnerService} from "../../admin/services/process-owner.service";
 
 @Component({
   selector: 'app-sops-form',

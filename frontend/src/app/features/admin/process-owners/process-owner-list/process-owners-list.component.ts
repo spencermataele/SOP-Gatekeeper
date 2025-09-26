@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ProcessOwnerService} from "../../sops/services/process-owner.service";
-import { ProcessOwner } from '../../sops/models/process-owner.model';
+import { ProcessOwnerService} from "../../services/process-owner.service";
+import { ProcessOwner } from '../../../sops/models/process-owner.model';
 import { Router } from '@angular/router';
 
 @Component({

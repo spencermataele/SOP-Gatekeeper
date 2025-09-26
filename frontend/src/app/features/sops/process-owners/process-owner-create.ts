@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ProcessOwnerService } from '../services/process-owner.service';
+import { ProcessOwnerService } from '../../admin/services/process-owner.service';
 
 @Component({
   selector: 'app-process-owner-create',

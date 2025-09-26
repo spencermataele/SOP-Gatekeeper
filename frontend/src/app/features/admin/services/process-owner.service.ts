@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { environment } from "../../../../environments/environment";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { ProcessOwner, ProcessOwnerCreate } from "../models/process-owner.model";
+import { ProcessOwner, ProcessOwnerCreate } from "../../sops/models/process-owner.model";
 
 @Injectable({ providedIn: 'root' })
 export class ProcessOwnerService {

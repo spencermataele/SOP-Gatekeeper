@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ProcessOwnerService } from '../../sops/services/process-owner.service';
+import { ProcessOwnerService } from '../services/process-owner.service';
 import { ProcessOwner } from '../../sops/models/process-owner.model';
 
 @Component({
