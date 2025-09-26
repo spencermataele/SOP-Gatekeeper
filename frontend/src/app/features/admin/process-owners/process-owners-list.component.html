@@ -18,7 +18,7 @@
       <th>ID</th>
       <th>Name</th>
       <th>Position Id</th>
-      <th>Parent</th>
+      <!--<th>Parent</th>-->
       <th>Created</th>
       <th>Updated</th>
       <th></th>
@@ -29,7 +29,7 @@
       <td>{{ o.processOwnerId }}</td>
       <td>{{ o.name }}</td>
       <td>{{ o.positionId }}</td>
-      <td>{{ o.parent?.name || '-' }}</td>
+      <!--<td>{{ o.parent?.name || '-' }}</td>-->
       <td>{{ o.createdTimestamp | date:'short' }}</td>
       <td>{{ o.lastUpdatedTimestamp | date:'short' }}</td>
       <td>

@@ -26,7 +26,7 @@ export class ProcessOwnerService {
     return this.http.put<ProcessOwner>(`${this.base}/${id}`, body);
   }
 
-  delete(id: number): Observable<void> {
+  delete(id: number | undefined): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 }

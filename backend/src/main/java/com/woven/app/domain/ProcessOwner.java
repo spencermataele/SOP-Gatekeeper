@@ -28,11 +28,11 @@ public class ProcessOwner {
     @Column(name = "last_updated_timestamp", nullable = false,
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private Instant lastUpdatedTimestamp;
-
+    /*
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_process_owner_id")
-    private ProcessOwner parent; // nullable
-
+    private ProcessOwner parentProcessOwnerID; // nullable
+    */
     @PrePersist
     void onCreate() {
         if (createdTimestamp == null) createdTimestamp = Instant.now();

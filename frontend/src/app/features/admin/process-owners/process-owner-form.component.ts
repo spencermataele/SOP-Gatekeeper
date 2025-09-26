@@ -25,7 +25,7 @@ export class ProcessOwnerFormComponent implements OnInit {
     this.form = this.fb.group({
       processOwnerName: ['', [Validators.required, Validators.maxLength(255)]],
       processOwnerPositionId: [null, [Validators.required]],
-      parent_process_owner_id: [null] // sending as parent object later if needed
+      //parent_process_owner_id: [null] // sending as parent object later if needed
     });
 
     this.svc.list().subscribe({
@@ -37,7 +37,7 @@ export class ProcessOwnerFormComponent implements OnInit {
   save(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
 
-    const parentId = this.form.value.parent_process_owner_id as number | null;
+    //const parentId = this.form.value.parent_process_owner_id as number | null;
     const body = {
       name: this.form.value.name!,
       positionId: Number(this.form.value.positionId)

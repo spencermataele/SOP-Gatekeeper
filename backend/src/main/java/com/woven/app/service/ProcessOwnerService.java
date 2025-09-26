@@ -13,33 +13,43 @@ import java.util.List;
 @Service
 @Transactional
 public class ProcessOwnerService {
-    private final ProcessOwnerRepository processOwnerRepository;
 
-    public ProcessOwnerService(ProcessOwnerRepository processOwnerRepository) {
-        this.processOwnerRepository = processOwnerRepository;
+    private final ProcessOwnerRepository repo;
+
+    public ProcessOwnerService(ProcessOwnerRepository repo) {
+        this.repo = repo;
     }
 
-    @Transactional(readOnly = true)
     public List<ProcessOwner> list() {
-        return processOwnerRepository.findAll();
+        return repo.findAll();
     }
 
-    @Transactional(readOnly = true)
     public ProcessOwner get(Integer id) {
-        return processOwnerRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Process owner not found: " + id)
-        );
+        return repo.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("Process owner not found: " + id));
     }
 
-    public ProcessOwner create(@Valid ProcessOwnerCreateDto po) { return processOwnerRepository.save(po); }
-
-    public ProcessOwner update(Integer id, @Valid ProcessOwnerCreateDto po) {
-        ProcessOwner existing = get(id);
-        existing.setName(po.getName());
-        existing.setPositionId(po.getPositionId());
-        existing.setParent(po.getParent());
-        return processOwnerRepository.save(existing);
+    public ProcessOwner create(@Valid ProcessOwnerCreateDto dto) {
+        ProcessOwner po = new ProcessOwner();
+        applyDto(po, dto);
+        return repo.save(po); // ✅ save the ENTITY, not the DTO
     }
 
-    public void delete(Integer id) { processOwnerRepository.deleteById(id); }
+    public ProcessOwner update(Integer id, @Valid ProcessOwnerCreateDto dto) {
+        ProcessOwner po = get(id);
+        applyDto(po, dto);
+        return repo.save(po); // ✅ save the ENTITY
+    }
+
+    public void delete(Integer id) {
+        repo.deleteById(id);
+    }
+
+    // --- helper to map DTO -> entity
+    private void applyDto(ProcessOwner po, ProcessOwnerCreateDto dto) {
+        // If your record fields are processOwnerName/processOwnerPositionId:
+        po.setName(dto.name());
+        po.setPositionId(dto.positionId());
+    }
 }
+

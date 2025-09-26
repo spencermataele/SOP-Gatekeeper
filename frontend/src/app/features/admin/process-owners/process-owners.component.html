@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <div class="container">
+    <h2>Process Owners</h2>
+
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <!-- Filters -->
+    <div class="toolbar">
+      <input placeholder="Search by name…" [(ngModel)]="filterName">
+      <input type="number" placeholder="Search by ID…" [(ngModel)]="filterId">
+      <!--
+      <button (click)="refresh()">Refresh</button>
+      <button (click)="startCreate()">New</button>
+      -->
+    </div>
+
+    <!-- Create/Edit form -->
+    <form [formGroup]="form!" (ngSubmit)="save()">
+      <fieldset>
+        <legend>{{ editingId ? 'Edit Owner' : 'Create Owner' }}</legend>
+        <label>Name
+          <input formControlName="name" />
+        </label>
+        <label>Position ID
+          <input type="number" formControlName="positionId" />
+        </label>
+        <button type="submit" [disabled]="form.invalid">{{ editingId ? 'Update' : 'Create' }}</button>
+        <button type="button" (click)="cancel()">Cancel</button>
+      </fieldset>
+    </form>
+
+    <!-- Table -->
+    <div *ngIf="loading">Loading…</div>
+    <table *ngIf="!loading && filtered().length" border="1" cellpadding="6" cellspacing="0">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Position ID</th>
+        <th>Created</th>
+        <th>Updated</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let o of filtered(); trackBy: trackById">
+        <td>{{ o.processOwnerId }}</td>
+        <td>{{ o.name }}</td>
+        <td>{{ o.positionId }}</td>
+        <td>{{ o.createdTimestamp | date:'short' }}</td>
+        <td>{{ o.lastUpdatedTimestamp | date:'short' }}</td>
+        <td>
+          <button (click)="startEdit(o)">Edit</button>
+          <button (click)="remove(o)">Delete</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <p *ngIf="!loading && !filtered().length">No owners.</p>
+  </div>
+</html>

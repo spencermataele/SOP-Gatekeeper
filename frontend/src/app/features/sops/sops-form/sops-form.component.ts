@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {SopService} from "../services/sop.service";
 import {Sop} from "../models/sop.model";
@@ -10,7 +10,7 @@ import {ProcessOwnerService} from "../services/process-owner.service";
 @Component({
   selector: 'app-sops-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule],
   templateUrl: './sops-form.component.html',
   styleUrls: ['./sops-form.component.css']
 })
@@ -20,6 +20,8 @@ export class SopsFormComponent implements OnInit {
   loading = false;
   error?: string;
   owners: ProcessOwner[] = [];
+  nameFilter = '';
+  idFilter?: number | null;
 
   constructor(
     private formbuilder: FormBuilder,
@@ -47,7 +49,7 @@ export class SopsFormComponent implements OnInit {
       versionId: [1, [Validators.required]],
       sopDetails: ['', [Validators.required]],
     });
-
+    // Load process owners
     this.processOwnerService.list().subscribe({
       next: (rows: any[]) => {
         this.owners = rows;
@@ -67,6 +69,12 @@ export class SopsFormComponent implements OnInit {
       },
       error: () => (this.error = 'Failed to load process owners')
     });
+    // auto-fill positionId when owner is selected
+    this.form.get('currentProcessOwnerId')!.valueChanges.subscribe((id: number | null) => {
+      const found = this.owners.find(o => o.processOwnerId === id);
+      if (found) this.form.get('currentProcessOwnerPositionId')!.setValue(found.positionId);
+    });
+
   }
 
   private coerceNumbers(raw: any): any {
@@ -80,6 +88,20 @@ export class SopsFormComponent implements OnInit {
       out[key] = Number(out[key]); });
     return out;
   }
+
+  // list for dropdown
+  get ownersFiltered() {
+    const n = this.nameFilter.trim().toLowerCase();
+    const id = this.idFilter && Number.isFinite(this.idFilter) ? Number(this.idFilter) : undefined;
+    return this.owners.filter(o => {
+      const nameOk = !n || o.name.toLowerCase().includes(n);
+      const idOk = id === undefined || o.processOwnerId === id;
+      return nameOk && idOk;
+    });
+
+  }
+
+
 
   save(): void {
     if (this.form.invalid) {

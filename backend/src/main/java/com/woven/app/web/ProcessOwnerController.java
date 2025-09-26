@@ -28,8 +28,8 @@ public class ProcessOwnerController {
         return processOwnerService.get(id); }
 
     @PostMapping
-    public ProcessOwner create(@Valid @RequestBody ProcessOwnerCreateDto po) {
-        return processOwnerService.create(po); }
+    public ProcessOwner create(@Valid @RequestBody ProcessOwnerCreateDto dto) {
+        return processOwnerService.create(dto); }
 
     @PutMapping("/{id}")
     public ProcessOwner update(@PathVariable Integer id,@Valid @RequestBody ProcessOwnerCreateDto po) {

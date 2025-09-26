@@ -20,19 +20,28 @@
 
     <fieldset>
       <legend>Ownership</legend>
-      <label>Author ID <input type="number" formControlName="authorId" /></label>
-      <!-- Dropdown menu for process owner -->
-      <label>Current Process Owner ID
+
+      <div class="row">
+        <label>Filter by name
+          <input [(ngModel)]="nameFilter" name="nameFilter">
+        </label>
+        <label>Filter by ID
+          <input type="number" [(ngModel)]="idFilter" name="idFilter">
+        </label>
+      </div>
+
+      <label>Current Owner
         <select formControlName="currentProcessOwnerId">
           <option [ngValue]="null">-- Select owner --</option>
-          <option *ngFor="let o of owners" [ngValue]="o.processOwnerId">
-            {{ o.name }} ({{ o.positionId }})
+          <option *ngFor="let o of ownersFiltered" [ngValue]="o.processOwnerId">
+            {{ o.processOwnerId }} — {{ o.name }} (pos: {{ o.positionId }})
           </option>
         </select>
-        <button [routerLink]="['/process-owners','new']" [queryParams]="{ backTo: '/sops/new' }">+ Add Owner</button>
       </label>
-      <!-- FIXME auto fill position id when process owner selected from dropdown -->
-      <label>Process Owner Position ID <input type="number" formControlName="currentProcessOwnerPositionId" /></label>
+
+      <label>Owner Position ID
+        <input type="number" formControlName="currentProcessOwnerPositionId" />
+      </label>
     </fieldset>
 -
     <fieldset>

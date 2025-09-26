@@ -6,14 +6,16 @@ import { HttpClientModule } from '@angular/common/http';
 import { SopsListComponent } from "./features/sops/sops-list/sops-list.component";
 import { SopsFormComponent } from "./features/sops/sops-form/sops-form.component";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { ProcessOwnersListComponent } from "./features/admin/process-owners/process-owners-list.component";
+import { ProcessOwnersListComponent} from "./features/admin/process-owners/process-owners-list.component";
 import { ProcessOwnerFormComponent} from "./features/admin/process-owners/process-owner-form.component";
+import {ProcessOwnersComponent} from "./features/admin/process-owners/process-owners.component";
 
 @NgModule({
   declarations: [
     AppComponent,
     ProcessOwnersListComponent,
-    ProcessOwnerFormComponent
+    ProcessOwnerFormComponent,
+    ProcessOwnersComponent
   ],
   imports: [
     BrowserModule,

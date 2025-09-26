@@ -5,7 +5,7 @@
 
   <div *ngIf="error" class="error">{{ error }}</div>
 
-  <form [formGroup]="form" (ngSubmit)="save()">
+  <form [formGroup]="form!" (ngSubmit)="save()">
     <label>Name
       <input type="text" formControlName="processOwnerName">
     </label>
@@ -16,7 +16,7 @@
     <label>Position ID
       <input type="number" formControlName="processOwnerPositionId">
     </label>
-
+    <!--
     <label>Parent Owner (optional)
       <select formControlName="parent_process_owner_id">
         <option [ngValue]="null">-- none --</option>
@@ -25,7 +25,7 @@
         </option>
       </select>
     </label>
-
+    -->
     <div class="actions">
       <button type="submit" [disabled]="form.invalid || loading">Save</button>
       <button type="button" (click)="cancel()">Cancel</button>
