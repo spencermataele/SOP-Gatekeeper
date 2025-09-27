@@ -29,6 +29,10 @@ import { OrgGroupDto } from '../models/org-group.model';
       <label>Department Name
         <input formControlName="departmentName" />
       </label>
+      <div class="field-error" *ngIf="createForm.get('departmentName')?.touched && createForm.get('departmentName')?.errors">
+        <span *ngIf="createForm.get('departmentName')?.hasError('required')">Required.</span>
+        <span *ngIf="createForm.get('departmentName')?.hasError('maxlength')">Max 255 characters.</span>
+      </div>
       <button type="submit" [disabled]="createForm.invalid || savingCreate">Add Department</button>
       <span class="error" *ngIf="errorCreate">{{ errorCreate }}</span>
     </form>
@@ -140,8 +144,22 @@ export class DepartmentsPageComponent implements OnInit {
       departmentName: this.createForm.value.departmentName!
     };
     this.deptSvc.create(body).subscribe({
-      next: () => { this.createForm.reset(); this.savingCreate = false; this.refresh(); },
-      error: err => { console.error('Create department failed', err); this.savingCreate = false; }
+      next: () => {
+        this.createForm.reset();
+        this.savingCreate =
+          false; this.refresh();
+          },
+      // to validate functionality, matches GlobalExceptionHandler
+      error: err => {
+        this.savingCreate = false;
+        const apiErrors = err?.error?.errors;
+        if (apiErrors) {
+          Object.entries(apiErrors).forEach(([field, messages]) => {
+            const ctrl = this.createForm.get(field as string);
+            if (ctrl) ctrl.setErrors({ api: (messages as string[]).join(' ') });
+          });
+        }
+      }
     });
   }
 

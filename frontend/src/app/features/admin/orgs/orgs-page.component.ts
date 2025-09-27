@@ -104,12 +104,21 @@ export class OrgsPageComponent implements OnInit {
     if (this.createForm.invalid) return;
     this.savingCreate = true;
     this.svc.create({ orgName: this.createForm.value.orgName! }).subscribe({
-      next: () => { this.createForm.reset(); this.savingCreate = false; this.refresh(); },
-      error: (err) => {
-        console.error('Create org failed', err);
-        // @ts-ignore
-        this.errorCreate = this.extractMsg(err) ?? 'Failed to create org';
+      next: () => {
+        this.createForm.reset();
         this.savingCreate = false;
+        this.refresh();
+        },
+      // to validate functionality, matches GlobalExceptionHandler
+      error: err => {
+        this.savingCreate = false;
+        const apiErrors = err?.error?.errors;
+        if (apiErrors) {
+          Object.entries(apiErrors).forEach(([field, messages]) => {
+            const ctrl = this.createForm.get(field as string);
+            if (ctrl) ctrl.setErrors({api: (messages as string[]).join(' ')});
+          });
+        }
       }
     });
   }

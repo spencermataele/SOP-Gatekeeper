@@ -22,7 +22,7 @@ export class ProcessOwnerService {
     return this.http.post<ProcessOwner>(this.base, body);
   }
 
-  update(id: number, body: ProcessOwner): Observable<ProcessOwner> {
+  update(id: number, body: { positionId: number; name: string }): Observable<ProcessOwner> {
     return this.http.put<ProcessOwner>(`${this.base}/${id}`, body);
   }
 

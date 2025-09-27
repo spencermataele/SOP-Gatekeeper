@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SopsListComponent } from './features/sops/sops-list/sops-list.component';
-import { SopsFormComponent } from './features/sops/sops-form/sops-form.component';
+import { SopsFormComponent } from './features/sops/sops-form.component';
 import { ProcessOwnerCreateComponent } from "./features/sops/process-owners/process-owner-create";
 import { ProcessOwnersComponent } from "./features/admin/process-owners/process-owners.component";
 import { AdminHomeComponent } from "./features/admin/admin-home.component";

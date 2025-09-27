@@ -138,8 +138,22 @@ export class OrgGroupsPageComponent implements OnInit {
       orgGroupName: this.createForm.value.orgGroupName!
     };
     this.svc.create(body).subscribe({
-      next: () => { this.createForm.reset(); this.savingCreate = false; this.refresh(); },
-      error: err => { console.error('Create org group failed', err); this.savingCreate = false; }
+      next: () => {
+        this.createForm.reset();
+        this.savingCreate = false;
+        this.refresh();
+        },
+      // to validate functionality, matches GlobalExceptionHandler
+      error: err => {
+        this.savingCreate = false;
+        const apiErrors = err?.error?.errors;
+        if (apiErrors) {
+          Object.entries(apiErrors).forEach(([field, messages]) => {
+            const ctrl = this.createForm.get(field as string);
+            if (ctrl) ctrl.setErrors({api: (messages as string[]).join(' ')});
+          });
+        }
+      }
     });
   }
 

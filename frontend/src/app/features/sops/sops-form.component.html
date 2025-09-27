@@ -1,0 +1,110 @@
+<h2>{{ id == null ? 'Create SOP' : 'Edit SOP' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="form">
+  <div class="grid">
+    <label>Title
+      <input formControlName="title" />
+    </label>
+    <div class="err" *ngIf="form.get('title')?.touched && form.get('title')?.errors">
+      <span *ngIf="form.get('title')?.hasError('required')">Required.</span>
+      <span *ngIf="form.get('title')?.hasError('maxlength')">Max 255 chars.</span>
+      <span *ngIf="form.get('title')?.errors?.['api']">{{ form.get('title')?.errors?.['api'] }}</span>
+    </div>
+
+    <label>Author Name
+      <input formControlName="authorName" />
+    </label>
+    <div class="err" *ngIf="form.get('authorName')?.touched && form.get('authorName')?.errors">
+      <span *ngIf="form.get('authorName')?.hasError('required')">Required.</span>
+      <span *ngIf="form.get('authorName')?.hasError('maxlength')">Max 255 chars.</span>
+    </div>
+
+    <label>Process Name
+      <input formControlName="processName" />
+    </label>
+    <div class="err" *ngIf="form.get('processName')?.touched && form.get('processName')?.errors">
+      <span *ngIf="form.get('processName')?.hasError('required')">Required.</span>
+      <span *ngIf="form.get('processName')?.hasError('maxlength')">Max 255 chars.</span>
+    </div>
+
+    <label>Process ID
+      <input type="number" formControlName="processId" />
+    </label>
+
+    <label>Process Family ID
+      <input type="number" formControlName="processFamilyId" />
+    </label>
+
+    <label>Parent Process ID
+      <input type="number" formControlName="parentProcessId" />
+    </label>
+
+    <label>Version ID
+      <input type="number" formControlName="versionId" />
+    </label>
+
+    <label>SOP Details
+      <textarea rows="6" formControlName="sopDetails"></textarea>
+    </label>
+    <div class="err" *ngIf="form.get('sopDetails')?.touched && form.get('sopDetails')?.errors">
+      <span *ngIf="form.get('sopDetails')?.hasError('required')">Required.</span>
+      <span *ngIf="form.get('sopDetails')?.errors?.['api']">{{ form.get('sopDetails')?.errors?.['api'] }}</span>
+    </div>
+  </div>
+
+  <!-- Global filter -->
+  <div class="filter">
+    <label>Filter by name
+      <input [formControl]="nameFilter" placeholder="Filters all dropdowns..." />
+    </label>
+    <button type="button" (click)="nameFilter.setValue('')">Clear</button>
+  </div>
+
+  <!-- Hierarchy -->
+  <div class="grid">
+    <label>Org
+      <select formControlName="orgId" (change)="onOrgChange()">
+        <option [ngValue]="null">-- select org --</option>
+        <option *ngFor="let o of filteredOrgs()" [ngValue]="o.orgId">{{ o.orgName }}</option>
+      </select>
+    </label>
+
+    <label>Org Group
+      <select formControlName="orgGroupId" (change)="onGroupChange()">
+        <option [ngValue]="null">-- select group --</option>
+        <option *ngFor="let g of filteredGroups()" [ngValue]="g.orgGroupId">{{ g.orgGroupName }}</option>
+      </select>
+    </label>
+
+    <label>Department
+      <select formControlName="departmentId" (change)="onDeptChange()">
+        <option [ngValue]="null">-- select department --</option>
+        <option *ngFor="let d of filteredDepts()" [ngValue]="d.departmentId">{{ d.departmentName }}</option>
+      </select>
+    </label>
+
+    <label>Dept Subgroup
+      <select formControlName="deptSubgroupId" (change)="onSubChange()">
+        <option [ngValue]="null">-- select subgroup --</option>
+        <option *ngFor="let s of filteredSubs()" [ngValue]="s.deptSubgroupId">{{ s.deptSubgroupName }}</option>
+      </select>
+    </label>
+
+    <label>Process Owner
+      <select formControlName="processOwnerId">
+        <option [ngValue]="null">-- select owner --</option>
+        <option *ngFor="let p of filteredOwners()" [ngValue]="p.processOwnerId">
+          {{ p.name }}
+        </option>
+      </select>
+    </label>
+  </div>
+
+  <div class="actions">
+    <button type="submit" [disabled]="saving || form.invalid">{{ id == null ? 'Create SOP' : 'Save Changes' }}</button>
+    <button *ngIf="id != null" type="button" class="danger" (click)="delete()">Delete</button>
+    <span class="err" *ngIf="errorMsg">{{ errorMsg }}</span>
+  </div>
+</form>
+
+

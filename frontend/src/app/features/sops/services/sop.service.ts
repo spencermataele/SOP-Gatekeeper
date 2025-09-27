@@ -18,10 +18,33 @@ export class SopService {
   get(id: number): Observable<Sop> {
     return this.http.get<Sop>(`${this.base}/${id}`);
   }
-  create(body: Sop): Observable<Sop> {
+
+    create(body: {
+        sopDetails: string;
+        orgGroupId: number | null;
+        departmentId: number | null;
+        deptSubgroupId: number | null;
+        title: string;
+        orgId: number | null
+    }): Observable<Sop> {
     return this.http.post<Sop>(this.base, body);
   }
-  update(id: number, body: Sop): Observable<Sop> {
+
+    update(id: number, body: {
+        departmentId: number | null;
+        processFamilyId: number | null;
+        deptSubgroupId: number | null;
+        title: string;
+        processOwnerId: number | null;
+        orgId: number | null;
+        sopDetails: string;
+        versionId: number;
+        parentProcessId: number | null;
+        processName: string;
+        processId: number | null;
+        authorName: string;
+        orgGroupId: number | null
+    }): Observable<Sop> {
     return this.http.put<Sop>(`${this.base}/${id}`, body);
   }
   delete(id: number): Observable<void> {
