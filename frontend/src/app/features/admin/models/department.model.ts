@@ -1,8 +1,13 @@
-import { DeptSubgroup } from './dept-subgroup.model';
 
-export interface Department {
+export interface DeptSubgroupSlimDto {
+  deptSubgroupId: number;
+  deptSubgroupName: string;
+}
+
+export interface DepartmentDto {
   departmentId: number;
   departmentName: string;
   orgGroupId: number;
-  subgroups?: DeptSubgroup[]; // if your DTO includes children
+  subgroups: DeptSubgroupSlimDto[]; // always an array
 }
+

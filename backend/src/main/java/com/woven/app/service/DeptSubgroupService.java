@@ -4,7 +4,11 @@ import com.woven.app.domain.Department;
 import com.woven.app.domain.DeptSubgroup;
 import com.woven.app.repository.DepartmentRepository;
 import com.woven.app.repository.DeptSubgroupRepository;
+import com.woven.app.web.dto.admin.DeptSubgroupCreateDto;
+import com.woven.app.web.dto.admin.DeptSubgroupDto;
+import com.woven.app.web.dto.admin.DeptSubgroupUpdateDto;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,53 +26,59 @@ public class DeptSubgroupService {
         this.deptRepo = deptRepo;
     }
 
+    // Subgroup list
     @Transactional(readOnly = true)
-    public List<DeptSubgroup> list() {
-        return subgroupRepo.findAll();
+    public List<DeptSubgroupDto> list() {
+        return subgroupRepo.findAll().stream().map(this::toDto).toList();
     }
 
+    // Filter subgroup list by department
     @Transactional(readOnly = true)
-    public DeptSubgroup get(Integer id) {
-        return subgroupRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("DeptSubgroup " + id + " not found"));
+    public List<DeptSubgroupDto> listByDepartment(Integer departmentId) {
+        return subgroupRepo.findByDepartment_DepartmentId(departmentId).stream().map(this::toDto).toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<DeptSubgroup> listByDepartment(Integer departmentId) {
-        return subgroupRepo.findByDepartment_DepartmentId(departmentId);
-    }
+    public DeptSubgroupDto create(DeptSubgroupCreateDto dto) {
+        Department parent = deptRepo.findById(dto.departmentId())
+                .orElseThrow(() -> new EntityNotFoundException("Department %d not found".formatted(dto.departmentId())));
 
-    public DeptSubgroup create(Integer departmentId, String deptSubgroupName) {
-        Department dept = deptRepo.findById(departmentId)
-                .orElseThrow(() -> new EntityNotFoundException("Department " + departmentId + " not found"));
-
-        DeptSubgroup sg = DeptSubgroup.builder()
-                .deptSubgroupName(deptSubgroupName)
-                .department(dept)
+        DeptSubgroup s = DeptSubgroup.builder()
+                .deptSubgroupName(dto.deptSubgroupName())
+                .department(parent)
                 .build();
 
-        return subgroupRepo.save(sg);
+        DeptSubgroup saved = subgroupRepo.save(s);
+        return new DeptSubgroupDto(saved.getDeptSubgroupId(), saved.getDeptSubgroupName(), parent.getDepartmentId());
     }
 
-    public DeptSubgroup update(Integer id, Integer departmentId, String deptSubgroupName) {
-        DeptSubgroup existing = get(id);
+    public DeptSubgroupDto update(Integer subgroupId, @Valid DeptSubgroupUpdateDto dto) {
+        DeptSubgroup s = subgroupRepo.findById(subgroupId)
+                .orElseThrow(() -> new EntityNotFoundException("DeptSubgroup %d not found".formatted(subgroupId)));
 
-        if (departmentId != null && (existing.getDepartment() == null
-                || !departmentId.equals(existing.getDepartment().getDepartmentId()))) {
-            Department newDept = deptRepo.findById(departmentId)
-                    .orElseThrow(() -> new EntityNotFoundException("Department " + departmentId + " not found"));
-            existing.setDepartment(newDept);
+        s.setDeptSubgroupName(dto.deptSubgroupName());
+
+        if (s.getDepartment() == null || !s.getDepartment().getDepartmentId().equals(dto.departmentId())) {
+            Department parent = deptRepo.findById(dto.departmentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Department %d not found".formatted(dto.departmentId())));
+            s.setDepartment(parent);
         }
 
-        if (deptSubgroupName != null && !deptSubgroupName.isBlank()) {
-            existing.setDeptSubgroupName(deptSubgroupName);
-        }
+        DeptSubgroup saved = subgroupRepo.save(s);
+        Integer parentId = saved.getDepartment() != null ? saved.getDepartment().getDepartmentId() : null;
 
-        return subgroupRepo.save(existing);
+        return new DeptSubgroupDto(saved.getDeptSubgroupId(), saved.getDeptSubgroupName(), parentId);
     }
 
-    public void delete(Integer id) {
-        subgroupRepo.deleteById(id);
+    public void delete(Integer subgroupId) {
+        if (!subgroupRepo.existsById(subgroupId)) {
+            throw new EntityNotFoundException("DeptSubgroup %d not found".formatted(subgroupId));
+        }
+        subgroupRepo.deleteById(subgroupId);
+    }
+
+    private DeptSubgroupDto toDto(DeptSubgroup s) {
+        Integer departmentId = s.getDepartment() != null ? s.getDepartment().getDepartmentId() : null;
+        return new DeptSubgroupDto(s.getDeptSubgroupId(), s.getDeptSubgroupName(), departmentId);
     }
 }
 

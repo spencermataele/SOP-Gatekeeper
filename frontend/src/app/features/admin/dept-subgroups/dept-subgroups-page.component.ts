@@ -1,111 +1,186 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Department } from '../models/department.model';
-import { DeptSubgroup } from '../models/dept-subgroup.model';
-import { DepartmentService } from '../services/department.service';
+import { RouterModule } from '@angular/router';
+
 import { DeptSubgroupService } from '../services/dept-subgroup.service';
+import { DeptSubgroupDto } from '../models/dept-subgroup.model';
+
+import { DepartmentService } from '../services/department.service';
+import { DepartmentDto } from '../models/department.model';
 
 @Component({
   selector: 'app-dept-subgroups-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
-  <h2>Dept Subgroups</h2>
+    <h2>Department Subgroups</h2>
 
-  <form [formGroup]="form" (ngSubmit)="save()" class="form">
-    <label>Department
-      <select formControlName="departmentId">
-        <option [ngValue]="null">-- select --</option>
-        <option *ngFor="let d of depts" [ngValue]="d.departmentId">
-          {{ d.departmentName }}
-        </option>
-      </select>
-    </label>
+    <!-- Create -->
+    <form [formGroup]="createForm" (ngSubmit)="create()" class="form">
+      <label>Department
+        <select formControlName="departmentId">
+          <option [ngValue]="null">-- select --</option>
+          <option *ngFor="let d of departments" [ngValue]="d.departmentId">
+            {{ d.departmentName }}
+          </option>
+        </select>
+      </label>
+      <label>Subgroup Name
+        <input formControlName="deptSubgroupName" />
+      </label>
+      <button type="submit" [disabled]="createForm.invalid || savingCreate">Add Subgroup</button>
+      <span class="error" *ngIf="errorCreate">{{ errorCreate }}</span>
+    </form>
 
-    <label>Subgroup Name
-      <input formControlName="deptSubgroupName" />
-    </label>
+    <h3>All Subgroups</h3>
+    <ul class="list">
+      <li *ngFor="let s of subs">
+        <!-- Edit mode -->
+        <ng-container *ngIf="editingId === s.deptSubgroupId; else viewRow">
+          <form [formGroup]="editForm" (ngSubmit)="saveEdit(s.deptSubgroupId)" class="row edit">
+            <select formControlName="departmentId">
+              <option *ngFor="let d of departments" [ngValue]="d.departmentId">{{ d.departmentName }}</option>
+            </select>
+            <input formControlName="deptSubgroupName" />
+            <button type="submit" [disabled]="editForm.invalid || savingEdit">Save</button>
+            <button type="button" (click)="cancelEdit()">Cancel</button>
+          </form>
+        </ng-container>
 
-    <button type="submit" [disabled]="form.invalid || saving">Add Subgroup</button>
-    <span class="error" *ngIf="error">{{ error }}</span>
-  </form>
-
-  <section *ngFor="let bucket of subByDept">
-    <h3>{{ bucket.dept.departmentName }}</h3>
-    <ul>
-      <li *ngFor="let s of bucket.subgroups">{{ s.deptSubgroupName }}</li>
+        <!-- View mode -->
+        <ng-template #viewRow>
+          <div class="row">
+            <div>
+              <strong>{{ s.deptSubgroupName }}</strong>
+              <div class="muted">Department: {{ displayDepartmentName(s.departmentId) }}</div>
+            </div>
+            <div class="actions">
+              <button type="button" (click)="startEdit(s)">Edit</button>
+              <button type="button" class="danger" (click)="remove(s)">Delete</button>
+            </div>
+          </div>
+        </ng-template>
+      </li>
     </ul>
-    <div *ngIf="!bucket.subgroups.length"><em>No subgroups yet.</em></div>
-  </section>
+
+    <p class="footer">
+      Manage: <a [routerLink]="['/admin/departments']">Departments</a>
+    </p>
   `,
   styles: [`
     .form { display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:1rem; }
     .form label { display:flex; flex-direction:column; gap:4px; }
     .error { color:#b00020; margin-left:.5rem; }
+
+    .list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem; }
+    .row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:.75rem 1rem; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
+    .row.edit { gap:8px; }
+    .muted { color:#6b7280; font-size:.9rem; }
+    .actions { display:flex; gap:.5rem; }
+    .danger { color:#b00020; }
+    .footer { margin-top:1rem; color:#6b7280; }
   `]
 })
 export class DeptSubgroupsPageComponent implements OnInit {
-  depts: Department[] = [];
-  subs: DeptSubgroup[] = [];
-  subByDept: { dept: Department; subgroups: DeptSubgroup[] }[] = [];
-  saving = false;
-  error?: string;
+  subs: DeptSubgroupDto[] = [];
+  departments: DepartmentDto[] = [];
 
-  form = this.fb.group({
+  // create
+  createForm = this.fb.group({
     departmentId: [null as number | null, [Validators.required]],
-    deptSubgroupName: ['', [Validators.required, Validators.maxLength(255)]],
+    deptSubgroupName: ['', [Validators.required, Validators.maxLength(255)]]
   });
+  savingCreate = false;
+  errorCreate?: string;
+
+  // edit
+  editingId: number | null = null;
+  editForm = this.fb.group({
+    departmentId: [null as number | null, [Validators.required]],
+    deptSubgroupName: ['', [Validators.required, Validators.maxLength(255)]]
+  });
+  savingEdit = false;
 
   constructor(
     private fb: FormBuilder,
-    private deptSvc: DepartmentService,
-    private svc: DeptSubgroupService
+    private svc: DeptSubgroupService,
+    private deptSvc: DepartmentService
   ) {}
 
   ngOnInit(): void {
-    this.loadDepts();
+    this.loadDepartments();
     this.refresh();
   }
 
-  loadDepts() {
+  loadDepartments() {
     this.deptSvc.list().subscribe({
-      next: rows => this.depts = rows,
-      error: () => this.error = 'Failed to load departments'
+      next: rows => this.departments = rows,
+      error: err => console.error('Failed to load departments', err)
     });
   }
 
   refresh() {
     this.svc.list().subscribe({
-      next: rows => {
-        this.subs = rows;
-        this.subByDept = this.bucketByDepartment(rows);
-      },
-      error: () => this.error = 'Failed to load subgroups'
+      next: rows => this.subs = rows,
+      error: err => console.error('Failed to load subgroups', err)
     });
   }
 
-  save() {
-    if (this.form.invalid) return;
-    this.saving = true;
+  create() {
+    if (this.createForm.invalid) return;
+    this.savingCreate = true;
     const body = {
-      departmentId: Number(this.form.value.departmentId),
-      deptSubgroupName: this.form.value.deptSubgroupName!
+      departmentId: Number(this.createForm.value.departmentId),
+      deptSubgroupName: this.createForm.value.deptSubgroupName!
     };
     this.svc.create(body).subscribe({
-      next: () => { this.form.reset(); this.saving = false; this.refresh(); },
-      error: () => { this.error = 'Failed to create subgroup'; this.saving = false; }
+      next: () => { this.createForm.reset(); this.savingCreate = false; this.refresh(); },
+      error: err => { console.error('Create subgroup failed', err); this.savingCreate = false; }
     });
   }
 
-  private bucketByDepartment(rows: DeptSubgroup[]): { dept: Department; subgroups: DeptSubgroup[] }[] {
-    const map = new Map<number, { dept: Department; subgroups: DeptSubgroup[] }>();
-    for (const s of rows) {
-      const d = this.depts.find(x => x.departmentId === s.departmentId);
-      if (!d) continue;
-      if (!map.has(d.departmentId)) map.set(d.departmentId, { dept: d, subgroups: [] });
-      map.get(d.departmentId)!.subgroups.push(s);
-    }
-    return Array.from(map.values());
+  startEdit(s: DeptSubgroupDto) {
+    this.editingId = s.deptSubgroupId;
+    this.editForm.reset({ departmentId: s.departmentId, deptSubgroupName: s.deptSubgroupName });
+  }
+
+  cancelEdit() {
+    this.editingId = null;
+    this.editForm.reset();
+  }
+
+  saveEdit(id: number) {
+    if (this.editForm.invalid) return;
+    this.savingEdit = true;
+    const body = {
+      departmentId: Number(this.editForm.value.departmentId),
+      deptSubgroupName: this.editForm.value.deptSubgroupName!
+    };
+    this.svc.update(id, body).subscribe({
+      next: () => { this.savingEdit = false; this.editingId = null; this.refresh(); },
+      error: err => { console.error('Update subgroup failed', err); this.savingEdit = false; }
+    });
+  }
+
+  remove(s: DeptSubgroupDto) {
+    const ok = confirm(`Delete subgroup "${s.deptSubgroupName}"?`);
+    if (!ok) return;
+    this.svc.delete(s.deptSubgroupId).subscribe({
+      next: () => this.refresh(),
+      error: err => {
+        console.error('Delete subgroup failed', err);
+        alert(this.extractMsg(err) ?? 'Failed to delete subgroup');
+      }
+    });
+  }
+
+  displayDepartmentName(deptId: number): string {
+    return this.departments.find(d => d.departmentId === deptId)?.departmentName ?? `#${deptId}`;
+  }
+
+  private extractMsg(err: any): string | undefined {
+    return err?.error?.message ?? err?.error?.detail ?? err?.message;
   }
 }
+

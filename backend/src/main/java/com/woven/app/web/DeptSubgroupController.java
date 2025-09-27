@@ -1,10 +1,11 @@
 package com.woven.app.web;
 
-import com.woven.app.domain.DeptSubgroup;
 import com.woven.app.service.DeptSubgroupService;
 import com.woven.app.web.dto.admin.DeptSubgroupCreateDto;
+import com.woven.app.web.dto.admin.DeptSubgroupDto;
 import com.woven.app.web.dto.admin.DeptSubgroupUpdateDto;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,33 +21,30 @@ public class DeptSubgroupController {
         this.service = service;
     }
 
+    // List subgroups
     @GetMapping
-    public List<DeptSubgroup> all() {
+    public List<DeptSubgroupDto> all() {
         return service.list();
     }
 
-    @GetMapping("/{id}")
-    public DeptSubgroup one(@PathVariable Integer id) {
-        return service.get(id);
-    }
-
-    // List subgroups under a specific Department
+    // Filters subgroups under a specific Department
     @GetMapping("/by-department/{departmentId}")
-    public List<DeptSubgroup> byDepartment(@PathVariable Integer departmentId) {
+    public List<DeptSubgroupDto> byDepartment(@PathVariable Integer departmentId) {
         return service.listByDepartment(departmentId);
     }
 
     @PostMapping
-    public DeptSubgroup create(@Valid @RequestBody DeptSubgroupCreateDto dto) {
-        return service.create(dto.departmentId(), dto.deptSubgroupName());
+    public DeptSubgroupDto create(@Valid @RequestBody DeptSubgroupCreateDto dto) {
+        return service.create(dto);
     }
 
     @PutMapping("/{id}")
-    public DeptSubgroup update(@PathVariable Integer id, @Valid @RequestBody DeptSubgroupUpdateDto dto) {
-        return service.update(id, dto.departmentId(), dto.deptSubgroupName());
+    public DeptSubgroupDto update(@PathVariable Integer id, @Valid @RequestBody DeptSubgroupUpdateDto dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Integer id) {
         service.delete(id);
     }
