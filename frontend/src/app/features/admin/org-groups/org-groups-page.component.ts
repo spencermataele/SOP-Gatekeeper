@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Org } from '../models/org.model';
+import { OrgDto } from '../models/org.model';
 import { OrgGroup } from '../models/org-group.model';
 import { OrgService } from '../services/org.service';
 import { OrgGroupService } from '../services/org-group.service';
@@ -52,9 +52,9 @@ import { OrgGroupService } from '../services/org-group.service';
   `]
 })
 export class OrgGroupsPageComponent implements OnInit {
-  orgs: Org[] = [];
+  orgs: OrgDto[] = [];
   groups: OrgGroup[] = [];
-  groupsByOrg: { org: Org; groups: OrgGroup[] }[] = [];
+  groupsByOrg: { org: OrgDto; groups: OrgGroup[] }[] = [];
   saving = false;
   error?: string;
 
@@ -104,8 +104,8 @@ export class OrgGroupsPageComponent implements OnInit {
     });
   }
 
-  private groupByOrg(rows: OrgGroup[]): { org: Org; groups: OrgGroup[] }[] {
-    const orgMap = new Map<number, { org: Org; groups: OrgGroup[] }>();
+  private groupByOrg(rows: OrgGroup[]): { org: OrgDto; groups: OrgGroup[] }[] {
+    const orgMap = new Map<number, { org: OrgDto; groups: OrgGroup[] }>();
     for (const g of rows) {
       const org = this.orgs.find(o => o.orgId === g.orgId);
       if (!org) continue;

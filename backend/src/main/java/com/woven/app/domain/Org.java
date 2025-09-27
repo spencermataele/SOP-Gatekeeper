@@ -34,5 +34,9 @@ public class Org {
         lastUpdatedTimestamp = now;
     }
     @PreUpdate void onUpdate() { lastUpdatedTimestamp = Instant.now(); }
+
+    public String orgName() {
+        return this.orgName = this.orgName;
+    }
 }
 
