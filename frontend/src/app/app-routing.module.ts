@@ -19,6 +19,8 @@ const routes: Routes = [
   { path: 'admin/dept-subgroups', loadComponent: () => import('./features/admin/dept-subgroups/dept-subgroups-page.component').then(m => m.DeptSubgroupsPageComponent) },
   { path: 'admin/process-owners', component: ProcessOwnersComponent },
   { path: 'process-owners/new', component: ProcessOwnerCreateComponent },
+  { path: 'reports', loadComponent: () => import('./features/reports/reports-home.component').then(m => m.ReportsHomeComponent) },
+  { path: 'reports/org-hierarchy', loadComponent: () => import('./features/reports/org-hierarchy-report.component').then(m => m.OrgHierarchyReportComponent) },
   { path: '**', redirectTo: 'sops' }
 ];
 

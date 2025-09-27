@@ -10,6 +10,7 @@ import { ProcessOwnersListComponent} from "./features/admin/process-owners/proce
 import { ProcessOwnerFormComponent} from "./features/admin/process-owners/process-owner-form/process-owner-form.component";
 import { ProcessOwnersComponent } from "./features/admin/process-owners/process-owners.component";
 import { AdminHomeComponent } from "./features/admin/admin-home.component";
+import { ReportsHomeComponent} from "./features/reports/reports-home.component";
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { AdminHomeComponent } from "./features/admin/admin-home.component";
     ReactiveFormsModule,
     FormsModule,
     SopsListComponent,
-    SopsFormComponent
+    SopsFormComponent,
+    ReportsHomeComponent
   ],
   providers: [],
   bootstrap: [AppComponent]
