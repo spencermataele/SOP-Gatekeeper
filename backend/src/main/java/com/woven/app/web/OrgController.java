@@ -1,11 +1,12 @@
 package com.woven.app.web;
 
-import com.woven.app.domain.Org;
 import com.woven.app.repository.OrgRepository;
+import com.woven.app.service.OrgService;
+import com.woven.app.web.dto.admin.OrgCreateDto;
 import com.woven.app.web.dto.admin.OrgDto;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -14,32 +15,30 @@ import java.util.List;
 public class OrgController {
     private final OrgRepository repo;
 
-    public OrgController(OrgRepository repo) {
+    private final OrgService service;
+
+    public OrgController(OrgRepository repo, OrgService service) {
         this.repo = repo;
+        this.service = service;
     }
 
     @GetMapping
-    public List<OrgDto> list() {
-        return repo.findAll().stream()
-                .map(org -> new OrgDto(org.getOrgId(), org.getOrgName(), List.of()))
-                .toList();
+    public List<OrgDto> all() { return service.listWithGroups(); }
+
+    @PostMapping
+    public OrgDto create(@Valid @RequestBody OrgCreateDto dto) {
+        return service.create(dto);
     }
 
-    // for create, avoid returning the entity too
-    @PostMapping
-    public OrgDto create(@RequestBody Org dto) {
-        Org entity = new Org();
-        entity.setOrgName(dto.orgName());
-        entity.setCreatedTimestamp(Instant.now());
-        entity.setLastUpdatedTimestamp(Instant.now());
+    @PutMapping("/{id}")
+    public OrgDto update(@PathVariable Integer id, @Valid @RequestBody OrgCreateDto dto) {
+        return service.update(id, dto);
+    }
 
-
-        Org saved = repo.save(entity);
-        return new OrgDto(
-                saved.getOrgId(),
-                saved.getOrgName(),
-                List.of()
-        );
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Integer id) {
+        service.delete(id);
     }
 }
 
