@@ -2,7 +2,7 @@ package com.woven.app.web;
 
 import com.woven.app.domain.DeptSubgroup;
 import com.woven.app.service.DeptSubgroupService;
-import com.woven.app.dto.DeptSubgroupCreateDto;
+import com.woven.app.web.dto.admin.DeptSubgroupCreateDto;
 import com.woven.app.dto.DeptSubgroupUpdateDto;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;

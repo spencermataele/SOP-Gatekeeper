@@ -3,8 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { SopsListComponent } from './features/sops/sops-list/sops-list.component';
 import { SopsFormComponent } from './features/sops/sops-form/sops-form.component';
 import { ProcessOwnerCreateComponent } from "./features/sops/process-owners/process-owner-create";
-import {ProcessOwnersComponent} from "./features/admin/process-owners/process-owners.component";
-import {AdminHomeComponent} from "./features/admin/admin-home.component";
+import { ProcessOwnersComponent } from "./features/admin/process-owners/process-owners.component";
+import { AdminHomeComponent } from "./features/admin/admin-home.component";
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'sops' },
@@ -18,7 +18,7 @@ const routes: Routes = [
   { path: 'admin/departments', loadComponent: () => import('./features/admin/departments/departments-page.component').then(m => m.DepartmentsPageComponent) },
   { path: 'admin/dept-subgroups', loadComponent: () => import('./features/admin/dept-subgroups/dept-subgroups-page.component').then(m => m.DeptSubgroupsPageComponent) },
   { path: 'admin/process-owners', component: ProcessOwnersComponent },
-  { path: 'process-owners/new', component: ProcessOwnerCreateComponent},
+  { path: 'process-owners/new', component: ProcessOwnerCreateComponent },
   { path: '**', redirectTo: 'sops' }
 ];
 

@@ -1,8 +1,12 @@
-import { Department } from './department.model';
 
-export interface OrgGroup {
+export interface OrgGroupDto {
   orgGroupId: number;
   orgGroupName: string;
-  orgId: number;              // backend can also send parent id
-  departments?: Department[]; // if your DTO includes children
+  orgId: number;
+
+  // child associations
+  departments?: {
+    departmentId: number;
+    departmentName: string;
+  }[];
 }

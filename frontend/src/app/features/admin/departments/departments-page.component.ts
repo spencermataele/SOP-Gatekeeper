@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Department } from '../models/department.model';
-import { OrgGroup } from '../models/org-group.model';
+import { OrgGroupDto } from '../models/org-group.model';
 import { OrgGroupService } from '../services/org-group.service';
 import { DepartmentService } from '../services/department.service';
 
@@ -54,9 +54,9 @@ import { DepartmentService } from '../services/department.service';
   `]
 })
 export class DepartmentsPageComponent implements OnInit {
-  groups: OrgGroup[] = [];
+  groups: OrgGroupDto[] = [];
   depts: Department[] = [];
-  deptByGroup: { group: OrgGroup; depts: Department[] }[] = [];
+  deptByGroup: { group: OrgGroupDto; depts: Department[] }[] = [];
   saving = false;
   error?: string;
 
@@ -106,8 +106,8 @@ export class DepartmentsPageComponent implements OnInit {
     });
   }
 
-  private bucketByGroup(rows: Department[]): { group: OrgGroup; depts: Department[] }[] {
-    const map = new Map<number, { group: OrgGroup; depts: Department[] }>();
+  private bucketByGroup(rows: Department[]): { group: OrgGroupDto; depts: Department[] }[] {
+    const map = new Map<number, { group: OrgGroupDto; depts: Department[] }>();
     for (const d of rows) {
       const g = this.groups.find(x => x.orgGroupId === d.orgGroupId);
       if (!g) continue;

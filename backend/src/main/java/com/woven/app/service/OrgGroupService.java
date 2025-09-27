@@ -1,8 +1,9 @@
 package com.woven.app.service;
 
-import com.woven.app.domain.Department;
+import com.woven.app.domain.Org;
 import com.woven.app.domain.OrgGroup;
 import com.woven.app.repository.OrgGroupRepository;
+import com.woven.app.repository.OrgRepository;
 import com.woven.app.web.dto.admin.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -14,34 +15,46 @@ import java.util.List;
 @Transactional
 public class OrgGroupService {
     private final OrgGroupRepository repo;
+    private final OrgRepository orgRepo;
 
-    public OrgGroupService(OrgGroupRepository repo) { this.repo = repo; }
+    public OrgGroupService(OrgGroupRepository repo, OrgRepository orgRepo) {
+        this.repo = repo;
+        this.orgRepo = orgRepo;
+    }
 
     @Transactional(readOnly = true)
     public List<OrgGroupDto> listWithDepartments() {
-        List<OrgGroup> groups = repo.findAllWithDepartments();
-        return groups.stream().map(this::toDto).toList();
+        return repo.findAllWithDepartments().stream().map(this::toDto).toList();
+    }
+
+    public OrgGroupDto create(OrgGroupCreateDto dto) {
+        Org org = orgRepo.findById(dto.orgId()).orElseThrow(() -> new EntityNotFoundException("Org " + dto.orgId() + " not found"));
+        OrgGroup g = OrgGroup.builder().orgGroupName(dto.orgGroupName()).org(org).build();
+        OrgGroup saved = repo.save(g);
+        return new OrgGroupDto(saved.getOrgGroupId(), saved.getOrgGroupName(), org.getOrgId(), List.of());
+    }
+
+    public OrgGroupDto update(Integer id, OrgGroupCreateDto dto) {
+        OrgGroup g = repo.findById(id).orElseThrow(() -> new EntityNotFoundException("OrgGroup " + id + " not found"));
+        g.setOrgGroupName(dto.orgGroupName());
+        if (!g.getOrg().getOrgId().equals(dto.orgId())) {
+            Org org = orgRepo.findById(dto.orgId()).orElseThrow(() -> new EntityNotFoundException("Org " + dto.orgId() + " not found"));
+            g.setOrg(org);
+        }
+        OrgGroup saved = repo.save(g);
+        return new OrgGroupDto(saved.getOrgGroupId(), saved.getOrgGroupName(), saved.getOrg().getOrgId(), List.of());
+    }
+
+    public void delete(Integer id) {
+        if (!repo.existsById(id)) throw new EntityNotFoundException("OrgGroup " + id + " not found");
+        repo.deleteById(id);
     }
 
     private OrgGroupDto toDto(OrgGroup g) {
-        List<DepartmentSlimDto> depts = g.getDepartments() == null ? List.of()
-                : g.getDepartments().stream()
-                .map(this::toSlim)
-                .toList();
-
-        Integer orgId = (g.getOrg() != null) ? g.getOrg().getOrgId() : null;
+        var depts = g.getDepartments() == null ? List.<DepartmentSlimDto>of()
+                : g.getDepartments().stream().map(d -> new DepartmentSlimDto(d.getDepartmentId(), d.getDepartmentName())).toList();
+        Integer orgId = g.getOrg() != null ? g.getOrg().getOrgId() : null;
         return new OrgGroupDto(g.getOrgGroupId(), g.getOrgGroupName(), orgId, depts);
-    }
-
-    private DepartmentSlimDto toSlim(Department d) {
-        return new DepartmentSlimDto(d.getDepartmentId(), d.getDepartmentName());
-    }
-
-    @Transactional(readOnly = true)
-    public OrgGroupDto getDto(Integer id) {
-        OrgGroup g = repo.findById(id).orElseThrow(() -> new EntityNotFoundException("OrgGroup " + id + " not found"));
-        Integer orgId = (g.getOrg() != null) ? g.getOrg().getOrgId() : null;
-        return new OrgGroupDto(g.getOrgGroupId(), g.getOrgGroupName(), orgId, List.of());
     }
 }
 

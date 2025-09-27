@@ -1,4 +1,4 @@
-package com.woven.app.dto;
+package com.woven.app.web.dto.admin;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
