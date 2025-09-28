@@ -1,0 +1,50 @@
+package com.woven.app.domain;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Entity
+@Table(name = "business_process", uniqueConstraints = @UniqueConstraint(columnNames = {"process_family_id", "process_name"}))
+@Getter @Setter
+public class BusinessProcess {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer processId;
+
+    @Column(nullable = false, length = 255)
+    private String processName;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "process_family_id")
+    private BusinessProcessFamily businessProcessFamily;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_process_id")
+    private BusinessProcess parentProcess;
+
+    @OneToMany(mappedBy = "parentProcess")
+    private List<BusinessProcess> children = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "process_dept_dubgroup",
+            joinColumns = @JoinColumn(name = "process_id"),
+            inverseJoinColumns = @JoinColumn(name = "dept_subgroup_id")
+    )
+    private Set<DeptSubgroup> deptSubgroups = new HashSet<>();
+
+    @Column(nullable = false)
+    private Instant createdTimestamp = Instant.now();
+    @Column(nullable = false)
+    private Instant lasUpdatedTimestamp = Instant.now();
+    @PreUpdate
+    void onUpdate() {
+        lasUpdatedTimestamp = Instant.now();
+    }
+}
