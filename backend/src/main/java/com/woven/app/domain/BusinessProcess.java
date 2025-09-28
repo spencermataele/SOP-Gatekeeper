@@ -15,26 +15,26 @@ import java.util.Set;
 @Getter @Setter
 public class BusinessProcess {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer processId;
+    private Integer businessProcessId;
 
     @Column(nullable = false, length = 255)
-    private String processName;
+    private String businessProcessName;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "process_family_id")
     private BusinessProcessFamily businessProcessFamily;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_process_id")
-    private BusinessProcess parentProcess;
+    @JoinColumn(name = "parent_business_process_id")
+    private BusinessProcess parentBusinessProcess;
 
-    @OneToMany(mappedBy = "parentProcess")
+    @OneToMany(mappedBy = "parentBusinessProcessId")
     private List<BusinessProcess> children = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
-            name = "process_dept_dubgroup",
-            joinColumns = @JoinColumn(name = "process_id"),
+            name = "process_dept_subgroup",
+            joinColumns = @JoinColumn(name = "business_process_id"),
             inverseJoinColumns = @JoinColumn(name = "dept_subgroup_id")
     )
     private Set<DeptSubgroup> deptSubgroups = new HashSet<>();

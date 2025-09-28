@@ -1,4 +1,4 @@
-package com.woven.app.web;
+package com.woven.app.web.controller;
 
 import com.woven.app.domain.ProcessOwner;
 import com.woven.app.dto.ProcessOwnerCreateDto;

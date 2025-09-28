@@ -1,4 +1,4 @@
-package com.woven.app.web;
+package com.woven.app.web.controller;
 
 import com.woven.app.service.report.ReportService;
 import com.woven.app.web.dto.report.OrgHierarchyRowDto;

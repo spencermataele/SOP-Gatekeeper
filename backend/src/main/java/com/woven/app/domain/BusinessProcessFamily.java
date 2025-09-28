@@ -14,10 +14,10 @@ import java.util.List;
 public class BusinessProcessFamily {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer processFamilyId;
+    private Integer businessProcessFamilyId;
 
     @Column(nullable = false, length = 255)
-    private String processFamilyName;
+    private String businessProcessFamilyName;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
@@ -29,9 +29,9 @@ public class BusinessProcessFamily {
     @Column(nullable = false)
     private Instant createdTimestamp = Instant.now();
     @Column(nullable = false)
-    private Instant lasUpdatedTimestamp = Instant.now();
+    private Instant lastUpdatedTimestamp = Instant.now();
     @PreUpdate
     void onUpdate() {
-        lasUpdatedTimestamp = Instant.now();
+        lastUpdatedTimestamp = Instant.now();
     }
 }

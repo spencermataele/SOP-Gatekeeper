@@ -1,4 +1,4 @@
-package com.woven.app.web;
+package com.woven.app.web.controller;
 
 import com.woven.app.web.dto.admin.OrgGroupCreateDto;
 import com.woven.app.web.dto.admin.OrgGroupDto;
