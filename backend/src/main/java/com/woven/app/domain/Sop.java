@@ -41,27 +41,27 @@ public class Sop {
     private Integer deptSubgroupId;
 
     @NotNull
-    @Column(name = "current_process_owner_id", nullable = false)
+    @Column(name = "current_business_process_owner_id", nullable = false)
     private Integer currentProcessOwnerId;
 
     @NotNull
-    @Column(name = "current_process_owner_position_id", nullable = false)
+    @Column(name = "current_business_process_owner_position_id", nullable = false)
     private Integer currentProcessOwnerPositionId;
 
     @NotNull
-    @Column(name = "process_id", nullable = false)
+    @Column(name = "business_process_id", nullable = false)
     private Integer processId;
 
     @NotBlank
-    @Column(name = "process_name", nullable = false, length = 255)
+    @Column(name = "business_process_name", nullable = false, length = 255)
     private String processName;
 
     @NotNull
-    @Column(name = "process_family_id", nullable = false)
+    @Column(name = "business_process_family_id", nullable = false)
     private Integer processFamilyId;
 
     @NotNull
-    @Column(name = "parent_process_id", nullable = false)
+    @Column(name = "parent_business_process_id", nullable = false)
     private Integer parentProcessId;
 
     @NotBlank

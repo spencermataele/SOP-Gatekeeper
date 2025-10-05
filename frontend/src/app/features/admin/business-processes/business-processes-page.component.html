@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<section class="container">
+  <h2>Business Processes</h2>
+  <div class="toolbar">
+    <input placeholder="Search by name/family/parent…" [(ngModel)]="q">
+    <button [routerLink]="['admin/business-processes/new']" (click)="create()">New Process</button>
+  </div>
+
+  <table *ngIf="!loading; else busy">
+    <thead>
+    <tr>
+      <th>ID</th><th>Name</th><th>Family</th><th>Parent</th><th>Dept</th><th>Subgroups</th><th>Updated</th><th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let p of filtered">
+      <td>{{ p.businessProcessId }}</td>
+      <td>{{ p.businessProcessName }}</td>
+      <td>{{ p.businessProcessFamilyName }}</td>
+      <td>{{ p.parentProcessName || '—' }}</td>
+      <td>{{ p.departmentName }}</td>
+      <td>{{ (p.deptSubgroupNames || []).join(', ') }}</td>
+      <td>{{ p.lastUpdatedTimestamp | date:'short' }}</td>
+      <td>
+        <button (click)="edit(p.businessProcessId)">Edit</button>
+        <button (click)="remove(p.businessProcessId, p.businessProcessName)">Delete</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <ng-template #busy>Loading…</ng-template>
+</section>
+</html>

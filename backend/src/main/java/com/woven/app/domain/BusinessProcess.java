@@ -21,19 +21,19 @@ public class BusinessProcess {
     private String businessProcessName;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "process_family_id")
+    @JoinColumn(name = "business_process_family_id")
     private BusinessProcessFamily businessProcessFamily;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_business_process_id")
     private BusinessProcess parentBusinessProcess;
 
-    @OneToMany(mappedBy = "parentBusinessProcessId")
+    @OneToMany(mappedBy = "parentBusinessProcess")
     private List<BusinessProcess> children = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
-            name = "process_dept_subgroup",
+            name = "business_process_dept_subgroup",
             joinColumns = @JoinColumn(name = "business_process_id"),
             inverseJoinColumns = @JoinColumn(name = "dept_subgroup_id")
     )
@@ -42,9 +42,9 @@ public class BusinessProcess {
     @Column(nullable = false)
     private Instant createdTimestamp = Instant.now();
     @Column(nullable = false)
-    private Instant lasUpdatedTimestamp = Instant.now();
+    private Instant lastUpdatedTimestamp = Instant.now();
     @PreUpdate
     void onUpdate() {
-        lasUpdatedTimestamp = Instant.now();
+        lastUpdatedTimestamp = Instant.now();
     }
 }

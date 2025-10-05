@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "process_family", uniqueConstraints = @UniqueConstraint(columnNames = {"department_id", "process_family_name"}))
+@Table(name = "business_process_family", uniqueConstraints = @UniqueConstraint(columnNames = {"department_id", "process_family_name"}))
 @Getter @Setter
 public class BusinessProcessFamily {
 

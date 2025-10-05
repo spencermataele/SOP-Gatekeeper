@@ -1,0 +1,53 @@
+
+<section class="container">
+  <h2>Business Process Families</h2>
+
+    <div class="toolbar">
+    <input placeholder="Search by name/department…" [(ngModel)]="q">
+    <button [routerLink]="['admin/business-process-families/new']" (click)="create()">New Family</button>
+  </div>
+
+  <h3>All Business Process Families</h3>
+  <ul class="list">
+    <li *ngFor="let f of filtered">
+      <ng-template #viewRow>
+        <div class="row">
+          <div>
+            <strong> {{ f.businessProcessFamilyName }}</strong>
+            <div class="muted" *ngIf="!f.businessProcesses?.length">
+              {{ f.businessProcesses.length}} process{{ f.businessProcesses.length === 1 ? '' : 'es' }}
+            </div>
+            <div class="muted" *ngIf="!f.businessProcesses?.length"> No related business processes yet.</div>
+          </div>
+          <div class="actions">
+            <button type="button" (click)="edit(f.businessProcessFamilyId)">Edit</button>
+            <button type="button" class="danger" (click)="remove(f.businessProcessFamilyId, f.businessProcessFamilyName)">
+              Delete
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+  </ul>
+
+  <table class="table" *ngIf="!loading; else busy">
+    <thead class="thead">
+    <tr>
+      <th>ID</th><th>Name</th><th>Department</th><th>Created</th><th>Updated</th><th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let f of filtered">
+      <td class="tbody td">{{ f.businessProcessFamilyId }}</td>
+      <td>{{ f.businessProcessFamilyName }}</td>
+      <td>{{ f.departmentName }}</td>
+      <td>
+        <button (click)="edit(f.businessProcessFamilyId)">Edit</button>
+        <button (click)="remove(f.businessProcessFamilyId, f.businessProcessFamilyName)">Delete</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <ng-template #busy>Loading…</ng-template>
+</section>

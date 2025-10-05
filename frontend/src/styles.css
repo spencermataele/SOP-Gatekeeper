@@ -1,1 +1,40 @@
-/* You can add global styles to this file, and also import other style files */
+.page { display:grid; gap:1rem; }
+.header { display:flex; justify-content:space-between; align-items:end; }
+.stamp { color:#6b7280; font-size:.9rem; }
+.filters { display:flex; gap:12px; align-items:end; flex-wrap:wrap; }
+.filters label { display:flex; flex-direction:column; gap:4px; }
+.filters .chk { flex-direction:row; gap:8px; align-items:center; }
+.table-wrap { overflow:auto; border:1px solid #e5e7eb; border-radius:10px; }
+table { width:100%; border-collapse:collapse; font-size:14px; background:#fff; }
+thead th { text-align:left; background:#f9fafb; border-bottom:1px solid #e5e7eb; padding:.5rem .75rem; white-space:nowrap; }
+tbody td { border-bottom:1px solid #f3f4f6; padding:.5rem .75rem; vertical-align:top; }
+.cell-title { font-weight:600; }
+.cell-sub { color:#6b7280; font-size:.85rem; }
+.footer { display:flex; justify-content:space-between; color:#6b7280; }
+
+.admin-home { max-width: 1000px; margin: 1.25rem auto; padding: 0 1rem; }
+.admin-header { margin-bottom: 1rem; }
+.subtitle { color: #667085; margin: .25rem 0 0; }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: block;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow .2s ease, transform .05s ease;
+  background: #fff;
+}
+.card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.07); transform: translateY(-1px); }
+.card h3 { margin: 0 0 .5rem; font-size: 1.125rem; }
+.card p { margin: 0 0 .75rem; color: #6b7280; }
+.card .cta { font-weight: 600; color: #2563eb; }
+
+.admin-footer { margin-top: 1.5rem; color: #6b7280; }

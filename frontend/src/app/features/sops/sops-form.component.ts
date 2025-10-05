@@ -16,6 +16,10 @@ import { DeptSubgroupDto } from '../admin/models/dept-subgroup.model';
 import { ProcessOwner } from './models/process-owner.model';
 
 import { SopService } from './services/sop.service';
+import {BusinessProcessService} from "../admin/services/business-process.service";
+import {BusinessProcessFamilyService} from "../admin/services/business-process-family.service";
+import {BusinessProcess} from "../admin/models/business-process.model";
+import {BusinessProcessFamily} from "../admin/models/business-process-family.model";
 
 @Component({
   selector: 'app-sop-form',
@@ -29,6 +33,7 @@ export class SopsFormComponent implements OnInit {
   id: number | null = null;
   loading = false;
   saving = false;
+  errorMsg?: string;
 
   // master lists
   orgs: OrgDto[] = [];
@@ -36,6 +41,8 @@ export class SopsFormComponent implements OnInit {
   depts: DepartmentDto[] = [];
   subs: DeptSubgroupDto[] = [];
   owners: ProcessOwner[] = [];
+  businessProcess: BusinessProcess[] = [];
+  businessProcessFamily: BusinessProcessFamily[] = [];
 
   // id->entity maps for autofill logic
   orgById = new Map<number, OrgDto>();
@@ -43,6 +50,8 @@ export class SopsFormComponent implements OnInit {
   deptById = new Map<number, DepartmentDto>();
   subgroupById = new Map<number, DeptSubgroupDto>();
   ownerById = new Map<number, ProcessOwner>();
+  businessProcessById =new Map<number, BusinessProcess>();
+  businessProcessFamilyId = new Map<number, BusinessProcessFamily>();
 
   // global filter
   nameFilter = this.fb.control<string>('', { nonNullable: true });
@@ -52,23 +61,21 @@ export class SopsFormComponent implements OnInit {
     title: ['', [Validators.required, Validators.maxLength(255)]],
     sopDetails: ['', [Validators.required]],
     authorName: ['', [Validators.required, Validators.maxLength(255)]],
-    processName: ['', [Validators.required, Validators.maxLength(255)]],
-    processId: [null as number | null],
-    processFamilyId: [null as number | null],
-    parentProcessId: [null as number | null],
     versionId: [1, [Validators.min(1)]],
 
-    // hierarchy (optional but selectable)
+    // selectables
+    businessProcessName: ['', [Validators.required, Validators.maxLength(255)]],
+    businessProcessId: [null as number | null],
+    businessProcessFamilyId: [null as number | null],
+    parentProcessId: [null as number | null],
+
     orgId: [null as number | null],
     orgGroupId: [null as number | null],
     departmentId: [null as number | null],
     deptSubgroupId: [null as number | null],
 
-    // process owner
     processOwnerId: [null as number | null]
   });
-
-  errorMsg?: string;
 
   constructor(
     private fb: FormBuilder,
@@ -79,7 +86,9 @@ export class SopsFormComponent implements OnInit {
     private groupSvc: OrgGroupService,
     private deptSvc: DepartmentService,
     private subSvc: DeptSubgroupService,
-    private ownerSvc: ProcessOwnerService
+    private ownerSvc: ProcessOwnerService,
+    private businessProcessSvc: BusinessProcessService,
+    private businessProcessFamSvc: BusinessProcessFamilyService
   ) {}
 
   ngOnInit(): void {
@@ -87,12 +96,17 @@ export class SopsFormComponent implements OnInit {
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam && idParam !== 'new') this.id = Number(idParam);
 
+    this.form.get('businessProcessFamilyId')?.addValidators([Validators.required]);
+    this.form.get('businessProcessId')?.addValidators([Validators.required]);
+
     // load reference data
     this.orgSvc.list().subscribe({ next: rows => { this.orgs = rows; rows.forEach(o => this.orgById.set(o.orgId, o)); }});
     this.groupSvc.list().subscribe({ next: rows => { this.groups = rows; rows.forEach(g => this.groupById.set(g.orgGroupId, g)); }});
     this.deptSvc.list().subscribe({ next: rows => { this.depts = rows; rows.forEach(d => this.deptById.set(d.departmentId, d)); }});
     this.subSvc.list().subscribe({ next: rows => { this.subs = rows; rows.forEach(s => this.subgroupById.set(s.deptSubgroupId, s)); }});
     this.ownerSvc.list().subscribe({ next: rows => { this.owners = rows; rows.forEach(p => this.ownerById.set(p.processOwnerId, p)); }});
+    this.businessProcessSvc.list().subscribe({next: rows => { this.businessProcess = rows; rows.forEach(b => this.businessProcessById.set(b.businessProcessId, b)); }});
+    this.businessProcessFamSvc.list().subscribe( {next: rows => { this.businessProcessFamily = rows; rows.forEach(f => this.businessProcessFamilyId.set(f.businessProcessFamilyId, f)); }});
 
     if (this.id != null) {
       this.loading = true;
@@ -102,9 +116,9 @@ export class SopsFormComponent implements OnInit {
             title: sop.title ?? '',
             sopDetails: sop.sopDetails ?? '',
             authorName: sop.authorName ?? '',
-            processName: sop.processName ?? '',
-            processId: sop.processId ?? null,
-            processFamilyId: sop.processFamilyId ?? null,
+            businessProcessName: sop.businessProcessName ?? '',
+            businessProcessId: sop.businessProcessId ?? null,
+            businessProcessFamilyId: sop.businessProcessFamilyId ?? null,
             parentProcessId: sop.parentProcessId ?? null,
             versionId: sop.versionId ?? 1,
             orgId: sop.orgId ?? null,
@@ -115,6 +129,7 @@ export class SopsFormComponent implements OnInit {
           });
           // ensure parent chain is consistent if only a child id is present
           this.onSubChange();
+          this.onProcessChange();
           this.loading = false;
         },
         error: err => { this.errorMsg = err?.error?.message ?? 'Failed to load SOP'; this.loading = false; }
@@ -147,6 +162,21 @@ export class SopsFormComponent implements OnInit {
   filteredOwners(): ProcessOwner[] {
     return this.owners.filter(p => this.match(p.name));
   }
+  filteredFamilies() {
+    // Optionally filter by department if your family has departmentId
+    const deptId = this.form.value.departmentId ?? null;
+    return this.businessProcessFamily
+      .filter(f => (!deptId || f.departmentId === deptId))
+      .filter(f => this.match(f.businessProcessFamilyName));
+  }
+
+  filteredProcesses() {
+    const famId = this.form.value.businessProcessFamilyId ?? null;
+    return this.businessProcess
+      .filter(p => (!famId || p.businessProcessFamilyId === famId))
+      .filter(p => this.match(p.businessProcessName));
+  }
+
 
   // autofill parents
   onOrgChange() {
@@ -243,6 +273,47 @@ export class SopsFormComponent implements OnInit {
     }
   }
 
+  onProcessFamilyChange() {
+    const famId = this.form.value.businessProcessFamilyId ?? null;
+
+    // Clear downstream fields
+    this.form.patchValue({
+      businessProcessId: null,
+      parentProcessId: null
+    });
+
+    const fam = famId ? this.businessProcessFamilyId.get(famId) : undefined;
+    if (fam && fam.departmentId && this.form.value.departmentId !== fam.departmentId) {
+      this.form.patchValue({ departmentId: fam.departmentId });
+      this.onDeptChange(); // reuse your existing cascade
+    }
+  }
+
+  onProcessChange() {
+    const procId = this.form.value.businessProcessId ?? null;
+    if (!procId) {
+      this.form.patchValue({ parentProcessId: null });
+      return;
+    }
+
+    const proc = this.businessProcessById.get(procId);
+    if (proc) {
+      // Auto-fill parent id
+      this.form.patchValue({ parentProcessId: proc.parentProcessId ?? null });
+
+      if (proc.businessProcessFamilyId && this.form.value.businessProcessFamilyId !== proc.businessProcessFamilyId) {
+        this.form.patchValue({ businessProcessFamilyId: proc.businessProcessFamilyId });
+      }
+
+      if (proc.businessProcessName && this.form.value.businessProcessName !== proc.businessProcessName) {
+        this.form.patchValue({ businessProcessName: proc.businessProcessName });
+      }
+    } else {
+      this.form.patchValue({ parentProcessId: null });
+    }
+  }
+
+
   //  submit, update, delete
   submit() {
     if (this.form.invalid) return;
@@ -253,9 +324,9 @@ export class SopsFormComponent implements OnInit {
       title: f.title!,
       sopDetails: f.sopDetails!,
       authorName: f.authorName!,
-      processName: f.processName!,
-      processId: f.processId ?? null,
-      processFamilyId: f.processFamilyId ?? null,
+      businessProcessName: f.businessProcessName!,
+      businessProcessId: f.businessProcessId ?? null,
+      businessProcessFamilyId: f.businessProcessFamilyId ?? null,
       parentProcessId: f.parentProcessId ?? null,
       versionId: Number(f.versionId ?? 1),
 

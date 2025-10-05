@@ -1,7 +1,7 @@
 INSERT INTO sop
 (title, author_id, org_id, org_group_id, department_id, dept_subgroup_id,
- current_process_owner_id, current_process_owner_position_id,
- process_id, process_name, process_family_id, parent_process_id,
+ current_business_process_owner_id, current_business_process_owner_position_id,
+ business_process_id, business_process_name, business_process_family_id, parent_business_process_id,
  sop_location_path, sop_details, version_id, created_timestamp, updated_timestamp)
 VALUES
     ('Receiving & Putaway SOP', 1, 1, 1, 10, 101,

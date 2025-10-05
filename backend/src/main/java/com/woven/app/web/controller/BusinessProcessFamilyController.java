@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/process-families")
+@RequestMapping("/api/admin/business-process-families")
 @CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class BusinessProcessFamilyController {
@@ -20,6 +20,11 @@ public class BusinessProcessFamilyController {
     @GetMapping
     public List<BusinessProcessFamilyDto> list(){
         return bsvc.list();
+    }
+
+    @GetMapping("/{id}")
+    public BusinessProcessFamilyDto get(@PathVariable Integer id){
+        return bsvc.get(id);
     }
 
     @PostMapping

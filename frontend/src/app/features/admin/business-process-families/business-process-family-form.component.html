@@ -1,0 +1,29 @@
+<section class="container" *ngIf="!loading; else busy">
+  <h2>{{ id ? 'Edit' : 'Create' }} Business Process Family</h2>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <label>
+      Name
+      <input formControlName="businessProcessFamilyName" maxlength="255">
+    </label>
+
+    <label>
+      Department
+      <select formControlName="departmentId">
+        <option [ngValue]="null">Select…</option>
+        <option *ngFor="let d of departments" [ngValue]="d.departmentId">
+          {{ d.departmentName }}
+        </option>
+      </select>
+    </label>
+
+    <div class="actions">
+      <button type="submit" [disabled]="saving || form.invalid">Save</button>
+      <button type="button" (click)="cancel()">Cancel</button>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+  </form>
+</section>
+
+<ng-template #busy>Loading…</ng-template>

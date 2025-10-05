@@ -4,6 +4,6 @@ import {RouterLinkWithHref} from "@angular/router";
 @Component({
   selector: 'app-admin-home',
   templateUrl: './admin-home.component.html',
-  styleUrls: ['./admin-home.component.css']
+  styleUrls: ['../../../styles.css']
 })
 export class AdminHomeComponent {}

@@ -1,0 +1,53 @@
+<section class="container" *ngIf="!loading; else loadingTpl">
+  <h2>{{ id ? 'Edit' : 'Create' }} Business Process</h2>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <label>
+      Name
+      <input formControlName="businessProcessName" maxlength="255">
+    </label>
+
+    <label>
+      Business Process Family
+      <select formControlName="businessProcessFamilyId">
+        <option [ngValue]="null">Select…</option>
+        <option *ngFor="let f of families" [ngValue]="f.businessProcessFamilyId">
+          {{ f.businessProcessFamilyName }} (Dept: {{ f.departmentId }})
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Parent Process (same family)
+      <select formControlName="parentProcessId">
+        <option [ngValue]="null">None</option>
+        <option *ngFor="let p of parents" [ngValue]="p.businessProcessId">
+          {{ p.businessProcessName }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Department (derived)
+      <input formControlName="departmentId" [disabled]="true">
+    </label>
+
+    <label>
+      Dept Subgroups
+      <select formControlName="deptSubgroupIds" multiple size="6">
+        <option *ngFor="let s of subgroups" [ngValue]="s.deptSubgroupId">
+          {{ s.deptSubgroupName }}
+        </option>
+      </select>
+    </label>
+
+    <div class="actions">
+      <button type="submit" [disabled]="saving || form.invalid">Save</button>
+      <button type="button" (click)="cancel()">Cancel</button>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+  </form>
+</section>
+
+<ng-template #loadingTpl>Loading…</ng-template>

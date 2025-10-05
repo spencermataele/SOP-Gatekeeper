@@ -11,11 +11,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reports")
 @CrossOrigin(origins = "http://localhost:4200")
-public class ReportController {
+public class OrgHierarchyReportController {
 
     private final ReportService reports;
 
-    public ReportController(ReportService reports) {
+    public OrgHierarchyReportController(ReportService reports) {
         this.reports = reports;
     }
 
@@ -29,5 +29,6 @@ public class ReportController {
     ) {
         return reports.orgHierarchy(orgId, nameLike, createdFrom, createdTo, includeEmptyChildren);
     }
+
 }
 

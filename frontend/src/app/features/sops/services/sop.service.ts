@@ -32,7 +32,7 @@ export class SopService {
 
     update(id: number, body: {
         departmentId: number | null;
-        processFamilyId: number | null;
+        businessProcessFamilyId: number | null;
         deptSubgroupId: number | null;
         title: string;
         processOwnerId: number | null;
@@ -40,8 +40,8 @@ export class SopService {
         sopDetails: string;
         versionId: number;
         parentProcessId: number | null;
-        processName: string;
-        processId: number | null;
+        businessProcessName: string;
+        businessProcessId: number | null;
         authorName: string;
         orgGroupId: number | null
     }): Observable<Sop> {

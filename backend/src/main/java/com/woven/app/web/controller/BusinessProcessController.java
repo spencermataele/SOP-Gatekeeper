@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/processes")
+@RequestMapping("/api/admin/business-processes")
 @CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class BusinessProcessController {
@@ -20,6 +20,11 @@ public class BusinessProcessController {
     @GetMapping
     public List<BusinessProcessDto> list() {
         return svc.list();
+    }
+
+    @GetMapping("/{id}")
+    public BusinessProcessDto get(@PathVariable Integer id) {
+        return svc.get(id);
     }
 
     @PostMapping

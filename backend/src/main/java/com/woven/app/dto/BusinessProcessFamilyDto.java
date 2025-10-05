@@ -1,9 +1,12 @@
 package com.woven.app.dto;
 
+import java.util.List;
+
 public record BusinessProcessFamilyDto(
         Integer businessProcessFamilyId,
         String businessProcessFamilyName,
         Integer departmentId,
-        String departmentName
+        String departmentName,
+        List<BusinessProcessDto> businessProcesses
 ) {
 }

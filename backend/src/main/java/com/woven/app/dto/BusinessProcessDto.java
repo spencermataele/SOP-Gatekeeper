@@ -11,7 +11,5 @@ public record BusinessProcessDto(
         //String parentProcessName, //Is this needed?
         Integer departmentId,
         //String departmentName,
-        List<Integer> deptSubgroupIds,
-        List<String> deptSubgroupNames
-) {
-}
+        List<BusinessProcessSlimDto> businessProcesses
+) {}

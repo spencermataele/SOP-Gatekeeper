@@ -58,6 +58,7 @@ import { RouterModule } from '@angular/router';
       <a [routerLink]="['/admin/dept-subgroups']">Dept Subgroups</a>
     </p>
   `,
+
   styles: [`
     .form { display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:1rem; }
     .form label { display:flex; flex-direction:column; gap:4px; }

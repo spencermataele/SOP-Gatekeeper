@@ -20,23 +20,33 @@
     </div>
 
     <label>Process Name
-      <input formControlName="processName" />
+      <input formControlName="businessProcessName" />
     </label>
     <div class="err" *ngIf="form.get('processName')?.touched && form.get('processName')?.errors">
       <span *ngIf="form.get('processName')?.hasError('required')">Required.</span>
       <span *ngIf="form.get('processName')?.hasError('maxlength')">Max 255 chars.</span>
     </div>
 
-    <label>Process ID
-      <input type="number" formControlName="processId" />
+    <label>Business Process
+      <select formControlName="businessProcessId" [disabled]="!form.value.businessProcessFamilyId" (change)="onProcessChange()">
+        <option [ngValue]="null">-- select process --</option>
+        <option *ngFor="let p of filteredProcesses()" [ngValue]="p.businessProcessId">
+          {{ p.businessProcessName }}
+        </option>
+      </select>
     </label>
 
-    <label>Process Family ID
-      <input type="number" formControlName="processFamilyId" />
+    <label>Business Process Family
+      <select formControlName="businessProcessFamilyId" (change)="onProcessFamilyChange()">
+        <option [ngValue]="null">-- select family --</option>
+        <option *ngFor="let f of filteredFamilies()" [ngValue]="f.businessProcessFamilyId">
+          {{ f.businessProcessFamilyName }}
+        </option>
+      </select>
     </label>
 
     <label>Parent Process ID
-      <input type="number" formControlName="parentProcessId" />
+      <input type="number" formControlName="parentProcessId" readonly />
     </label>
 
     <label>Version ID

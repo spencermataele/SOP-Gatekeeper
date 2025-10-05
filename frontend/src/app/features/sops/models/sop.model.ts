@@ -8,9 +8,9 @@ export interface Sop {
   deptSubgroupId: number;
   currentProcessOwnerId: number;
   currentProcessOwnerPositionId: number;
-  processId: number;
-  processName: string;
-  processFamilyId: number;
+  businessProcessId: number;
+  businessProcessName: string;
+  businessProcessFamilyId: number;
   parentProcessId: number;
   sopLocationPath: string;
   createdTimestamp?: string;
