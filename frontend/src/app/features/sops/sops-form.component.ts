@@ -177,6 +177,19 @@ export class SopsFormComponent implements OnInit {
       .filter(p => this.match(p.businessProcessName));
   }
 
+  filteredParentProcesses() {
+    const famId = this.form.value.businessProcessFamilyId ?? null;
+    const currentProcId = this.form.value.businessProcessId ?? null;
+
+    return this.businessProcess
+      .filter(p =>
+        (!famId || p.businessProcessFamilyId === famId) &&
+        p.businessProcessId !== currentProcId
+      )
+      .sort((a, b) => a.businessProcessName.localeCompare(b.businessProcessName))
+      .filter(p => this.match(p.businessProcessName));
+  }
+
 
   // autofill parents
   onOrgChange() {
@@ -310,6 +323,29 @@ export class SopsFormComponent implements OnInit {
       }
     } else {
       this.form.patchValue({ parentProcessId: null });
+    }
+  }
+
+  onParentProcessChange() {
+    const parentId = this.form.value.parentProcessId ?? null;
+    if (!parentId) return;
+
+    const parentProc = this.businessProcessById.get(parentId);
+    if (!parentProc) return;
+
+    //Update the family automatically if different
+    if (
+      parentProc.businessProcessFamilyId &&
+      this.form.value.businessProcessFamilyId !== parentProc.businessProcessFamilyId
+    ) {
+      this.form.patchValue({ businessProcessFamilyId: parentProc.businessProcessFamilyId });
+    }
+
+    //Update department if applicable
+    const family = this.businessProcessFamilyId.get(parentProc.businessProcessFamilyId);
+    if ( family && family.departmentId && this.form.value.departmentId !== family.departmentId ) {
+      this.form.patchValue({ departmentId: family.departmentId });
+      this.onDeptChange();
     }
   }
 

@@ -19,14 +19,6 @@
       <span *ngIf="form.get('authorName')?.hasError('maxlength')">Max 255 chars.</span>
     </div>
 
-    <label>Process Name
-      <input formControlName="businessProcessName" />
-    </label>
-    <div class="err" *ngIf="form.get('processName')?.touched && form.get('processName')?.errors">
-      <span *ngIf="form.get('processName')?.hasError('required')">Required.</span>
-      <span *ngIf="form.get('processName')?.hasError('maxlength')">Max 255 chars.</span>
-    </div>
-
     <label>Business Process
       <select formControlName="businessProcessId" [disabled]="!form.value.businessProcessFamilyId" (change)="onProcessChange()">
         <option [ngValue]="null">-- select process --</option>
@@ -45,21 +37,18 @@
       </select>
     </label>
 
-    <label>Parent Process ID
-      <input type="number" formControlName="parentProcessId" readonly />
+    <label>Parent Process
+      <select formControlName="parentProcessId" [disabled]="!form.value.businessProcessFamilyId" (change)="onParentProcessChange()">
+        <option [ngValue]="null"> --select parent process (optional)--</option>
+        <option *ngFor="let p of filteredParentProcesses()" [ngValue]="p.businessProcessId">
+          {{ p.businessProcessName }}
+        </option>
+      </select>
     </label>
 
     <label>Version ID
       <input type="number" formControlName="versionId" />
     </label>
-
-    <label>SOP Details
-      <textarea rows="6" formControlName="sopDetails"></textarea>
-    </label>
-    <div class="err" *ngIf="form.get('sopDetails')?.touched && form.get('sopDetails')?.errors">
-      <span *ngIf="form.get('sopDetails')?.hasError('required')">Required.</span>
-      <span *ngIf="form.get('sopDetails')?.errors?.['api']">{{ form.get('sopDetails')?.errors?.['api'] }}</span>
-    </div>
   </div>
 
   <!-- Global filter -->
@@ -108,6 +97,16 @@
         </option>
       </select>
     </label>
+  </div>
+
+  <div>
+    <label>SOP Details
+      <textarea rows="6" formControlName="sopDetails"></textarea>
+    </label>
+    <div class="err" *ngIf="form.get('sopDetails')?.touched && form.get('sopDetails')?.errors">
+      <span *ngIf="form.get('sopDetails')?.hasError('required')">Required.</span>
+      <span *ngIf="form.get('sopDetails')?.errors?.['api']">{{ form.get('sopDetails')?.errors?.['api'] }}</span>
+    </div>
   </div>
 
   <div class="actions">
