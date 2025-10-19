@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 
 import { OrgService } from "../admin/services/org.service";
@@ -74,7 +74,10 @@ export class SopsFormComponent implements OnInit {
     departmentId: [null as number | null],
     deptSubgroupId: [null as number | null],
 
-    processOwnerId: [null as number | null]
+    processOwnerId: [null as number | null],
+
+    //structured SOP fields for UX
+    steps: this.fb.array([])
   });
 
   constructor(
@@ -349,6 +352,31 @@ export class SopsFormComponent implements OnInit {
     }
   }
 
+  goToNewBusinessProcess() {
+      this.router.navigate(['/admin/business-processes/new']);
+  }
+
+  goToNewProcessOwner() {
+      this.router.navigate(['/admin/process-owners/new']);
+  }
+
+  //SOP details steps
+  get steps(): FormArray {
+    return this.form.get('steps') as FormArray;
+  }
+
+  newStep(): any {
+    return this.fb.group({
+      title: ['', [Validators.required, Validators.maxLength(100)]],
+      who: ['', [Validators.required, Validators.maxLength(100)]],
+      where: ['', [Validators.required, Validators.maxLength(100)]],
+      details: ['', [Validators.required]]
+    })
+  }
+
+  addStep() {
+    this.steps.push(this.newStep());
+  }
 
   //  submit, update, delete
   submit() {
@@ -356,9 +384,23 @@ export class SopsFormComponent implements OnInit {
     this.saving = true;
 
     const f = this.form.value;
+
+    //Combine sopDetail steps into a single string
+    let structuredDetails = (f.sopDetails ?? '').trim();
+    if (this.steps.length > 0) {
+      const formattedSteps = this.steps.controls.map((step, index) => {
+        const s = step.value;
+        return `Step ${index + 1}: ${s.title}\n` +
+               ` Who: ${s.who}\n` +
+               ` Where: ${s.where}\n` +
+               ` Details:\n  ${s.details.replace(/\n/g, '\n  ')}\n`;
+      }).join('\n');
+      structuredDetails += `\n\n${formattedSteps}`;
+    }
+
     const body = {
       title: f.title!,
-      sopDetails: f.sopDetails!,
+      sopDetails: structuredDetails, //Combined steps
       authorName: f.authorName!,
       businessProcessName: f.businessProcessName!,
       businessProcessId: f.businessProcessId ?? null,

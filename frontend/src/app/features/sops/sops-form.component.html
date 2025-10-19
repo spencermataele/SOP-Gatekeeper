@@ -19,14 +19,17 @@
       <span *ngIf="form.get('authorName')?.hasError('maxlength')">Max 255 chars.</span>
     </div>
 
-    <label>Business Process
-      <select formControlName="businessProcessId" [disabled]="!form.value.businessProcessFamilyId" (change)="onProcessChange()">
-        <option [ngValue]="null">-- select process --</option>
-        <option *ngFor="let p of filteredProcesses()" [ngValue]="p.businessProcessId">
-          {{ p.businessProcessName }}
-        </option>
-      </select>
-    </label>
+    <div>
+      <label>Business Process
+        <select formControlName="businessProcessId" [disabled]="!form.value.businessProcessFamilyId" (change)="onProcessChange()">
+          <option [ngValue]="null">-- select process --</option>
+          <option *ngFor="let p of filteredProcesses()" [ngValue]="p.businessProcessId">
+            {{ p.businessProcessName }}
+          </option>
+        </select>
+      </label>
+      <button type="button" class="small-btn" (click)="goToNewBusinessProcess()">Add New Process</button>
+    </div>
 
     <label>Business Process Family
       <select formControlName="businessProcessFamilyId" (change)="onProcessFamilyChange()">
@@ -89,24 +92,48 @@
       </select>
     </label>
 
-    <label>Process Owner
-      <select formControlName="processOwnerId">
-        <option [ngValue]="null">-- select owner --</option>
-        <option *ngFor="let p of filteredOwners()" [ngValue]="p.processOwnerId">
-          {{ p.name }}
-        </option>
-      </select>
-    </label>
+    <div>
+      <label>Process Owner
+        <select formControlName="processOwnerId">
+          <option [ngValue]="null">-- select owner --</option>
+          <option *ngFor="let p of filteredOwners()" [ngValue]="p.processOwnerId">
+            {{ p.name }}
+          </option>
+        </select>
+      </label>
+      <button type="button" class="small-btn" (click)="goToNewProcessOwner()">Add New Process Owner</button>
+    </div>
   </div>
 
   <div>
-    <label>SOP Details
-      <textarea rows="6" formControlName="sopDetails"></textarea>
-    </label>
-    <div class="err" *ngIf="form.get('sopDetails')?.touched && form.get('sopDetails')?.errors">
-      <span *ngIf="form.get('sopDetails')?.hasError('required')">Required.</span>
-      <span *ngIf="form.get('sopDetails')?.errors?.['api']">{{ form.get('sopDetails')?.errors?.['api'] }}</span>
+    <div class="sop-description">
+      <h3>SOP Description</h3>
+      <input formControlName="sopDetails" placeholder="Brief description of this SOP" />
     </div>
+
+    <h3>Steps</h3>
+    <div formArrayName="steps" class="steps-section">
+      <div *ngFor="let step of steps.controls; let i = index" [formGroupName]="i" class="step-card">
+        <h4>Step {{ i + 1 }}</h4>
+        <label>Step Title
+          <input formControlName="title" placeholder="Enter step title" />
+        </label>
+
+        <div class="step-meta">
+          <label>Who
+            <input formControlName="who" placeholder="Who performs this step?" />
+          </label>
+          <label>Where
+            <input formControlName="where" placeholder="Where it happens" />
+          </label>
+        </div>
+
+        <label>Step Details
+          <textarea rows="4" formControlName="details" placeholder="Describe what happens in this step..."></textarea>
+        </label>
+      </div>
+    </div>
+    <button type="button" class="small-btn" (click)="addStep()">＋ Add Step</button>
   </div>
 
   <div class="actions">
@@ -114,6 +141,7 @@
     <button *ngIf="id != null" type="button" class="danger" (click)="delete()">Delete</button>
     <span class="err" *ngIf="errorMsg">{{ errorMsg }}</span>
   </div>
+
 </form>
 
 
