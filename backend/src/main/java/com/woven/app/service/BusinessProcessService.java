@@ -137,6 +137,7 @@ public class BusinessProcessService {
     private BusinessProcessDto toDto(BusinessProcess businessProcess) {
         var family = businessProcess.getBusinessProcessFamily();
         var parentProcess = businessProcess.getParentBusinessProcess();
+        var children = businessProcess.getChildren();
 
         var subgroupIds = businessProcess.getDeptSubgroups().stream()
                 .map(DeptSubgroup::getDeptSubgroupId)
@@ -149,6 +150,8 @@ public class BusinessProcessService {
         Integer deptId = (family != null && family.getDepartment() != null)
                 ? family.getDepartment().getDepartmentId().intValue(): null;
 
+
+
         return new BusinessProcessDto(
                 businessProcess.getBusinessProcessId() != null ? businessProcess.getBusinessProcessId().intValue(): null,
                 businessProcess.getBusinessProcessName(),
@@ -156,8 +159,7 @@ public class BusinessProcessService {
                 family != null ? family.getBusinessProcessFamilyName() : null,
                 parentProcess != null && parentProcess.getBusinessProcessId() != null ? parentProcess.getBusinessProcessId().intValue(): null,
                 deptId,
-                subgroupIds,
-                subgroupNames
+                List.of()
         );
     }
 }

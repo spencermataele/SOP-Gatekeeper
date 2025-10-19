@@ -29,8 +29,13 @@ public class BusinessProcessFamilyService {
         bpf.setBusinessProcessFamilyName(businessProcessFamilyCreateDto.businessProcessFamilyName());
         bpf.setDepartment(dept);
         var saved = businessProcessFamilyRepository.save(bpf);
-        return new BusinessProcessFamilyDto(saved.getBusinessProcessFamilyId(), saved.getBusinessProcessFamilyName(),
-                dept.getDepartmentId(), dept.getDepartmentName());
+        return new BusinessProcessFamilyDto(
+                saved.getBusinessProcessFamilyId(),
+                saved.getBusinessProcessFamilyName(),
+                dept.getDepartmentId(),
+                dept.getDepartmentName(),
+                List.of()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -81,7 +86,8 @@ public class BusinessProcessFamilyService {
                 bpf.getBusinessProcessFamilyId().intValue(),
                 bpf.getBusinessProcessFamilyName(),
                 bpf.getDepartment() != null ? bpf.getDepartment().getDepartmentId().intValue() : null,
-                bpf.getDepartment() != null ? bpf.getDepartment().getDepartmentName() : null
+                bpf.getDepartment() != null ? bpf.getDepartment().getDepartmentName() : null,
+                List.of()
         );
     }
 
