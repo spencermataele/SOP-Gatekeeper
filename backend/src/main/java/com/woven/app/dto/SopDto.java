@@ -49,7 +49,7 @@ public record SopDto(
         @NotNull
         Integer parentProcessId,
 
-        @NotBlank
+        //Null ok, may not use this...
         @Size(max = 255)
         String sopLocationPath,
 

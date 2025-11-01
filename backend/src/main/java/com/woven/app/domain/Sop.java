@@ -64,8 +64,7 @@ public class Sop {
     @Column(name = "parent_business_process_id", nullable = false)
     private Integer parentProcessId;
 
-    @NotBlank
-    @Column(name = "sop_location_path", nullable = false, length = 255)
+    @Column(name = "sop_location_path", length = 255)
     private String sopLocationPath;
 
     @Column(name = "created_timestamp", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")

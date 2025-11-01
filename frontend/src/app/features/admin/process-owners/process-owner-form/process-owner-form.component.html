@@ -20,7 +20,7 @@
     <label>Parent Owner (optional)
       <select formControlName="parent_process_owner_id">
         <option [ngValue]="null">-- none --</option>
-        <option *ngFor="let o of owners" [ngValue]="o.processOwnerId">
+        <option *ngFor="let o of owners" [ngValue]="o.businessProcessOwnerId">
           {{ o.name }}
         </option>
       </select>

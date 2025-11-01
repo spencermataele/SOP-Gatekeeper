@@ -35,7 +35,7 @@
     <label>
       Dept Subgroups
       <select formControlName="deptSubgroupIds" multiple size="6">
-        <option *ngFor="let s of subgroups" [ngValue]="s.deptSubgroupId">
+        <option *ngFor="let s of filteredSubgroups()" [ngValue]="s.departmentId">
           {{ s.deptSubgroupName }}
         </option>
       </select>

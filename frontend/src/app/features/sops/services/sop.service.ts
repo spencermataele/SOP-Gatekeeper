@@ -19,34 +19,44 @@ export class SopService {
     return this.http.get<Sop>(`${this.base}/${id}`);
   }
 
-    create(body: {
-        sopDetails: string;
-        orgGroupId: number | null;
-        departmentId: number | null;
-        deptSubgroupId: number | null;
-        title: string;
-        orgId: number | null
-    }): Observable<Sop> {
+  create(body: {
+    title: string;
+    authorId: number | null;
+    orgId: number | null;
+    orgGroupId: number | null;
+    departmentId: number | null;
+    deptSubgroupId: number | null;
+    currentProcessOwnerId: number | null;
+    currentProcessOwnerPositionId: number | null;
+    processId: number | null;
+    processName: string;
+    processFamilyId: number | null;
+    parentProcessId: number | null;
+    versionId: number | null;
+    sopDetails: string;
+  }): Observable<Sop> {
     return this.http.post<Sop>(this.base, body);
   }
 
-    update(id: number, body: {
-        departmentId: number | null;
-        businessProcessFamilyId: number | null;
-        deptSubgroupId: number | null;
-        title: string;
-        processOwnerId: number | null;
-        orgId: number | null;
-        sopDetails: string;
-        versionId: number;
-        parentProcessId: number | null;
-        businessProcessName: string;
-        businessProcessId: number | null;
-        authorName: string;
-        orgGroupId: number | null
+  update(id: number, body: {
+    title: string;
+    authorId: number | null;
+    orgId: number | null;
+    orgGroupId: number | null;
+    departmentId: number | null;
+    deptSubgroupId: number | null;
+    currentProcessOwnerId: number | null;
+    currentProcessOwnerPositionId: number | null;
+    processId: number | null;
+    processName: string;
+    processFamilyId: number | null;
+    parentProcessId: number | null;
+    versionId: number | null;
+    sopDetails: string;
     }): Observable<Sop> {
     return this.http.put<Sop>(`${this.base}/${id}`, body);
   }
+
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }

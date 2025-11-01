@@ -45,7 +45,7 @@ export class ProcessOwnersComponent implements OnInit {
   }
 
   startEdit(row: ProcessOwner): void {
-    this.editingId = row.processOwnerId;
+    this.editingId = row.businessProcessOwnerId;
     this.form.reset({ name: row.name, positionId: row.positionId });
   }
 
@@ -74,7 +74,7 @@ export class ProcessOwnersComponent implements OnInit {
       // update
       this.svc.update(this.editingId, payload).subscribe({
         next: updated => {
-          this.owners = this.owners.map(o => o.processOwnerId === updated.processOwnerId ? updated : o);
+          this.owners = this.owners.map(o => o.businessProcessOwnerId === updated.businessProcessOwnerId ? updated : o);
           this.cancel();
         },
         error: () => this.error = 'Update failed'
@@ -84,8 +84,8 @@ export class ProcessOwnersComponent implements OnInit {
 
   remove(row: ProcessOwner): void {
     if (!confirm(`Delete ${row.name}?`)) return;
-    this.svc.delete(row.processOwnerId).subscribe({
-      next: () => this.owners = this.owners.filter(o => o.processOwnerId !== row.processOwnerId),
+    this.svc.delete(row.businessProcessOwnerId).subscribe({
+      next: () => this.owners = this.owners.filter(o => o.businessProcessOwnerId !== row.businessProcessOwnerId),
       error: () => this.error = 'Delete failed (possibly in use by an SOP)'
     });
   }
@@ -95,10 +95,10 @@ export class ProcessOwnersComponent implements OnInit {
     const id = this.filterId && Number.isFinite(this.filterId) ? Number(this.filterId) : undefined;
     return this.owners.filter(o => {
       const nameOk = !name || o.name.toLowerCase().includes(name);
-      const idOk = id === undefined || o.processOwnerId === id;
+      const idOk = id === undefined || o.businessProcessOwnerId === id;
       return nameOk && idOk;
     });
   }
 
-  trackById(_: number, o: ProcessOwner) { return o.processOwnerId; }
+  trackById(_: number, o: ProcessOwner) { return o.businessProcessOwnerId; }
 }

@@ -1,6 +1,6 @@
 
 export interface ProcessOwner {
-  processOwnerId: number;
+  businessProcessOwnerId: number;
   name: string;
   positionId: number;
   //parent?: ProcessOwner | null;

@@ -75,6 +75,7 @@ export class SopsFormComponent implements OnInit {
     deptSubgroupId: [null as number | null],
 
     processOwnerId: [null as number | null],
+    processOwnerPositionId: [null as number | null],
 
     //structured SOP fields for UX
     steps: this.fb.array([])
@@ -107,7 +108,7 @@ export class SopsFormComponent implements OnInit {
     this.groupSvc.list().subscribe({ next: rows => { this.groups = rows; rows.forEach(g => this.groupById.set(g.orgGroupId, g)); }});
     this.deptSvc.list().subscribe({ next: rows => { this.depts = rows; rows.forEach(d => this.deptById.set(d.departmentId, d)); }});
     this.subSvc.list().subscribe({ next: rows => { this.subs = rows; rows.forEach(s => this.subgroupById.set(s.deptSubgroupId, s)); }});
-    this.ownerSvc.list().subscribe({ next: rows => { this.owners = rows; rows.forEach(p => this.ownerById.set(p.processOwnerId, p)); }});
+    this.ownerSvc.list().subscribe({ next: rows => { this.owners = rows; rows.forEach(p => this.ownerById.set(p.businessProcessOwnerId, p)); }});
     this.businessProcessSvc.list().subscribe({next: rows => { this.businessProcess = rows; rows.forEach(b => this.businessProcessById.set(b.businessProcessId, b)); }});
     this.businessProcessFamSvc.list().subscribe( {next: rows => { this.businessProcessFamily = rows; rows.forEach(f => this.businessProcessFamilyId.set(f.businessProcessFamilyId, f)); }});
 
@@ -117,18 +118,19 @@ export class SopsFormComponent implements OnInit {
         next: (sop: any) => {
           this.form.patchValue({
             title: sop.title ?? '',
-            sopDetails: sop.sopDetails ?? '',
             authorName: sop.authorName ?? '',
-            businessProcessName: sop.businessProcessName ?? '',
-            businessProcessId: sop.businessProcessId ?? null,
-            businessProcessFamilyId: sop.businessProcessFamilyId ?? null,
-            parentProcessId: sop.parentProcessId ?? null,
-            versionId: sop.versionId ?? 1,
             orgId: sop.orgId ?? null,
             orgGroupId: sop.orgGroupId ?? null,
             departmentId: sop.departmentId ?? null,
             deptSubgroupId: sop.deptSubgroupId ?? null,
-            processOwnerId: sop.processOwnerId ?? null
+            processOwnerId: sop.processOwnerId ?? null,
+            processOwnerPositionId: sop.processOwnerPositionId ?? null,
+            businessProcessId: sop.businessProcessId ?? null,
+            businessProcessName: sop.businessProcessName ?? '',
+            businessProcessFamilyId: sop.businessProcessFamilyId ?? null,
+            parentProcessId: sop.parentProcessId ?? null,
+            versionId: sop.versionId ?? 1,
+            sopDetails: sop.sopDetails ?? '',
           });
           // ensure parent chain is consistent if only a child id is present
           this.onSubChange();
@@ -400,20 +402,19 @@ export class SopsFormComponent implements OnInit {
 
     const body = {
       title: f.title!,
-      sopDetails: structuredDetails, //Combined steps
-      authorName: f.authorName!,
-      businessProcessName: f.businessProcessName!,
-      businessProcessId: f.businessProcessId ?? null,
-      businessProcessFamilyId: f.businessProcessFamilyId ?? null,
-      parentProcessId: f.parentProcessId ?? null,
-      versionId: Number(f.versionId ?? 1),
-
+      authorId: f.authorId ?? null,
       orgId: f.orgId ?? null,
       orgGroupId: f.orgGroupId ?? null,
       departmentId: f.departmentId ?? null,
       deptSubgroupId: f.deptSubgroupId ?? null,
-
-      processOwnerId: f.processOwnerId ?? null
+      currentProcessOwnerId: f.processOwnerId ?? null,
+      currentProcessOwnerPositionId: f.processOwnerPositionId ?? null,
+      processId: f.businessProcessId ?? null,
+      processName: f.businessProcessName!,
+      processFamilyId: f.businessProcessFamilyId ?? null,
+      parentProcessId: f.parentProcessId ?? null,
+      versionId: Number(f.versionId ?? 1),
+      sopDetails: structuredDetails,
     };
 
     const obs = this.id == null

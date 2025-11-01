@@ -30,7 +30,7 @@ export class ProcessOwnersListComponent implements OnInit {
 
   remove(row: ProcessOwner): void {
     if (!confirm(`Delete ${row.name}?`)) return;
-    this.svc.delete(row.processOwnerId).subscribe({
+    this.svc.delete(row.businessProcessOwnerId).subscribe({
       next: () => this.refresh(),
       error: () => this.error = 'Delete failed'
     });

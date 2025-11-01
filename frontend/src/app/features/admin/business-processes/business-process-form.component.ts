@@ -9,7 +9,7 @@ import { BusinessProcessFamily } from '../models/business-process-family.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 
-interface SubgroupLite { deptSubgroupId: number; deptSubgroupName: string; }
+interface SubgroupLite { departmentId: number; deptSubgroupName: string; }
 
 @Component({
   selector: 'app-business-process-form',
@@ -98,6 +98,29 @@ export class BusinessProcessFormComponent implements OnInit {
         this.parents = (this.id ? ps.filter(p => p.businessProcessId !== this.id) : ps);
       }});
   }
+
+  filteredSubgroups() {
+    const familyId = this.form.value.businessProcessFamilyId ?? null;
+
+    // No family selected: show all alphabetically
+    if (!familyId) {
+      return [...this.subgroups].sort((a, b) =>
+        a.deptSubgroupName.localeCompare(b.deptSubgroupName)
+      );
+    }
+
+    // Filter by matching familyId
+    const fam = this.families.find(f => f.businessProcessFamilyId === familyId);
+    if (!fam || !fam.departmentId) {
+      return [];
+    }
+
+    return this.subgroups
+      .filter(s => s.departmentId === fam.departmentId)
+      .sort((a, b) => a.deptSubgroupName.localeCompare(b.deptSubgroupName));
+  }
+
+
 
   save() {
     if (this.form.invalid) return;

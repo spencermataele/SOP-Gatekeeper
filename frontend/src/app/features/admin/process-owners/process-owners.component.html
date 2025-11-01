@@ -45,7 +45,7 @@
       </thead>
       <tbody>
       <tr *ngFor="let o of filtered(); trackBy: trackById">
-        <td>{{ o.processOwnerId }}</td>
+        <td>{{ o.businessProcessOwnerId }}</td>
         <td>{{ o.name }}</td>
         <td>{{ o.positionId }}</td>
         <td>{{ o.createdTimestamp | date:'short' }}</td>

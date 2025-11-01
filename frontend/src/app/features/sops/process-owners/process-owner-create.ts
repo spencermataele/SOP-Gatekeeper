@@ -57,7 +57,7 @@ export class ProcessOwnerCreateComponent {
     this.svc.create(body).subscribe({
       next: (po) => {
         // navigate back and optionally preselect in SOP form
-        this.router.navigate(['/sops/new'], { queryParams: { ownerId: po.processOwnerId } });
+        this.router.navigate(['/sops/new'], { queryParams: { ownerId: po.businessProcessOwnerId } });
       },
       error: () => this.error = 'Failed to create process owner'
     });

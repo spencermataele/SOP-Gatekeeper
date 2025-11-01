@@ -94,9 +94,9 @@
 
     <div>
       <label>Process Owner
-        <select formControlName="processOwnerId">
+        <select formControlName="businessProcessOwnerId">
           <option [ngValue]="null">-- select owner --</option>
-          <option *ngFor="let p of filteredOwners()" [ngValue]="p.processOwnerId">
+          <option *ngFor="let p of filteredOwners()" [ngValue]="p.businessProcessOwnerId">
             {{ p.name }}
           </option>
         </select>
