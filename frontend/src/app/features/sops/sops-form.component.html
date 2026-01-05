@@ -11,13 +11,7 @@
       <span *ngIf="form.get('title')?.errors?.['api']">{{ form.get('title')?.errors?.['api'] }}</span>
     </div>
 
-    <label>Author Name
-      <input formControlName="authorName" />
-    </label>
-    <div class="err" *ngIf="form.get('authorName')?.touched && form.get('authorName')?.errors">
-      <span *ngIf="form.get('authorName')?.hasError('required')">Required.</span>
-      <span *ngIf="form.get('authorName')?.hasError('maxlength')">Max 255 chars.</span>
-    </div>
+    <!-- Need to show author with auto populated currentUser -->>
 
     <div>
       <label>Business Process

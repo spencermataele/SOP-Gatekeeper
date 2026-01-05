@@ -118,7 +118,7 @@ export class SopsFormComponent implements OnInit {
         next: (sop: any) => {
           this.form.patchValue({
             title: sop.title ?? '',
-            authorName: sop.authorName ?? '',
+            //authorName: sop.authorName ?? '',
             orgId: sop.orgId ?? null,
             orgGroupId: sop.orgGroupId ?? null,
             departmentId: sop.departmentId ?? null,
@@ -402,7 +402,7 @@ export class SopsFormComponent implements OnInit {
 
     const body = {
       title: f.title!,
-      authorId: f.authorId ?? null,
+      //need to add autopopulated currentUser as author,
       orgId: f.orgId ?? null,
       orgGroupId: f.orgGroupId ?? null,
       departmentId: f.departmentId ?? null,

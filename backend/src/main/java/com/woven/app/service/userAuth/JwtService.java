@@ -1,4 +1,4 @@
-package com.woven.app.service.user;
+package com.woven.app.service.userAuth;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -17,7 +17,7 @@ public class JwtService {
 
     // Get secret value for key and period of permission
     public JwtService(@Value("${app.jwt.secret}") String secret,
-                      @Value("${app.jwt.expirationMs") Integer expirationMs) {
+                      @Value("${app.jwt.expirationMs}") Integer expirationMs) {
         // Encrypt for JWT signing and validation
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;

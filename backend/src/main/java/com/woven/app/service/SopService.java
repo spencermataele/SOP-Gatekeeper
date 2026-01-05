@@ -3,6 +3,7 @@ package com.woven.app.service;
 import com.woven.app.domain.Sop;
 import com.woven.app.dto.SopDto;
 import com.woven.app.repository.SopRepository;
+import com.woven.app.service.user.AppUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +29,11 @@ public class SopService {
         return toDto(findOrThrow(id));
     }
 
-    public SopDto create(SopDto dto) {
+    public SopDto create(SopDto dto, AppUserDetails currentUser) {
         Sop entity = new Sop();
         apply(dto, entity);
+        //Set authorId as current user's
+        entity.setAuthor_id(currentUser.getUser().getId());
         Sop saved = sopRepository.save(entity);
         return toDto(saved);
     }

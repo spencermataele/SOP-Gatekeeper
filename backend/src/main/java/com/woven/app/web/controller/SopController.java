@@ -2,8 +2,10 @@ package com.woven.app.web.controller;
 
 import com.woven.app.dto.SopDto;
 import com.woven.app.service.SopService;
+import com.woven.app.service.user.AppUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +31,10 @@ public class SopController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SopDto create(@RequestBody SopDto sopDto) {
-        return sopService.create(sopDto);
+    public SopDto create(@RequestBody SopDto sopDto,
+                         // For automating current user as the author
+                         @AuthenticationPrincipal AppUserDetails currentUser) {
+        return sopService.create(sopDto, currentUser);
     }
 
     @PutMapping("/{id}")

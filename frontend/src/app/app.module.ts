@@ -12,6 +12,8 @@ import { ProcessOwnersComponent } from "./features/admin/process-owners/process-
 import { AdminHomeComponent } from "./features/admin/admin-home.component";
 import { ReportsHomeComponent} from "./features/reports/reports-home.component";
 import {RouterModule} from "@angular/router";
+import {LoginComponent} from "./features/sops/users/authorization/login.component";
+import {CommonModule} from "@angular/common";
 
 @NgModule({
   declarations: [
@@ -19,7 +21,8 @@ import {RouterModule} from "@angular/router";
     ProcessOwnersListComponent,
     ProcessOwnerFormComponent,
     ProcessOwnersComponent,
-    AdminHomeComponent
+    AdminHomeComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,
@@ -30,7 +33,8 @@ import {RouterModule} from "@angular/router";
     FormsModule,
     SopsListComponent,
     SopsFormComponent,
-    ReportsHomeComponent
+    ReportsHomeComponent,
+    CommonModule
   ],
   providers: [],
   bootstrap: [AppComponent]

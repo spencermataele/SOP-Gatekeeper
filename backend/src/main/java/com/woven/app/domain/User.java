@@ -1,6 +1,5 @@
 package com.woven.app.domain;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
