@@ -68,10 +68,11 @@ public class SopService {
                 sop.getProcess_name(),
                 sop.getProcess_family_id(),
                 sop.getParent_process_id(),
-                sop.getSop_location_path(),
+                //sop.getSop_location_path(),
                 sop.getCreated_timestamp(),
                 sop.getUpdated_timestamp(),
                 sop.getVersion_id(),
+                sop.getSopDescription(),
                 sop.getSopDetails()
         );
     }
@@ -97,10 +98,11 @@ public class SopService {
         entity.setProcess_name(dto.processName());
         entity.setProcess_family_id(dto.processFamilyId());
         entity.setParent_process_id(dto.parentProcessId());
-        entity.setSop_location_path(dto.sopLocationPath());
+        //entity.setSop_location_path(dto.sopLocationPath());
         // created_timestamp created by db trigger
         // updated_timestamp created by db trigger
         entity.setVersion_id(dto.versionId());
+        entity.setSopDescription(dto.sopDescription());
         entity.setSopDetails(dto.sopDetails());
     }
 }

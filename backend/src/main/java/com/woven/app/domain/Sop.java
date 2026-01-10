@@ -3,12 +3,12 @@ package com.woven.app.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "sop")
@@ -18,6 +18,8 @@ public class Sop {
     @Column(name = "sop_id")
     private Integer sopId;
 
+    @Setter
+    @Getter
     @NotBlank
     @Column(name = "title", nullable = false, length = 255)
     private String title;
@@ -66,9 +68,6 @@ public class Sop {
     @Column(name = "parent_business_process_id", nullable = false)
     private Integer parentProcessId;
 
-    @Column(name = "sop_location_path", length = 255)
-    private String sopLocationPath;
-
     @CreationTimestamp
     @Column(name = "created_timestamp", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Instant createdTimestamp;
@@ -81,14 +80,27 @@ public class Sop {
     @Column(name = "version_id", nullable = false, length = 255)
     private String versionId;
 
+    @Setter
+    @Getter
     @Lob
     @Column(name = "sop_description", columnDefinition = "LONGTEXT", nullable = false)
     private String sopDescription;
 
+    @Setter
+    @Getter
     @Lob
     @Column(name = "sop_details", columnDefinition = "LONGTEXT", nullable = false)
     private String sopDetails;
 
+    @PrePersist
+    public void prePersist() {
+        System.out.println(">>> PrePersist fired. sopDescription before: " + sopDescription); /*** DELETEME ***/
+        if (this.sopDescription == null || this.sopDescription.isBlank()) {
+            this.sopDescription = "N/A";
+        }
+    }
+
+    /*  MVP will not include tools
     @OneToMany(mappedBy = "sop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Tool> tools = new ArrayList<>();
 
@@ -101,21 +113,13 @@ public class Sop {
         tool.setSop(null);
         this.tools.remove(tool);
     }
-
+    */
     public Integer getSop_id() {
         return sopId;
     }
 
     public void setSop_id(Integer sop_id) {
         this.sopId = sop_id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public Integer getAuthor_id() {
@@ -206,14 +210,6 @@ public class Sop {
         this.parentProcessId = parent_process_id;
     }
 
-    public String getSop_location_path() {
-        return sopLocationPath;
-    }
-
-    public void setSop_location_path(String sop_location_path) {
-        this.sopLocationPath = sop_location_path;
-    }
-
     public Instant getCreated_timestamp() {
         return createdTimestamp;
     }
@@ -238,23 +234,6 @@ public class Sop {
         this.versionId = version_id;
     }
 
-    /* MVP will not include description
-    public String getSopDescription() {
-        return sopDescription;
-    }
-
-    public void setSopDescription(String sopDescription) {
-        this.sopDescription = sopDescription;
-    }
-    */
-    public String getSopDetails() {
-        return sopDetails;
-    }
-
-    public void setSopDetails(String sopDetails) {
-        this.sopDetails = sopDetails;
-    }
-
-    public List<Tool> getTools() { return tools; }
-    public void setTools(List<Tool> attributes) { this.tools = attributes; }
+    //public List<Tool> getTools() { return tools; }
+    //public void setTools(List<Tool> attributes) { this.tools = attributes; }
 }
