@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/sops")
+@RequestMapping("/sops")
 public class SopController {
     private final SopService sopService;
 

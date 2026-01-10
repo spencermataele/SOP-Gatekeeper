@@ -20,6 +20,7 @@ import {BusinessProcessService} from "../admin/services/business-process.service
 import {BusinessProcessFamilyService} from "../admin/services/business-process-family.service";
 import {BusinessProcess} from "../admin/models/business-process.model";
 import {BusinessProcessFamily} from "../admin/models/business-process-family.model";
+import {AuthService} from "../authorization/auth.service";
 
 @Component({
   selector: 'app-sop-form',
@@ -34,6 +35,7 @@ export class SopsFormComponent implements OnInit {
   loading = false;
   saving = false;
   errorMsg?: string;
+  userId: number | null = null;
 
   // master lists
   orgs: OrgDto[] = [];
@@ -61,7 +63,7 @@ export class SopsFormComponent implements OnInit {
     title: ['', [Validators.required, Validators.maxLength(255)]],
     sopDetails: ['', [Validators.required]],
     authorName: ['', [Validators.required, Validators.maxLength(255)]],
-    versionId: [1, [Validators.min(1)]],
+    versionId: ['1.0', [Validators.required, Validators.maxLength(255)]],
 
     // selectables
     businessProcessName: ['', [Validators.required, Validators.maxLength(255)]],
@@ -74,8 +76,8 @@ export class SopsFormComponent implements OnInit {
     departmentId: [null as number | null],
     deptSubgroupId: [null as number | null],
 
-    processOwnerId: [null as number | null],
-    processOwnerPositionId: [null as number | null],
+    businessProcessOwnerId: this.fb.control<number | null>(null, Validators.required),
+    positionId: this.fb.control<number | null>(null, Validators.required),
 
     //structured SOP fields for UX
     steps: this.fb.array([])
@@ -92,7 +94,8 @@ export class SopsFormComponent implements OnInit {
     private subSvc: DeptSubgroupService,
     private ownerSvc: ProcessOwnerService,
     private businessProcessSvc: BusinessProcessService,
-    private businessProcessFamSvc: BusinessProcessFamilyService
+    private businessProcessFamSvc: BusinessProcessFamilyService,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -102,6 +105,19 @@ export class SopsFormComponent implements OnInit {
 
     this.form.get('businessProcessFamilyId')?.addValidators([Validators.required]);
     this.form.get('businessProcessId')?.addValidators([Validators.required]);
+    this.form.get('businessProcessOwnerId')?.valueChanges.subscribe(v => {
+      console.log('businessProcessOwnerId valueChanges →', v);
+    });
+    this.form.get('positionId')?.valueChanges.subscribe(v => {
+      console.log('positionId valueChanges→', v);
+    });
+
+    // make current logged-in user the author
+    const user = this.auth.currentUser();
+    if (user) {
+      this.form.patchValue( { authorName: user.fullName });
+      this.userId = user.id;
+    }
 
     // load reference data
     this.orgSvc.list().subscribe({ next: rows => { this.orgs = rows; rows.forEach(o => this.orgById.set(o.orgId, o)); }});
@@ -118,13 +134,13 @@ export class SopsFormComponent implements OnInit {
         next: (sop: any) => {
           this.form.patchValue({
             title: sop.title ?? '',
-            //authorName: sop.authorName ?? '',
+            authorName: sop.authorName ?? '',
             orgId: sop.orgId ?? null,
             orgGroupId: sop.orgGroupId ?? null,
             departmentId: sop.departmentId ?? null,
             deptSubgroupId: sop.deptSubgroupId ?? null,
-            processOwnerId: sop.processOwnerId ?? null,
-            processOwnerPositionId: sop.processOwnerPositionId ?? null,
+            businessProcessOwnerId: sop.businessProcessOwnerId ?? null,
+            positionId: sop.positionId ?? null,
             businessProcessId: sop.businessProcessId ?? null,
             businessProcessName: sop.businessProcessName ?? '',
             businessProcessFamilyId: sop.businessProcessFamilyId ?? null,
@@ -174,14 +190,12 @@ export class SopsFormComponent implements OnInit {
       .filter(f => (!deptId || f.departmentId === deptId))
       .filter(f => this.match(f.businessProcessFamilyName));
   }
-
   filteredProcesses() {
     const famId = this.form.value.businessProcessFamilyId ?? null;
     return this.businessProcess
       .filter(p => (!famId || p.businessProcessFamilyId === famId))
       .filter(p => this.match(p.businessProcessName));
   }
-
   filteredParentProcesses() {
     const famId = this.form.value.businessProcessFamilyId ?? null;
     const currentProcId = this.form.value.businessProcessId ?? null;
@@ -354,6 +368,31 @@ export class SopsFormComponent implements OnInit {
     }
   }
 
+
+  onProcessOwnerChange() {
+    const ownerId = this.form.get('businessProcessOwnerId')?.value;
+
+    if (!ownerId) {
+      this.form.patchValue({ positionId: null });
+      return;
+    }
+
+    const owner = this.owners.find(
+      o => o.businessProcessOwnerId === Number(ownerId)
+    );
+
+    if (!owner) return;
+
+    this.form.patchValue({
+      businessProcessOwnerId: owner.businessProcessOwnerId,
+      positionId: owner.positionId
+    });
+  }
+
+
+
+
+
   goToNewBusinessProcess() {
       this.router.navigate(['/admin/business-processes/new']);
   }
@@ -382,7 +421,27 @@ export class SopsFormComponent implements OnInit {
 
   //  submit, update, delete
   submit() {
-    if (this.form.invalid) return;
+    const payload = {
+      ...this.form.value,
+      businessProcessOwnerId: Number(this.form.value.businessProcessOwnerId)
+    };
+
+    //Assumes all fields are filled in as intended
+    this.form.markAllAsTouched();
+
+    if (this.form.invalid) {
+      console.warn('SOP form is not valid');
+      console.log(this.form.errors);
+      console.log(this.form.value);
+
+      Object.entries(this.form.controls).forEach(([key, control]) => {
+        if (control.invalid) {
+          console.warn(`Invalid control: ${key}`, control.errors);
+        }
+      });
+      return;
+    }
+
     this.saving = true;
 
     const f = this.form.value;
@@ -402,18 +461,18 @@ export class SopsFormComponent implements OnInit {
 
     const body = {
       title: f.title!,
-      //need to add autopopulated currentUser as author,
+      authorId: this.userId,
       orgId: f.orgId ?? null,
       orgGroupId: f.orgGroupId ?? null,
       departmentId: f.departmentId ?? null,
       deptSubgroupId: f.deptSubgroupId ?? null,
-      currentProcessOwnerId: f.processOwnerId ?? null,
-      currentProcessOwnerPositionId: f.processOwnerPositionId ?? null,
+      currentProcessOwnerId: f.businessProcessOwnerId ?? null,
+      currentProcessOwnerPositionId: f.positionId ?? null,
       processId: f.businessProcessId ?? null,
       processName: f.businessProcessName!,
       processFamilyId: f.businessProcessFamilyId ?? null,
-      parentProcessId: f.parentProcessId ?? null,
-      versionId: Number(f.versionId ?? 1),
+      parentProcessId: f.parentProcessId ?? 0,
+      versionId: String(f.versionId ?? '1.0'),
       sopDetails: structuredDetails,
     };
 

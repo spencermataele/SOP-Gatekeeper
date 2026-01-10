@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/business-processes")
+@RequestMapping("/admin/business-processes")
 @CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class BusinessProcessController {

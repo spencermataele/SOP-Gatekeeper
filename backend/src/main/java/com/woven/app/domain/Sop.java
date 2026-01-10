@@ -3,6 +3,8 @@ package com.woven.app.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -67,20 +69,22 @@ public class Sop {
     @Column(name = "sop_location_path", length = 255)
     private String sopLocationPath;
 
+    @CreationTimestamp
     @Column(name = "created_timestamp", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Instant createdTimestamp;
 
+    @UpdateTimestamp
     @Column(name = "updated_timestamp", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private Instant updatedTimestamp;
 
     @NotBlank
     @Column(name = "version_id", nullable = false, length = 255)
     private String versionId;
-    /* MVP will not include description
+
     @Lob
     @Column(name = "sop_description", columnDefinition = "LONGTEXT", nullable = false)
     private String sopDescription;
-    */
+
     @Lob
     @Column(name = "sop_details", columnDefinition = "LONGTEXT", nullable = false)
     private String sopDetails;

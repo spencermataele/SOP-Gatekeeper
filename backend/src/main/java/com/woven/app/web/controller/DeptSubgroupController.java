@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/dept-subgroups")
+@RequestMapping("/admin/dept-subgroups")
 @CrossOrigin(origins = "http://localhost:4200")
 public class DeptSubgroupController {
 

@@ -11,19 +11,31 @@
       <span *ngIf="form.get('title')?.errors?.['api']">{{ form.get('title')?.errors?.['api'] }}</span>
     </div>
 
-    <!-- Need to show author with auto populated currentUser -->>
+    <div class="err" *ngIf="form.get('title')?.touched && form.get('title')?.invalid">
+      <span *ngIf="form.get('title')?.hasError('required')">Required.</span>
+    </div>
+
+    <label>Author
+      <input formControlName="authorName" readonly />
+    </label>
 
     <div>
       <label>Business Process
-        <select formControlName="businessProcessId" [disabled]="!form.value.businessProcessFamilyId" (change)="onProcessChange()">
+        <select formControlName="businessProcessId"  (change)="onProcessChange()">
           <option [ngValue]="null">-- select process --</option>
           <option *ngFor="let p of filteredProcesses()" [ngValue]="p.businessProcessId">
             {{ p.businessProcessName }}
           </option>
         </select>
       </label>
+
+      <div class="err" *ngIf="form.get('businessProcessId')?.touched && form.get('businessProcessId')?.invalid">
+        <span *ngIf="form.get('businessProcessId')?.hasError('required')">Required.</span>
+      </div>
+
       <button type="button" class="small-btn" (click)="goToNewBusinessProcess()">Add New Process</button>
     </div>
+
 
     <label>Business Process Family
       <select formControlName="businessProcessFamilyId" (change)="onProcessFamilyChange()">
@@ -34,8 +46,12 @@
       </select>
     </label>
 
+    <div class="err" *ngIf="form.get('businessProcessFamilyId')?.touched && form.get('businessProcessFamilyId')?.invalid">
+      <span *ngIf="form.get('businessProcessFamilyId')?.hasError('required')">Required.</span>
+    </div>
+
     <label>Parent Process
-      <select formControlName="parentProcessId" [disabled]="!form.value.businessProcessFamilyId" (change)="onParentProcessChange()">
+      <select formControlName="parentProcessId"  (change)="onParentProcessChange()">
         <option [ngValue]="null"> --select parent process (optional)--</option>
         <option *ngFor="let p of filteredParentProcesses()" [ngValue]="p.businessProcessId">
           {{ p.businessProcessName }}
@@ -44,8 +60,13 @@
     </label>
 
     <label>Version ID
-      <input type="number" formControlName="versionId" />
+      <input formControlName="versionId" />
     </label>
+    <div class="err" *ngIf="form.get('versionId')?.touched && form.get('versionId')?.errors">
+      <span *ngIf="form.get('versionId')?.hasError('required')">Required.</span>
+      <span *ngIf="form.get('versionId')?.hasError('maxlength')">Max 255 chars.</span>
+      <span *ngIf="form.get('versionId')?.errors?.['api']">{{ form.get('versionId')?.errors?.['api'] }}</span>
+    </div>
   </div>
 
   <!-- Global filter -->
@@ -65,12 +86,20 @@
       </select>
     </label>
 
+    <div class="err" *ngIf="form.get('orgId')?.touched && form.get('orgId')?.invalid">
+      <span *ngIf="form.get('orgId')?.hasError('required')">Required.</span>
+    </div>
+
     <label>Org Group
       <select formControlName="orgGroupId" (change)="onGroupChange()">
         <option [ngValue]="null">-- select group --</option>
         <option *ngFor="let g of filteredGroups()" [ngValue]="g.orgGroupId">{{ g.orgGroupName }}</option>
       </select>
     </label>
+
+    <div class="err" *ngIf="form.get('orgGroupId')?.touched && form.get('orgGroupId')?.invalid">
+      <span *ngIf="form.get('orgGroupId')?.hasError('required')">Required.</span>
+    </div>
 
     <label>Department
       <select formControlName="departmentId" (change)="onDeptChange()">
@@ -79,6 +108,10 @@
       </select>
     </label>
 
+    <div class="err" *ngIf="form.get('departmentId')?.touched && form.get('departmentId')?.invalid">
+      <span *ngIf="form.get('departmentId')?.hasError('required')">Required.</span>
+    </div>
+
     <label>Dept Subgroup
       <select formControlName="deptSubgroupId" (change)="onSubChange()">
         <option [ngValue]="null">-- select subgroup --</option>
@@ -86,15 +119,24 @@
       </select>
     </label>
 
+    <div class="err" *ngIf="form.get('deptSubgroupId')?.touched && form.get('deptSubgroupId')?.invalid">
+      <span *ngIf="form.get('deptSubgroupId')?.hasError('required')">Required.</span>
+    </div>
+
     <div>
       <label>Process Owner
-        <select formControlName="businessProcessOwnerId">
+        <select formControlName="businessProcessOwnerId" (change)="onProcessOwnerChange()">
           <option [ngValue]="null">-- select owner --</option>
-          <option *ngFor="let p of filteredOwners()" [ngValue]="p.businessProcessOwnerId">
+          <option *ngFor="let p of filteredOwners()" [value]="p.businessProcessOwnerId">
             {{ p.name }}
           </option>
         </select>
       </label>
+
+      <div class="err" *ngIf="form.get('processOwnerId')?.touched && form.get('processOwnerId')?.invalid">
+        <span *ngIf="form.get('processOwnerId')?.hasError('required')">Required.</span>
+      </div>
+
       <button type="button" class="small-btn" (click)="goToNewProcessOwner()">Add New Process Owner</button>
     </div>
   </div>
@@ -131,7 +173,9 @@
   </div>
 
   <div class="actions">
-    <button type="submit" [disabled]="saving || form.invalid">{{ id == null ? 'Create SOP' : 'Save Changes' }}</button>
+    <button type="submit" [disabled]="saving">
+      {{ id == null ? 'Create SOP' : 'Save Changes' }}
+    </button>
     <button *ngIf="id != null" type="button" class="danger" (click)="delete()">Delete</button>
     <span class="err" *ngIf="errorMsg">{{ errorMsg }}</span>
   </div>

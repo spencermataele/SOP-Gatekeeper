@@ -12,14 +12,14 @@
     <div class="error" *ngIf="form.get('processOwnerName')?.touched && form.get('processOwnerName')?.invalid">
       Name is required (max 255).
     </div>
-
-    <label>Position ID
-      <input type="number" formControlName="processOwnerPositionId">
-    </label>
     <!--
+    <label>Position ID
+      <input type="number" formControlName="positionId">
+    </label>
+
     <label>Parent Owner (optional)
       <select formControlName="parent_process_owner_id">
-        <option [ngValue]="null">-- none --</option>
+        <option [ngValue]="null">&#45;&#45; none &#45;&#45;</option>
         <option *ngFor="let o of owners" [ngValue]="o.businessProcessOwnerId">
           {{ o.name }}
         </option>
@@ -27,7 +27,7 @@
     </label>
     -->
     <div class="actions">
-      <button type="submit" [disabled]="form.invalid || loading">Save</button>
+      <button type="submit" [disabled]="form.invalid || saving">Save</button>
       <button type="button" (click)="cancel()">Cancel</button>
     </div>
   </form>

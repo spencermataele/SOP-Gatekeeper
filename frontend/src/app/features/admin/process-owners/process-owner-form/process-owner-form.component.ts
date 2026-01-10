@@ -12,7 +12,7 @@ import { ProcessOwner } from '../../../sops/models/process-owner.model';
 export class ProcessOwnerFormComponent implements OnInit {
   form!: FormGroup;
   owners: ProcessOwner[] = [];
-  loading = false;
+  saving = false;
   error?: string;
 
   constructor(
@@ -23,9 +23,9 @@ export class ProcessOwnerFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      processOwnerName: ['', [Validators.required, Validators.maxLength(255)]],
-      processOwnerPositionId: [null, [Validators.required]],
-      //parent_process_owner_id: [null] // sending as parent object later if needed
+      name: ['', [Validators.required, Validators.maxLength(255)]],
+      positionId: [null, [Validators.required]],
+      parentProcessOwnerId: [null] // sending as parent object later if needed
     });
 
     this.svc.list().subscribe({
@@ -37,14 +37,17 @@ export class ProcessOwnerFormComponent implements OnInit {
   save(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
 
-    //const parentId = this.form.value.parent_process_owner_id as number | null;
     const body = {
       name: this.form.value.name!,
-      positionId: Number(this.form.value.positionId)
+      positionId: Number(this.form.value.positionId),
+      parentProcessOwnerId: this.form.value.parentProcessOwnerId || null
     };
 
-    this.loading = true;
-    this.svc.create(body).subscribe({ /* ... */ });
+    this.saving = true;
+    this.svc.create(body).subscribe({
+      next: () => this.router.navigate(['/admin/process-owners']),
+      error: () => this.error = 'Failed to create process owner'
+    });
   }
 
   cancel(): void { this.router.navigate(['/admin/process-owners']); }

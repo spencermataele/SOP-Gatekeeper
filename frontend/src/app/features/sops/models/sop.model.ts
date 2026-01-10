@@ -15,6 +15,6 @@ export interface Sop {
   sopLocationPath: string;
   createdTimestamp?: string;
   updatedTimestamp?: string;
-  versionId: number;
+  versionId: string;
   sopDetails: string;
 }

@@ -25,11 +25,12 @@ export class SopService {
     processFamilyId: number | null;
     deptSubgroupId: number | null;
     title: string;
+    authorId: number | null;
     orgId: number | null;
     sopDetails: string;
-    versionId: number;
+    versionId: string;
     currentProcessOwnerId: number | null;
-    parentProcessId: number | null;
+    parentProcessId: number;
     processId: number | null;
     processName: string;
     orgGroupId: number | null
@@ -43,11 +44,12 @@ export class SopService {
     processFamilyId: number | null;
     deptSubgroupId: number | null;
     title: string;
+    authorId: number | null;
     orgId: number | null;
     sopDetails: string;
-    versionId: number;
+    versionId: string;
     currentProcessOwnerId: number | null;
-    parentProcessId: number | null;
+    parentProcessId: number;
     processId: number | null;
     processName: string;
     orgGroupId: number | null

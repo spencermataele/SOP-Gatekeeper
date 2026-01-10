@@ -2,15 +2,15 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SopsListComponent } from './features/sops/sops-list/sops-list.component';
 import { SopsFormComponent } from './features/sops/sops-form.component';
-import { ProcessOwnerCreateComponent } from "./features/sops/process-owners/process-owner-create";
+import { ProcessOwnerCreateComponent } from "./features/admin/process-owners/process-owner-form/process-owner-create";
 import { ProcessOwnersComponent } from "./features/admin/process-owners/process-owners.component";
 import { AdminHomeComponent } from "./features/admin/admin-home.component";
 import { BusinessProcessesPageComponent} from "./features/admin/business-processes/business-processes-page.component";
 import { BusinessProcessFormComponent} from "./features/admin/business-processes/business-process-form.component";
 import { BusinessProcessFamiliesPageComponent} from "./features/admin/business-process-families/business-process-families-page.component";
 import { BusinessProcessFamilyFormComponent} from "./features/admin/business-process-families/business-process-family-form.component";
-import {LoginComponent} from "./features/sops/users/authorization/login.component";
-import {AuthGuard} from "./features/sops/users/authorization/auth.guard";
+import {LoginComponent} from "./features/authorization/login.component";
+import {AuthGuard} from "./features/authorization/auth.guard";
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'sops' },

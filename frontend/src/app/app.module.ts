@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HttpClientModule } from '@angular/common/http';
+import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 import { SopsListComponent } from "./features/sops/sops-list/sops-list.component";
 import { SopsFormComponent } from "./features/sops/sops-form.component";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
@@ -12,8 +12,9 @@ import { ProcessOwnersComponent } from "./features/admin/process-owners/process-
 import { AdminHomeComponent } from "./features/admin/admin-home.component";
 import { ReportsHomeComponent} from "./features/reports/reports-home.component";
 import {RouterModule} from "@angular/router";
-import {LoginComponent} from "./features/sops/users/authorization/login.component";
+import {LoginComponent} from "./features/authorization/login.component";
 import {CommonModule} from "@angular/common";
+import {JwtInterceptor} from "./features/authorization/jwt.interceptor";
 
 @NgModule({
   declarations: [
@@ -36,7 +37,13 @@ import {CommonModule} from "@angular/common";
     ReportsHomeComponent,
     CommonModule
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: JwtInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -2,42 +2,22 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ProcessOwnerService } from '../../admin/services/process-owner.service';
+import { ProcessOwnerService } from '../../services/process-owner.service';
 
 @Component({
   selector: 'app-process-owner-create',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  template: `
-  <div class="container">
-    <h2>Create Process Owner</h2>
-
-    <form [formGroup]="form" (ngSubmit)="save()">
-      <label>Name
-        <input type="text" formControlName="name" />
-      </label>
-
-      <label>Position ID
-        <input type="number" formControlName="positionId" />
-      </label>
-
-      <div class="actions">
-        <button type="submit" [disabled]="form.invalid || saving">Save</button>
-        <button type="button" (click)="cancel()">Cancel</button>
-      </div>
-
-      <div *ngIf="error" class="error">{{ error }}</div>
-    </form>
-  </div>
-  `,
-  styles: [`.container{max-width:720px;margin:1rem auto;display:block} .actions{margin-top:1rem;display:flex;gap:.5rem}`]
+  templateUrl: './process-owner-form.component.html',
+  styleUrls: ['./process-owner-form.component.scss']
 })
 export class ProcessOwnerCreateComponent {
   saving = false;
   error?: string;
   form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
-    positionId: [null as number | null, [Validators.required]]
+    positionId: [null as number | null, [Validators.required]],
+    parentProcessOwnerId: [null as number | null]
   });
 
   constructor(
@@ -52,7 +32,8 @@ export class ProcessOwnerCreateComponent {
     this.saving = true;
     const body = {
       name: this.form.value.name!,
-      positionId: Number(this.form.value.positionId)
+      positionId: Number(this.form.value.positionId),
+      //parentProcessOwnerId: this.form.value.parentProcessOwnerId || null
     };
     this.svc.create(body).subscribe({
       next: (po) => {

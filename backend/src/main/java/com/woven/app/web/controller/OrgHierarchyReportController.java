@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping("/reports")
 @CrossOrigin(origins = "http://localhost:4200")
 public class OrgHierarchyReportController {
 
