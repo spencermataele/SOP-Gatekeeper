@@ -20,39 +20,41 @@ export class SopService {
   }
 
   create(body: {
-    departmentId: number | null;
-    currentProcessOwnerPositionId: number | null;
-    processFamilyId: number | null;
-    deptSubgroupId: number | null;
     title: string;
     authorId: number | null;
     orgId: number | null;
-    sopDetails: string;
-    versionId: string;
+    orgGroupId: number | null
+    departmentId: number | null;
+    deptSubgroupId: number | null;
     currentProcessOwnerId: number | null;
-    parentProcessId: number;
+    currentProcessOwnerPositionId: number | null;
     processId: number | null;
     processName: string;
-    orgGroupId: number | null
+    processFamilyId: number | null;
+    parentProcessId: number;
+    versionId: string;
+    sopDescription: string;
+    sopDetails: string
   }): Observable<Sop> {
     return this.http.post<Sop>(this.base, body);
   }
 
   update(id: number, body: {
-    departmentId: number | null;
-    currentProcessOwnerPositionId: number | null;
-    processFamilyId: number | null;
-    deptSubgroupId: number | null;
     title: string;
     authorId: number | null;
     orgId: number | null;
-    sopDetails: string;
-    versionId: string;
+    orgGroupId: number | null
+    departmentId: number | null;
+    deptSubgroupId: number | null;
     currentProcessOwnerId: number | null;
-    parentProcessId: number;
+    currentProcessOwnerPositionId: number | null;
     processId: number | null;
     processName: string;
-    orgGroupId: number | null
+    processFamilyId: number | null;
+    parentProcessId: number;
+    versionId: string;
+    sopDescription: string;
+    sopDetails: string
   }): Observable<Sop> {
     return this.http.put<Sop>(`${this.base}/${id}`, body);
   }

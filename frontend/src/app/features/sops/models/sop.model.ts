@@ -16,5 +16,6 @@ export interface Sop {
   createdTimestamp?: string;
   updatedTimestamp?: string;
   versionId: string;
+  sopDescription: string;
   sopDetails: string;
 }

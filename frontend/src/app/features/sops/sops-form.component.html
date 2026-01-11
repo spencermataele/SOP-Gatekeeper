@@ -133,8 +133,8 @@
         </select>
       </label>
 
-      <div class="err" *ngIf="form.get('processOwnerId')?.touched && form.get('processOwnerId')?.invalid">
-        <span *ngIf="form.get('processOwnerId')?.hasError('required')">Required.</span>
+      <div class="err" *ngIf="form.get('businessProcessOwnerId')?.touched && form.get('businessProcessOwnerId')?.invalid">
+        <span *ngIf="form.get('businessProcessOwnerId')?.hasError('required')">Required.</span>
       </div>
 
       <button type="button" class="small-btn" (click)="goToNewProcessOwner()">Add New Process Owner</button>
@@ -144,7 +144,7 @@
   <div>
     <div class="sop-description">
       <h3>SOP Description</h3>
-      <input formControlName="sopDetails" placeholder="Brief description of this SOP" />
+      <input formControlName="sopDescription" placeholder="Brief description of this SOP" />
     </div>
 
     <h3>Steps</h3>

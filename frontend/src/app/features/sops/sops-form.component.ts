@@ -61,7 +61,8 @@ export class SopsFormComponent implements OnInit {
   form = this.fb.group({
     // core SOP fields
     title: ['', [Validators.required, Validators.maxLength(255)]],
-    sopDetails: ['', [Validators.required]],
+    sopDescription: ['', [Validators.required]],
+    //sopDetails: ['', [Validators.required]], This is assembled from steps array
     authorName: ['', [Validators.required, Validators.maxLength(255)]],
     versionId: ['1.0', [Validators.required, Validators.maxLength(255)]],
 
@@ -146,7 +147,8 @@ export class SopsFormComponent implements OnInit {
             businessProcessFamilyId: sop.businessProcessFamilyId ?? null,
             parentProcessId: sop.parentProcessId ?? null,
             versionId: sop.versionId ?? 1,
-            sopDetails: sop.sopDetails ?? '',
+            sopDescription: sop.sopDescription ?? ''
+            //sopDetails: sop.sopDetails ?? '', Built by steps array
           });
           // ensure parent chain is consistent if only a child id is present
           this.onSubChange();
@@ -368,7 +370,6 @@ export class SopsFormComponent implements OnInit {
     }
   }
 
-
   onProcessOwnerChange() {
     const ownerId = this.form.get('businessProcessOwnerId')?.value;
 
@@ -388,9 +389,6 @@ export class SopsFormComponent implements OnInit {
       positionId: owner.positionId
     });
   }
-
-
-
 
 
   goToNewBusinessProcess() {
@@ -421,6 +419,7 @@ export class SopsFormComponent implements OnInit {
 
   //  submit, update, delete
   submit() {
+    //Makes process owner id numerical, comes as string for some reason
     const payload = {
       ...this.form.value,
       businessProcessOwnerId: Number(this.form.value.businessProcessOwnerId)
@@ -447,7 +446,7 @@ export class SopsFormComponent implements OnInit {
     const f = this.form.value;
 
     //Combine sopDetail steps into a single string
-    let structuredDetails = (f.sopDetails ?? '').trim();
+    let structuredDetails = '';
     if (this.steps.length > 0) {
       const formattedSteps = this.steps.controls.map((step, index) => {
         const s = step.value;
@@ -473,6 +472,7 @@ export class SopsFormComponent implements OnInit {
       processFamilyId: f.businessProcessFamilyId ?? null,
       parentProcessId: f.parentProcessId ?? 0,
       versionId: String(f.versionId ?? '1.0'),
+      sopDescription: f.sopDescription!,
       sopDetails: structuredDetails,
     };
 
