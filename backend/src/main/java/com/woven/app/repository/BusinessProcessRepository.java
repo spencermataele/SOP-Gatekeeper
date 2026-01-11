@@ -20,7 +20,7 @@ public interface BusinessProcessRepository extends JpaRepository<BusinessProcess
         and (:orgGroupId is null or (og is not null and og.orgGroupId = :orgGroupId))
         and (:departmentId is null or d.departmentId = :departmentId)
         and (:businessProcessFamilyId is null or pf.businessProcessFamilyId = :businessProcessFamilyId)
-        and (:search is null or lower(p.businessProcessName) like concat('%', lower(:search), '%'))
+        and (:search is null or lower(p.processName) like concat('%', lower(:search), '%'))
       """)
     List<BusinessProcess> findForProcessStreamReport(Integer orgId,
                                                      Integer orgGroupId,

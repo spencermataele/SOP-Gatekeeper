@@ -23,7 +23,7 @@
           <input formControlName="name" />
         </label>
         <label>Position ID
-          <input type="number" formControlName="positionId" />
+          <input type="number" formControlName="currentProcessOwnerPositionId" />
         </label>
         <button type="submit" [disabled]="form.invalid">{{ editingId ? 'Update' : 'Create' }}</button>
         <button type="button" (click)="cancel()">Cancel</button>

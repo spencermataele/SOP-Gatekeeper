@@ -9,7 +9,7 @@ export interface Sop {
   currentProcessOwnerId: number;
   currentProcessOwnerPositionId: number;
   businessProcessId: number;
-  businessProcessName: string;
+  processName: string;
   businessProcessFamilyId: number;
   parentProcessId: number;
   sopLocationPath: string;

@@ -125,7 +125,7 @@
 
     <div>
       <label>Process Owner
-        <select formControlName="businessProcessOwnerId" (change)="onProcessOwnerChange()">
+        <select formControlName="currentProcessOwnerId" (change)="onProcessOwnerChange()">
           <option [ngValue]="null">-- select owner --</option>
           <option *ngFor="let p of filteredOwners()" [value]="p.businessProcessOwnerId">
             {{ p.name }}
@@ -145,6 +145,11 @@
     <div class="sop-description">
       <h3>SOP Description</h3>
       <input formControlName="sopDescription" placeholder="Brief description of this SOP" />
+    </div>
+
+    <div *ngIf="id != null" class="readonly-preview">
+      <h3>Current SOP Details</h3>
+      <pre>{{ existingSopDetails }}</pre>
     </div>
 
     <h3>Steps</h3>

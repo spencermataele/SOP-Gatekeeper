@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import {forkJoin} from "rxjs";
 
 import { OrgService } from "../admin/services/org.service";
 import { OrgGroupService } from '../admin/services/org-group.service';
@@ -36,6 +37,7 @@ export class SopsFormComponent implements OnInit {
   saving = false;
   errorMsg?: string;
   userId: number | null = null;
+  existingSopDetails = '';
 
   // master lists
   orgs: OrgDto[] = [];
@@ -63,7 +65,7 @@ export class SopsFormComponent implements OnInit {
     title: ['', [Validators.required, Validators.maxLength(255)]],
     sopDescription: ['', [Validators.required]],
     //sopDetails: ['', [Validators.required]], This is assembled from steps array
-    authorName: ['', [Validators.required, Validators.maxLength(255)]],
+    authorName: this.fb.control({ value: '', disabled: true },[Validators.required, Validators.maxLength(255)]),
     versionId: ['1.0', [Validators.required, Validators.maxLength(255)]],
 
     // selectables
@@ -71,12 +73,12 @@ export class SopsFormComponent implements OnInit {
     businessProcessId: [null as number | null],
     businessProcessFamilyId: [null as number | null],
     parentProcessId: [null as number | null],
-
     orgId: [null as number | null],
     orgGroupId: [null as number | null],
     departmentId: [null as number | null],
     deptSubgroupId: [null as number | null],
 
+    // added when name selected
     businessProcessOwnerId: this.fb.control<number | null>(null, Validators.required),
     positionId: this.fb.control<number | null>(null, Validators.required),
 
@@ -100,64 +102,98 @@ export class SopsFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+
     // detect edit mode
     const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam && idParam !== 'new') this.id = Number(idParam);
+    if (idParam && idParam !== 'new') {
+      this.id = Number(idParam);
+    }
 
-    this.form.get('businessProcessFamilyId')?.addValidators([Validators.required]);
-    this.form.get('businessProcessId')?.addValidators([Validators.required]);
-    this.form.get('businessProcessOwnerId')?.valueChanges.subscribe(v => {
-      console.log('businessProcessOwnerId valueChanges →', v);
-    });
-    this.form.get('positionId')?.valueChanges.subscribe(v => {
-      console.log('positionId valueChanges→', v);
-    });
-
-    // make current logged-in user the author
+    // author always comes from auth
     const user = this.auth.currentUser();
     if (user) {
-      this.form.patchValue( { authorName: user.fullName });
+      this.form.patchValue({ authorName: user.fullName });
       this.userId = user.id;
     }
 
-    // load reference data
-    this.orgSvc.list().subscribe({ next: rows => { this.orgs = rows; rows.forEach(o => this.orgById.set(o.orgId, o)); }});
-    this.groupSvc.list().subscribe({ next: rows => { this.groups = rows; rows.forEach(g => this.groupById.set(g.orgGroupId, g)); }});
-    this.deptSvc.list().subscribe({ next: rows => { this.depts = rows; rows.forEach(d => this.deptById.set(d.departmentId, d)); }});
-    this.subSvc.list().subscribe({ next: rows => { this.subs = rows; rows.forEach(s => this.subgroupById.set(s.deptSubgroupId, s)); }});
-    this.ownerSvc.list().subscribe({ next: rows => { this.owners = rows; rows.forEach(p => this.ownerById.set(p.businessProcessOwnerId, p)); }});
-    this.businessProcessSvc.list().subscribe({next: rows => { this.businessProcess = rows; rows.forEach(b => this.businessProcessById.set(b.businessProcessId, b)); }});
-    this.businessProcessFamSvc.list().subscribe( {next: rows => { this.businessProcessFamily = rows; rows.forEach(f => this.businessProcessFamilyId.set(f.businessProcessFamilyId, f)); }});
+    // load ALL reference data first
+    forkJoin({
+      orgs: this.orgSvc.list(),
+      groups: this.groupSvc.list(),
+      depts: this.deptSvc.list(),
+      subs: this.subSvc.list(),
+      owners: this.ownerSvc.list(),
+      processes: this.businessProcessSvc.list(),
+      families: this.businessProcessFamSvc.list()
+    }).subscribe({
+      next: res => {
+        this.orgs = res.orgs;
+        this.groups = res.groups;
+        this.depts = res.depts;
+        this.subs = res.subs;
+        this.owners = res.owners;
+        this.businessProcess = res.processes;
+        this.businessProcessFamily = res.families;
 
-    if (this.id != null) {
-      this.loading = true;
-      this.sopSvc.get(this.id).subscribe({
-        next: (sop: any) => {
-          this.form.patchValue({
-            title: sop.title ?? '',
-            authorName: sop.authorName ?? '',
-            orgId: sop.orgId ?? null,
-            orgGroupId: sop.orgGroupId ?? null,
-            departmentId: sop.departmentId ?? null,
-            deptSubgroupId: sop.deptSubgroupId ?? null,
-            businessProcessOwnerId: sop.businessProcessOwnerId ?? null,
-            positionId: sop.positionId ?? null,
-            businessProcessId: sop.businessProcessId ?? null,
-            businessProcessName: sop.businessProcessName ?? '',
-            businessProcessFamilyId: sop.businessProcessFamilyId ?? null,
-            parentProcessId: sop.parentProcessId ?? null,
-            versionId: sop.versionId ?? 1,
-            sopDescription: sop.sopDescription ?? ''
-            //sopDetails: sop.sopDetails ?? '', Built by steps array
-          });
-          // ensure parent chain is consistent if only a child id is present
-          this.onSubChange();
-          this.onProcessChange();
-          this.loading = false;
-        },
-        error: err => { this.errorMsg = err?.error?.message ?? 'Failed to load SOP'; this.loading = false; }
-      });
-    }
+        res.orgs.forEach(o => this.orgById.set(o.orgId, o));
+        res.groups.forEach(g => this.groupById.set(g.orgGroupId, g));
+        res.depts.forEach(d => this.deptById.set(d.departmentId, d));
+        res.subs.forEach(s => this.subgroupById.set(s.deptSubgroupId, s));
+        res.owners.forEach(o => this.ownerById.set(o.businessProcessOwnerId, o));
+        res.processes.forEach(p => this.businessProcessById.set(p.businessProcessId, p));
+        res.families.forEach(f => this.businessProcessFamilyId.set(f.businessProcessFamilyId, f));
+
+        if (this.id != null) {
+          this.loadSopForEdit();
+        }
+      },
+      error: () => {
+        this.errorMsg = 'Failed to load reference data';
+      }
+    });
+  }
+
+  // Load existing sop data for edit
+
+  private loadSopForEdit(): void {
+    this.loading = true;
+
+    this.sopSvc.get(this.id!).subscribe({
+      next: sop => {
+        this.form.patchValue({
+          title: sop.title ?? '',
+          orgId: sop.orgId ?? null,
+          orgGroupId: sop.orgGroupId ?? null,
+          departmentId: sop.departmentId ?? null,
+          deptSubgroupId: sop.deptSubgroupId ?? null,
+          businessProcessOwnerId: sop.currentProcessOwnerId ?? null,
+          positionId: sop.currentProcessOwnerPositionId ?? null,
+          businessProcessFamilyId: sop.businessProcessFamilyId ?? null,
+          businessProcessId: sop.businessProcessId ?? null,
+          parentProcessId: sop.parentProcessId ?? null,
+          businessProcessName: sop.processName ?? '',
+          versionId: sop.versionId ?? '1.0',
+          sopDescription: sop.sopDescription ?? ''
+        });
+
+        this.existingSopDetails = sop.sopDetails ?? '';
+
+        this.reapplyCascadeLogic();
+      },
+      error: () => {
+        this.errorMsg = 'Failed to load SOP';
+        this.loading = false;
+      }
+    });
+  }
+
+  private reapplyCascadeLogic(): void {
+    this.onOrgChange();
+    this.onGroupChange();
+    this.onDeptChange();
+    this.onSubChange();
+    this.onProcessFamilyChange();
+    this.onProcessChange();
   }
 
   //  global filter (applies to all dropdowns)
@@ -210,7 +246,6 @@ export class SopsFormComponent implements OnInit {
       .sort((a, b) => a.businessProcessName.localeCompare(b.businessProcessName))
       .filter(p => this.match(p.businessProcessName));
   }
-
 
   // autofill parents
   onOrgChange() {
@@ -438,6 +473,11 @@ export class SopsFormComponent implements OnInit {
           console.warn(`Invalid control: ${key}`, control.errors);
         }
       });
+      return;
+    }
+    //Validate that steps are added
+    if (this.id == null && this.steps.length === 0) {
+      this.steps.setErrors({ required: true });
       return;
     }
 

@@ -14,13 +14,13 @@
     </div>
     <!--
     <label>Position ID
-      <input type="number" formControlName="positionId">
+      <input type="number" formControlName="currentProcessOwnerPositionId">
     </label>
 
     <label>Parent Owner (optional)
       <select formControlName="parent_process_owner_id">
         <option [ngValue]="null">&#45;&#45; none &#45;&#45;</option>
-        <option *ngFor="let o of owners" [ngValue]="o.businessProcessOwnerId">
+        <option *ngFor="let o of owners" [ngValue]="o.currentProcessOwnerId">
           {{ o.name }}
         </option>
       </select>
