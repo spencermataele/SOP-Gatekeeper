@@ -4,7 +4,8 @@ public record UserDto(
         Integer id,
         String username,
         String email,
-        String password,
+        // Password not included for security
         String fullName,
-        String roles
+        String role
 ) {}
+

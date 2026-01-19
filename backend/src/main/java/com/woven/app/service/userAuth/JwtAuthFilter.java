@@ -1,6 +1,6 @@
 package com.woven.app.service.userAuth;
 
-import com.woven.app.service.user.AppUserDetailsService;
+import com.woven.app.service.user.UsersService;
 import jakarta.servlet.*;
 import java.io.IOException;
 import jakarta.servlet.GenericFilter;
@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 public class JwtAuthFilter extends GenericFilter {
 
     private final JwtService jwtService;
-    private final AppUserDetailsService appUserDetailsService;
-    public JwtAuthFilter(final JwtService jwtService, final AppUserDetailsService appUserDetailsService) {
+    private final UsersService appUserDetailsService;
+    public JwtAuthFilter(final JwtService jwtService, final UsersService appUserDetailsService) {
         this.jwtService = jwtService;
         this.appUserDetailsService = appUserDetailsService;
     }
