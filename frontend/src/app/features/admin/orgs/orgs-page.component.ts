@@ -97,7 +97,7 @@ export class OrgsPageComponent implements OnInit {
   refresh() {
     this.svc.list().subscribe({
       next: rows => this.orgs = rows,
-      error: () => this.errorCreate = 'Failed to load orgs'
+      error: () => this.errorCreate = 'Failed to load Orgs'
     });
   }
 

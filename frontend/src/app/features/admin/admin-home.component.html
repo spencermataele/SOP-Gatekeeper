@@ -1,12 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
 <section class="admin-home">
   <header class="admin-header">
     <h2>Administrator</h2>
+  </header>
+
     <p class="subtitle">
+      View and manage users.
+    </p>
+
+  <div class="cards">
+    <a class="card" [routerLink]="['/admin/users']">
+      <h3>Users</h3>
+      <p>View, edit, and create users.</p>
+      <span class="cta">Open Users</span>
+    </a>
+  </div>
+
+    <p class="admin-footer">
       Manage reference data used across SOPs. These values change rarely and are controlled here.
     </p>
-  </header>
 
   <div class="cards">
     <a class="card" [routerLink]="['/admin/orgs']">
@@ -59,4 +70,4 @@
     </a>
   </div>
 </section>
-</html>
+

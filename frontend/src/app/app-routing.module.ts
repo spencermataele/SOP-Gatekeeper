@@ -19,6 +19,7 @@ const routes: Routes = [
   { path: 'sops/new', component: SopsFormComponent, canActivate: [AuthGuard] },
   { path: 'sops/:id/edit', component: SopsFormComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminHomeComponent, canActivate: [AuthGuard] },
+  { path: 'admin/users', loadComponent: () => import('./features/admin/users/user-page.component').then(m => m.UsersPageComponent), canActivate: [AuthGuard] },
   { path: 'admin/orgs', loadComponent: () => import('./features/admin/orgs/orgs-page.component').then(m => m.OrgsPageComponent), canActivate: [AuthGuard] },
   { path: 'admin/org-groups', loadComponent: () => import('./features/admin/org-groups/org-groups-page.component').then(m => m.OrgGroupsPageComponent), canActivate: [AuthGuard] },
   { path: 'admin/departments', loadComponent: () => import('./features/admin/departments/departments-page.component').then(m => m.DepartmentsPageComponent), canActivate: [AuthGuard] },
