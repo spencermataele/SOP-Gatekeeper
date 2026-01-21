@@ -51,7 +51,7 @@ public class AuthController {
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setFullName(request.fullName());
-        user.setRoles(Set.of(Role.USER));
+        user.setRole(Role.USER);
 
         userRepository.save(user);
 
@@ -82,7 +82,7 @@ public class AuthController {
                                                 user.getId(),
                                                 user.getUsername(),
                                                 user.getFullName(),
-                                                user.getRoles()
+                                                user.getRole()
                                 )
         );
     }
@@ -96,7 +96,7 @@ public class AuthController {
                         user.getId(),
                         user.getUsername(),
                         user.getFullName(),
-                        user.getRoles()
+                        user.getRole()
                 )
         );
     }

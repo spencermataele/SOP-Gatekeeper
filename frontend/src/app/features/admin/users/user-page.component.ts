@@ -1,6 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import { FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn} from "@angular/forms";
 import {RouterModule} from "@angular/router";
 import {UserDto} from "../../sops/models/user.model";
 import {UserService} from "../services/user.service";
@@ -29,9 +29,11 @@ import {UserService} from "../services/user.service";
       <label>First & Last Name
         <input formControlName="fullName"/>
       </label>
-      <!-- TODO: Add form static drop menu -->
       <label>Role
-        <input formControlName="role"/>
+        <select formControlName="role">
+            <option value="" disabled>Select role</option>
+            <option *ngFor="let r of roles" [value]="r"> {{ r }}</option>
+        </select>
       </label>
       <button type="submit" [disabled]="createForm.invalid || savingCreate">Add User</button>
       <span class="error" *ngIf="errorCreate">{{ errorCreate }}</span>
@@ -41,8 +43,8 @@ import {UserService} from "../services/user.service";
     <ul class="list">
       <li *ngFor="let user of users">
         <!-- Inline edit mode -->
-        <ng-container *ngIf="editingId === user.userId; else viewRow">
-          <form [formGroup]="editForm" (ngSubmit)="saveEdit(user.userId)" class="row edit">
+        <ng-container *ngIf="editingId === user.id; else viewRow">
+          <form [formGroup]="editForm" (ngSubmit)="saveEdit(user.id)" class="row edit">
             <input formControlName="username"/>
             <button type="submit" [disabled]="editForm.invalid || savingEdit">Save</button>
             <button type="button" (click)="cancelEdit()">Cancel</button>
@@ -55,7 +57,7 @@ import {UserService} from "../services/user.service";
             <div>
               <strong>{{ user.username }}</strong>
               <strong>{{ user.fullName }}</strong>
-              <strong>{{ user.roles }}</strong>
+              <strong>{{ user.role }}</strong>
             </div>
             <div class="actions">
               <button type="button" (click)="startEdit(user)">Edit</button>
@@ -82,6 +84,7 @@ import {UserService} from "../services/user.service";
 })
 export class UsersPageComponent implements OnInit {
   users: UserDto[] = [];
+  readonly roles = ['ADMIN', 'USER'] as const;
 
   // create
   createForm = this.fb.group({
@@ -89,7 +92,14 @@ export class UsersPageComponent implements OnInit {
     email: ['',  [Validators.required, Validators.maxLength(255)]],
     password: ['',  [Validators.required, Validators.maxLength(255)]],
     fullName: ['',  [Validators.required, Validators.maxLength(255)]],
-    role: ['',  [Validators.required, Validators.maxLength(255)]]
+    role: [
+      '',
+      [
+        Validators.required,
+        oneOf(this.roles)
+      ]
+    ]
+
   })
   savingCreate = false;
   errorCreate?: string;
@@ -101,7 +111,14 @@ export class UsersPageComponent implements OnInit {
     email: ['',  [Validators.required, Validators.maxLength(255)]],
     password: ['',  [Validators.required, Validators.maxLength(255)]],
     fullName: ['',  [Validators.required, Validators.maxLength(255)]],
-    role: ['',  [Validators.required, Validators.maxLength(255)]]
+    role: [
+      '',
+      [
+        Validators.required,
+        oneOf(this.roles)
+      ]
+    ]
+
   })
   savingEdit = false;
 
@@ -147,16 +164,16 @@ export class UsersPageComponent implements OnInit {
 
   startEdit(user: UserDto) {
     // userId cannot be null
-    if (user.userId == null) {
+    if (user.id == null) {
       throw new Error('User ID is missing')
     }
-    this.editingId = user.userId;
+    this.editingId = user.id;
     this.editForm.reset({
       username: user.username ?? '',
       email: user.email ?? '',
       password: '',
       fullName: user.fullName ?? '',
-      role: user.roles ?? ''
+      role: user.role ?? ''
     });
   }
 
@@ -189,21 +206,29 @@ export class UsersPageComponent implements OnInit {
 
   delete(user: UserDto) {
     // userId cannot be null
-    if (user.userId == null) {
+    if (user.id == null) {
       console.error(`Cannot delete user without userId`, user);
       return;
     }
 
-    const ok = confirm(`Delete user "${user.userId}"?`);
+    const ok = confirm(`Delete user "${user.id}"?`);
     if (!ok) return;
 
-    this.svc.delete(user.userId).subscribe({
+    this.svc.delete(user.id).subscribe({
       next: () => this.refresh(),
       error: (err) => {
         console.error('Delete user failed', err);
       }
     });
   }
-
-
 }
+
+function oneOf<T extends readonly string[]>(allowed: T): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+    return allowed.includes(control.value)
+      ? null
+      : { oneOf: { allowed } };
+  };
+}
+

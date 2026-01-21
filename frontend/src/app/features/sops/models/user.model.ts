@@ -1,8 +1,8 @@
-export  interface UserDto {
-  userId?: number;
+export interface UserDto {
+  id?: number;
   username: string;
   email: string;
-  password: string;
+  //Password not included for security
   fullName: string;
-  roles: string;
+  role: 'ADMIN' | 'USER';
 }

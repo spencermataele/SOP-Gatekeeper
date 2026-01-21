@@ -1,6 +1,6 @@
 package com.woven.app.service.user;
 
-
+import com.woven.app.domain.Role;
 import com.woven.app.domain.User;
 import com.woven.app.repository.UserRepository;
 import com.woven.app.web.dto.admin.UserCreateDto;
@@ -26,6 +26,15 @@ public class UsersService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    //convert front end role to type Role (enum)
+    private Role toRole(String role) {
+        try {
+            return Role.valueOf(role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid role: " + role);
+        }
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Username Not Found"));
@@ -47,7 +56,7 @@ public class UsersService implements UserDetailsService {
         entity.setEmail(dto.email());
         entity.setPassword(passwordEncoder.encode(dto.password()));
         entity.setFullName(dto.fullName());
-        entity.setRoles(dto.role());
+        entity.setRole(toRole(dto.role()));
 
         User savedEntity = userRepository.save(entity);
         return toDto(savedEntity);
@@ -60,7 +69,7 @@ public class UsersService implements UserDetailsService {
         user.setUsername(dto.username());
         user.setEmail(dto.email());
         user.setFullName(dto.fullName());
-        user.setRoles(dto.role());
+        user.setRole(toRole(dto.role()));
         if (dto.password() != null && !dto.password().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.password()));
         }
@@ -79,7 +88,7 @@ public class UsersService implements UserDetailsService {
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRoles()
+                user.getRole()
         );
     }
 }
