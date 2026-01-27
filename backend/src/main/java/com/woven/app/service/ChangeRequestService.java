@@ -1,7 +1,9 @@
 package com.woven.app.service;
 
 import com.woven.app.domain.*;
+import com.woven.app.dto.SopDto;
 import com.woven.app.repository.*;
+import com.woven.app.service.user.AppUserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -95,9 +97,10 @@ public class ChangeRequestService {
         //approval.setCreatedTimestamp(Instant.now());
         approval.setUpdatedTimestamp(Instant.now());
 
-        changeApprovalRepository.save(approval);
+        ChangeRequest changeRequest = approval.getChangeRequest();
+        changeRequest.setChangeStatus(ChangeStatus.APPROVED);
 
-        // Action for other approvals?
+        changeApprovalRepository.save(approval);
     }
 
     // Reject Change Request
@@ -108,13 +111,19 @@ public class ChangeRequestService {
     ) {
         ChangeApproval approval = changeApprovalRepository.findById(changeApprovalId).orElseThrow();
 
+        if (approval.getApprover().getId() != approver) {
+            throw new SecurityException("Wrong approver");
+        }
+
         approval.setDecision(ApprovalDecision.REJECTED);
         approval.setComments(comments);
         //approval.setCreatedTimestamp(Instant.now());
         approval.setUpdatedTimestamp(Instant.now());
 
-        changeApprovalRepository.save(approval);
+        ChangeRequest changeRequest = approval.getChangeRequest();
+        changeRequest.setChangeStatus(ChangeStatus.REJECTED);
 
+        changeApprovalRepository.save(approval);
     }
 
     // Upon submit, create approvals
@@ -174,4 +183,12 @@ public class ChangeRequestService {
 
     }
 
+    public SopDto publish(
+            Long changeRequestId,
+            SopPublishRequestDto dto,
+            AppUserDetails currentUser)
+
+
 }
+
+

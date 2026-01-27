@@ -42,7 +42,7 @@ public class ChangeApproval {
     private ApprovalDecision decision;
 
     @Lob
-    @Column(name = "comments", columnDefinition = "LONGTEXT", nullable = false)
+    @Column(name = "comments", columnDefinition = "LONGTEXT")
     private String comments;
 
     @CreationTimestamp

@@ -11,6 +11,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.Instant;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "sop")
 public class Sop {
     @Id
@@ -18,8 +20,6 @@ public class Sop {
     @Column(name = "sop_id")
     private Integer sopId;
 
-    @Setter
-    @Getter
     @NotBlank
     @Column(name = "title", nullable = false, length = 255)
     private String title;
@@ -80,160 +80,35 @@ public class Sop {
     @Column(name = "version_id", nullable = false, length = 255)
     private String versionId;
 
-    @Setter
-    @Getter
     @Lob
     @Column(name = "sop_description", columnDefinition = "LONGTEXT", nullable = false)
     private String sopDescription;
 
-    @Setter
-    @Getter
     @Lob
     @Column(name = "sop_details", columnDefinition = "LONGTEXT", nullable = false)
     private String sopDetails;
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
+
+    @Column(name = "published_timestamp")
+    private Instant publishedTimestamp;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "change_request_id")
+    private ChangeRequest changeRequest;
+
     @PrePersist
     public void prePersist() {
-        System.out.println(">>> PrePersist fired. sopDescription before: " + sopDescription); /*** DELETEME ***/
+        System.out.println(">>> PrePersist fired. sopDescription before: " + sopDescription);
         if (this.sopDescription == null || this.sopDescription.isBlank()) {
             this.sopDescription = "N/A";
         }
+
+        if (this.isActive == null) {
+            this.isActive = true;
+        }
+
     }
 
-    /*  MVP will not include tools
-    @OneToMany(mappedBy = "sop", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Tool> tools = new ArrayList<>();
-
-    public void addTool(Tool tool) {
-        tool.setSop(this);
-        this.tools.add(tool);    }
-
-
-    public void removeTool(Tool tool) {
-        tool.setSop(null);
-        this.tools.remove(tool);
-    }
-    */
-    public Integer getSop_id() {
-        return sopId;
-    }
-
-    public void setSop_id(Integer sop_id) {
-        this.sopId = sop_id;
-    }
-
-    public Integer getAuthor_id() {
-        return authorId;
-    }
-
-    public void setAuthor_id(Integer author_id) {
-        this.authorId = author_id;
-    }
-
-    public Integer getOrg_id() {
-        return orgId;
-    }
-
-    public void setOrg_id(Integer org_id) {
-        this.orgId = org_id;
-    }
-
-    public Integer getOrg_group_id() {
-        return orgGroupId;
-    }
-
-    public void setOrg_group_id(Integer org_group_id) {
-        this.orgGroupId = org_group_id;
-    }
-
-    public Integer getDepartment_id() {
-        return departmentId;
-    }
-
-    public void setDepartment_id(Integer department_id) {
-        this.departmentId = department_id;
-    }
-
-    public Integer getDept_subgroup_id() {
-        return deptSubgroupId;
-    }
-
-    public void setDept_subgroup_id(Integer dept_subgroup_id) {
-        this.deptSubgroupId = dept_subgroup_id;
-    }
-
-    public Integer getCurrent_process_owner_id() {
-        return currentProcessOwnerId;
-    }
-
-    public void setCurrent_process_owner_id(Integer current_process_owner_id) {
-        this.currentProcessOwnerId = current_process_owner_id;
-    }
-
-    public Integer getCurrent_process_owner_position_id() {
-        return currentProcessOwnerPositionId;
-    }
-
-    public void setCurrent_process_owner_position_id(Integer current_process_owner_position_id) {
-        this.currentProcessOwnerPositionId = current_process_owner_position_id;
-    }
-
-    public Integer getProcess_id() {
-        return processId;
-    }
-
-    public void setProcess_id(Integer process_id) {
-        this.processId = process_id;
-    }
-
-    public String getProcess_name() {
-        return processName;
-    }
-
-    public void setProcess_name(String process_name) {
-        this.processName = process_name;
-    }
-
-    public Integer getProcess_family_id() {
-        return processFamilyId;
-    }
-
-    public void setProcess_family_id(Integer process_family_id) {
-        this.processFamilyId = process_family_id;
-    }
-
-    public Integer getParent_process_id() {
-        return parentProcessId;
-    }
-
-    public void setParent_process_id(Integer parent_process_id) {
-        this.parentProcessId = parent_process_id;
-    }
-
-    public Instant getCreated_timestamp() {
-        return createdTimestamp;
-    }
-
-    public void setCreated_timestamp(Instant created_timestamp) {
-        this.createdTimestamp = created_timestamp;
-    }
-
-    public Instant getUpdated_timestamp() {
-        return updatedTimestamp;
-    }
-
-    public void setUpdated_timestamp(Instant updated_timestamp) {
-        this.updatedTimestamp = updated_timestamp;
-    }
-
-    public String getVersion_id() {
-        return versionId;
-    }
-
-    public void setVersion_id(String version_id) {
-        this.versionId = version_id;
-    }
-
-    //public List<Tool> getTools() { return tools; }
-    //public void setTools(List<Tool> attributes) { this.tools = attributes; }
 }

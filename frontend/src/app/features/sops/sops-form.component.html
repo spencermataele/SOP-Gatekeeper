@@ -1,4 +1,16 @@
-<h2>{{ id == null ? 'Create SOP' : 'Edit SOP' }}</h2>
+<h2>
+    {{ mode === 'approve'
+    ? 'Review & Publish SOP Change'
+    : id == null ? 'Create SOP' : 'Edit SOP' }}
+</h2>
+<!-- IF MODE = APPROVE -->
+<div *ngIf="mode === 'approve'" class="change-panel">
+  <h3>Change Request</h3>
+  <p><strong>Summary:</strong> {{ changeRequest?.changeSummary }} </p>
+  <p><strong>Reason:</strong> {{ changeRequest?.changeReason }} </p>
+  <p><strong>Requested By:</strong> {{ changeRequest?.requestedByName }} </p>
+</div>
+
 
 <form [formGroup]="form" (ngSubmit)="submit()" class="form">
   <div class="grid">
@@ -60,7 +72,7 @@
     </label>
 
     <label>Version ID
-      <input formControlName="versionId" />
+      <input formControlName="versionId" [readonly]="mode === 'approve'" />
     </label>
     <div class="err" *ngIf="form.get('versionId')?.touched && form.get('versionId')?.errors">
       <span *ngIf="form.get('versionId')?.hasError('required')">Required.</span>
@@ -179,9 +191,9 @@
 
   <div class="actions">
     <button type="submit" [disabled]="saving">
-      {{ id == null ? 'Create SOP' : 'Save Changes' }}
+      {{ mode === 'approve' ? 'Approve & Publish' : id == null ? 'Create SOP' : 'Save Changes' }}
     </button>
-    <button *ngIf="id != null" type="button" class="danger" (click)="delete()">Delete</button>
+    <button *ngIf="id != null && mode !== 'approve'" type="button" class="danger" (click)="delete()">Delete</button>
     <span class="err" *ngIf="errorMsg">{{ errorMsg }}</span>
   </div>
 

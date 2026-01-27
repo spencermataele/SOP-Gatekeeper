@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import {forkJoin} from "rxjs";
+import {forkJoin, Observable} from "rxjs";
 
 import { OrgService } from "../admin/services/org.service";
 import { OrgGroupService } from '../admin/services/org-group.service';
@@ -22,6 +22,7 @@ import {BusinessProcessFamilyService} from "../admin/services/business-process-f
 import {BusinessProcess} from "../admin/models/business-process.model";
 import {BusinessProcessFamily} from "../admin/models/business-process-family.model";
 import {AuthService} from "../authorization/auth.service";
+import {ChangeRequestService} from "./services/change-request.service";
 
 @Component({
   selector: 'app-sop-form',
@@ -38,6 +39,8 @@ export class SopsFormComponent implements OnInit {
   errorMsg?: string;
   userId: number | null = null;
   existingSopDetails = '';
+  mode: 'edit' | 'approve' = 'edit';
+  changeRequest?: any;
 
   // master lists
   orgs: OrgDto[] = [];
@@ -98,7 +101,8 @@ export class SopsFormComponent implements OnInit {
     private ownerSvc: ProcessOwnerService,
     private businessProcessSvc: BusinessProcessService,
     private businessProcessFamSvc: BusinessProcessFamilyService,
-    private auth: AuthService
+    private auth: AuthService,
+    private changeRequestSvc: ChangeRequestService
   ) {}
 
   ngOnInit(): void {
@@ -516,14 +520,25 @@ export class SopsFormComponent implements OnInit {
       sopDetails: structuredDetails,
     };
 
-    const obs = this.id == null
-      ? this.sopSvc.create(body)
-      : this.sopSvc.update(this.id, body);
+    // Create, Update, or Approve and update to new version
+    let obs: Observable<any>;
+
+    if (this.mode === 'approve') {
+      obs = this.changeRequestSvc.publishChangeRequest(
+        this.changeRequest!.changeRequestId, body
+      );
+    }
+    else if (this.id == null) {
+      obs = this.sopSvc.create(body);
+    }
+    else {
+      obs = this.sopSvc.update(this.id, body)
+    }
 
     obs.subscribe({
       next: () => {
         this.saving = false;
-        // navigate back to SOPs list or detail as you prefer
+        // navigate back to SOPs list
         this.router.navigate(['/sops']);
       },
       error: err => {
