@@ -86,7 +86,11 @@ public class ChangeRequestService {
             Integer approver,
             String comments
     ) {
-        ChangeApproval approval = changeApprovalRepository.findById(changeApprovalId).orElseThrow();
+        ChangeApproval approval = changeApprovalRepository.findById(changeApprovalId).orElseThrow(
+                () ->
+                        new IllegalArgumentException(
+                                "Approval not found: " + changeApprovalId
+                        ));
 
 
         if (approval.getApprover().getId() != approver) {
@@ -110,7 +114,61 @@ public class ChangeRequestService {
             SopPublishRequestDto dto,
             AppUserDetails user
     ) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        // Smoke test
+        System.out.println(">>> ENTERED publish() for changeRequest " + id);
+
+        ChangeRequest changeRequest = changeRequestRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("ChangeRequest not found " + id));
+
+        if (changeRequest.getChangeStatus() != ChangeStatus.APPROVED) {
+            throw new IllegalStateException(
+                    "Only approved changes can be published"
+            );
+        }
+
+        Sop oldSop = changeRequest.getSop();
+
+        // Make sure correct process owner is the approver
+        Integer ownerId = oldSop.getCurrentProcessOwnerId();
+
+        if (!ownerId.equals(user.getUser().getId())) {
+            throw new SecurityException("You are not authorized to publish changes to this SOP");
+        }
+
+        // Update active flag on old sop
+        oldSop.setIsActive(false);
+        sopRepository.save(oldSop);
+
+        // Create new SOP version
+        Sop newSop = new Sop();
+
+        newSop.setTitle(dto.title());
+        newSop.setAuthorId(user.getUser().getId());
+        newSop.setOrgId(dto.orgId());
+        newSop.setOrgGroupId(dto.orgGroupId());
+        newSop.setDepartmentId(dto.departmentId());
+        newSop.setDeptSubgroupId(dto.deptSubgroupId());
+        newSop.setCurrentProcessOwnerId(dto.currentProcessOwnerId());
+        newSop.setCurrentProcessOwnerPositionId(dto.currentProcessOwnerPositionId());
+        newSop.setProcessId(dto.processId());
+        newSop.setProcessName(dto.processName());
+        newSop.setProcessFamilyId(dto.processFamilyId());
+        newSop.setParentProcessId(dto.parentProcessId());
+        newSop.setSopDescription(dto.sopDescription());
+        newSop.setSopDetails(dto.sopDetails());
+        newSop.setIsActive(true);
+        newSop.setPublishedTimestamp(Instant.now());
+        newSop.setChangeRequest(changeRequest);
+        newSop.setVersionId(incrementVersion(oldSop.getVersionId()));
+
+        Sop saved = sopRepository.save(newSop);
+
+        // Associate change request with new sop
+        changeRequest.setSop(saved);
+        changeRequestRepository.save(changeRequest);
+
+        return toDto(saved);
+
     }
 
     // Reject Change Request
@@ -193,6 +251,38 @@ public class ChangeRequestService {
 
     }
 
+    // Because versionId is a String
+    private String incrementVersion(String current) {
+        try {
+            double v = Double.parseDouble(current);
+            return String.format("%.1f", v + 0.1);
+        } catch (Exception e) {
+            return current + ".1";
+        }
+    }
+
+    private SopDto toDto(Sop sop) {
+        return new SopDto(
+                sop.getSopId(),
+                sop.getTitle(),
+                sop.getAuthorId(),
+                sop.getOrgId(),
+                sop.getOrgGroupId(),
+                sop.getDepartmentId(),
+                sop.getDeptSubgroupId(),
+                sop.getCurrentProcessOwnerId(),
+                sop.getCurrentProcessOwnerPositionId(),
+                sop.getProcessId(),
+                sop.getProcessName(),
+                sop.getProcessFamilyId(),
+                sop.getParentProcessId(),
+                sop.getCreatedTimestamp(),
+                sop.getUpdatedTimestamp(),
+                sop.getVersionId(),
+                sop.getSopDescription(),
+                sop.getSopDetails()
+        );
+    }
 
 }
 

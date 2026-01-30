@@ -1,13 +1,12 @@
 package com.woven.app.web.controller;
 
-import com.woven.app.domain.Sop;
+import com.woven.app.domain.ChangeRequest;
 import com.woven.app.dto.SopDto;
 import com.woven.app.dto.SopPublishRequestDto;
 import com.woven.app.service.ChangeRequestService;
 import com.woven.app.service.user.AppUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,5 +57,30 @@ public class ChangeRequestController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping
+    public ResponseEntity<Long> createDraft(
+            @RequestParam Integer sopId,
+            @RequestParam String summary,
+            @RequestParam String reason,
+            @AuthenticationPrincipal AppUserDetails currentUser
+    ) {
+        ChangeRequest changeRequest = changeRequestService.createDraft(
+                sopId,
+                currentUser.getUser().getId(),
+                summary,
+                reason
+        );
+
+        return ResponseEntity.ok(changeRequest.getChangeRequestId());
+    }
+
+    @PostMapping("/{id}/submit")
+    public ResponseEntity<Void> submit(@PathVariable Long id) {
+        changeRequestService.submitForReview(id);
+
+        return ResponseEntity.ok().build();
+    }
+
 }
 
