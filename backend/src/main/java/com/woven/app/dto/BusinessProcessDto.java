@@ -8,8 +8,6 @@ public record BusinessProcessDto(
         Integer businessProcessFamilyId,
         String businessProcessFamilyName,
         Integer parentBusinessProcessId,
-        //String parentProcessName, //Is this needed?
         Integer departmentId,
-        //String departmentName,
         List<BusinessProcessSlimDto> businessProcesses
 ) {}

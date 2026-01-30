@@ -8,11 +8,13 @@ import java.util.List;
 public interface ChangeApprovalRepository extends JpaRepository<ChangeApproval, Long> {
 
     // Find by CR id
-    List<ChangeApproval> findByChangeRequestId(Long changeRequestId);
+    List<ChangeApproval> findByChangeRequest_ChangeRequestId(Long changeRequestId);
 
-    boolean existsByChangeRequestIdAndApproverId(
+
+    boolean existsByChangeRequest_ChangeRequestIdAndApprover_Id(
             Long changeRequestId,
-            Long approverId
+            Integer approverId
     );
+
 
 }

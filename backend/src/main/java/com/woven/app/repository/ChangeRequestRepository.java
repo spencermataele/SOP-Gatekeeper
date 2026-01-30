@@ -9,9 +9,9 @@ import java.util.List;
 public interface ChangeRequestRepository extends JpaRepository<ChangeRequest, Long> {
 
     // Find by status
-    List<ChangeRequest> fingByStatus(ChangeStatus changeStatus);
+    List<ChangeRequest> findByChangeStatus(ChangeStatus changeStatus);
 
     // Find by SOP id
-    List<ChangeRequest> findBySopId(Long sopId);
+    List<ChangeRequest> findBySop_SopId(Integer sopId);
 
 }

@@ -33,14 +33,14 @@ public class SopService {
         Sop entity = new Sop();
         apply(dto, entity);
         //Set authorId as current user's
-        entity.setAuthor_id(currentUser.getUser().getId());
+        entity.setAuthorId(currentUser.getUser().getId());
         Sop saved = sopRepository.save(entity);
         return toDto(saved);
     }
 
     public SopDto update(Integer id, SopDto dto) {
         Sop entity = findOrThrow(id);
-        entity.setSop_id(id);
+        entity.setSopId(id);
         apply(dto, entity);
         Sop saved = sopRepository.save(entity);
         return toDto(saved);
@@ -55,23 +55,22 @@ public class SopService {
 
     private SopDto toDto(Sop sop) {
         return new SopDto(
-                sop.getSop_id(),
+                sop.getSopId(),
                 sop.getTitle(),
-                sop.getAuthor_id(),
-                sop.getOrg_id(),
-                sop.getOrg_group_id(),
-                sop.getDepartment_id(),
-                sop.getDept_subgroup_id(),
-                sop.getCurrent_process_owner_id(),
-                sop.getCurrent_process_owner_position_id(),
-                sop.getProcess_id(),
-                sop.getProcess_name(),
-                sop.getProcess_family_id(),
-                sop.getParent_process_id(),
-                //sop.getSop_location_path(),
-                sop.getCreated_timestamp(),
-                sop.getUpdated_timestamp(),
-                sop.getVersion_id(),
+                sop.getAuthorId(),
+                sop.getOrgId(),
+                sop.getOrgGroupId(),
+                sop.getDepartmentId(),
+                sop.getDeptSubgroupId(),
+                sop.getCurrentProcessOwnerId(),
+                sop.getCurrentProcessOwnerPositionId(),
+                sop.getProcessId(),
+                sop.getProcessName(),
+                sop.getProcessFamilyId(),
+                sop.getParentProcessId(),
+                sop.getCreatedTimestamp(),
+                sop.getUpdatedTimestamp(),
+                sop.getVersionId(),
                 sop.getSopDescription(),
                 sop.getSopDetails()
         );
@@ -83,25 +82,24 @@ public class SopService {
 
     private void apply(SopDto dto, Sop entity) {
         if (dto.sopId() !=null) {
-            entity.setSop_id(dto.sopId());
+            entity.setSopId(dto.sopId());
         }
 
         entity.setTitle(dto.title());
-        entity.setAuthor_id(dto.authorId());
-        entity.setOrg_id(dto.orgId());
-        entity.setOrg_group_id(dto.orgGroupId());
-        entity.setDepartment_id(dto.departmentId());
-        entity.setDept_subgroup_id(dto.deptSubgroupId());
-        entity.setCurrent_process_owner_id(dto.currentProcessOwnerId());
-        entity.setCurrent_process_owner_position_id(dto.currentProcessOwnerPositionId());
-        entity.setProcess_id(dto.processId());
-        entity.setProcess_name(dto.processName());
-        entity.setProcess_family_id(dto.processFamilyId());
-        entity.setParent_process_id(dto.parentProcessId());
-        //entity.setSop_location_path(dto.sopLocationPath());
+        entity.setAuthorId(dto.authorId());
+        entity.setOrgId(dto.orgId());
+        entity.setOrgId(dto.orgGroupId());
+        entity.setDepartmentId(dto.departmentId());
+        entity.setDeptSubgroupId(dto.deptSubgroupId());
+        entity.setCurrentProcessOwnerId(dto.currentProcessOwnerId());
+        entity.setCurrentProcessOwnerPositionId(dto.currentProcessOwnerPositionId());
+        entity.setProcessId(dto.processId());
+        entity.setProcessName(dto.processName());
+        entity.setProcessFamilyId(dto.processFamilyId());
+        entity.setParentProcessId(dto.parentProcessId());
         // created_timestamp created by db trigger
         // updated_timestamp created by db trigger
-        entity.setVersion_id(dto.versionId());
+        entity.setVersionId(dto.versionId());
         entity.setSopDescription(dto.sopDescription());
         entity.setSopDetails(dto.sopDetails());
     }

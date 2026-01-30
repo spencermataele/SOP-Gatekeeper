@@ -2,6 +2,7 @@ package com.woven.app.service;
 
 import com.woven.app.domain.*;
 import com.woven.app.dto.SopDto;
+import com.woven.app.dto.SopPublishRequestDto;
 import com.woven.app.repository.*;
 import com.woven.app.service.user.AppUserDetails;
 import org.springframework.stereotype.Service;
@@ -103,6 +104,15 @@ public class ChangeRequestService {
         changeApprovalRepository.save(approval);
     }
 
+    // Publish upon approval
+    public SopDto publish(
+            Long id,
+            SopPublishRequestDto dto,
+            AppUserDetails user
+    ) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
     // Reject Change Request
     public void reject(
             Long changeApprovalId,
@@ -139,7 +149,7 @@ public class ChangeRequestService {
 
         Sop sop = changeRequest.getSop();
 
-        Integer currentProcessOwnerId = sop.getCurrent_process_owner_id();
+        Integer currentProcessOwnerId = sop.getCurrentProcessOwnerId();
 
         //Shouldn't happen, but just in case there is no process owner
         if (currentProcessOwnerId == null) {
@@ -182,11 +192,6 @@ public class ChangeRequestService {
         }
 
     }
-
-    public SopDto publish(
-            Long changeRequestId,
-            SopPublishRequestDto dto,
-            AppUserDetails currentUser)
 
 
 }

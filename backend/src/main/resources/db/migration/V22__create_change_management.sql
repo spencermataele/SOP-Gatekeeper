@@ -1,7 +1,7 @@
 CREATE TABLE change_request (
     change_request_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    sop_id BIGINT NOT NULL,
-    requested_by_user_id BIGINT NOT NULL,
+    sop_id INT NOT NULL,
+    requested_by_user_id INT NOT NULL,
     change_summary LONGTEXT NOT NULL,
     change_reason LONGTEXT NOT NULL,
     change_status VARCHAR(30) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE change_request (
     updated_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_change_request_sop
-        FOREIGN KEY (sop_id) REFERENCES sop(id),
+        FOREIGN KEY (sop_id) REFERENCES sop(sop_id),
 
     CONSTRAINT fk_change_request_user
         FOREIGN KEY (requested_by_user_id) REFERENCES users(id)
@@ -18,7 +18,7 @@ CREATE TABLE change_request (
 CREATE TABLE change_approval (
     change_approval_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     change_request_id BIGINT NOT NULL,
-    approver_user_id BIGINT NOT NULL,
+    approver_user_id INT NOT NULL,
     approver_role VARCHAR(50) NOT NULL,
     approval_decision VARCHAR(30) NOT NULL,
     comments LONGTEXT,
@@ -39,7 +39,7 @@ CREATE TABLE change_approval (
 CREATE TABLE notification_log (
     notification_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     change_request_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
+    user_id INT NOT NULL,
     created_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     notification_type VARCHAR(30) NOT NULL,
 
