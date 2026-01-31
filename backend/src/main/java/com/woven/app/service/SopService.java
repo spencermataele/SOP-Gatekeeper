@@ -21,7 +21,8 @@ public class SopService {
 
     @Transactional(readOnly = true)
     public List<SopDto> list() {
-        return sopRepository.findAll().stream().map(this::toDto).toList();
+        //show only active sops
+        return sopRepository.findByIsActiveTrue().stream().map(this::toDto).toList();
     }
 
     @Transactional(readOnly = true)
