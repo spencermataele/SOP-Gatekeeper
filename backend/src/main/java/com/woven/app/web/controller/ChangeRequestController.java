@@ -1,6 +1,8 @@
 package com.woven.app.web.controller;
 
 import com.woven.app.domain.ChangeRequest;
+import com.woven.app.domain.ChangeStatus;
+import com.woven.app.dto.ChangeRequestDto;
 import com.woven.app.dto.SopDto;
 import com.woven.app.dto.SopPublishRequestDto;
 import com.woven.app.service.ChangeRequestService;
@@ -9,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/change-requests")
@@ -80,6 +84,41 @@ public class ChangeRequestController {
         changeRequestService.submitForReview(id);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public List<ChangeRequestDto> list(
+        @RequestParam(required = false)ChangeStatus status
+    ) {
+        if (status != null) {
+            return changeRequestService.listByStatus(status);
+        }
+
+        return changeRequestService.listAll();
+
+    }
+
+    @GetMapping("/{id}")
+    public ChangeRequestDto get(@PathVariable Long id) {
+        return changeRequestService.get(id);
+    }
+
+    // For "my requests" notifications
+    @GetMapping("/mine")
+    public List<ChangeRequestDto> myRequests(
+          @AuthenticationPrincipal AppUserDetails user
+    ) {
+        return changeRequestService
+                .findByRequestor(user.getUser().getId());
+    }
+
+    // For "my pending approvals" notifications
+    @GetMapping("/pending-approval")
+    public List<ChangeRequestDto> pendingApprovals(
+            @AuthenticationPrincipal AppUserDetails user
+    ) {
+        return changeRequestService
+                .findPendingForApprover(user.getUser().getId());
     }
 
 }

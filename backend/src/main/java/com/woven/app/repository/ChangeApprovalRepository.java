@@ -1,5 +1,6 @@
 package com.woven.app.repository;
 
+import com.woven.app.domain.ApprovalDecision;
 import com.woven.app.domain.ChangeApproval;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -7,7 +8,7 @@ import java.util.List;
 
 public interface ChangeApprovalRepository extends JpaRepository<ChangeApproval, Long> {
 
-    // Find by CR id
+    // Find by change request id
     List<ChangeApproval> findByChangeRequest_ChangeRequestId(Long changeRequestId);
 
 
@@ -16,5 +17,10 @@ public interface ChangeApprovalRepository extends JpaRepository<ChangeApproval, 
             Integer approverId
     );
 
+    // Find by approver and decision (for pending approval notification)
+    List<ChangeApproval> findByApprover_IdAndDecision(
+            Integer approverId,
+            ApprovalDecision decision
+    );
 
 }

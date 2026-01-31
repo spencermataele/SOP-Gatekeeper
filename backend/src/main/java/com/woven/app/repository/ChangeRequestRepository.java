@@ -14,4 +14,7 @@ public interface ChangeRequestRepository extends JpaRepository<ChangeRequest, Lo
     // Find by SOP id
     List<ChangeRequest> findBySop_SopId(Integer sopId);
 
+    // Find by requested by user
+    List<ChangeRequest> findByRequestedByUser_Id(Integer userId);
+
 }

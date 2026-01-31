@@ -1,6 +1,7 @@
 package com.woven.app.service;
 
 import com.woven.app.domain.*;
+import com.woven.app.dto.ChangeRequestDto;
 import com.woven.app.dto.SopDto;
 import com.woven.app.dto.SopPublishRequestDto;
 import com.woven.app.repository.*;
@@ -282,6 +283,82 @@ public class ChangeRequestService {
                 sop.getSopDescription(),
                 sop.getSopDetails()
         );
+    }
+
+    private ChangeRequestDto toChangeRequestDto(ChangeRequest changeRequest) {
+
+        // Change request list could include approved changes with new published sop versions
+        Integer publishedSopId = null;
+
+        if (changeRequest.getChangeStatus() == ChangeStatus.APPROVED
+                && changeRequest.getSop() != null
+                && Boolean.TRUE.equals(changeRequest.getSop().getIsActive())) {
+            publishedSopId = changeRequest.getSop().getSopId();
+        }
+
+        return new ChangeRequestDto(
+                changeRequest.getChangeRequestId(),
+                changeRequest.getSop().getSopId(),
+                changeRequest.getRequestedByUser().getId(),
+                changeRequest.getChangeSummary(),
+                changeRequest.getChangeReason(),
+                changeRequest.getChangeStatus(),
+                changeRequest.getCreatedTimestamp(),
+                changeRequest.getUpdatedTimestamp(),
+                changeRequest.getRequestedByUser().getFullName(),
+                changeRequest.getSop().getTitle(),
+                changeRequest.getSop().getVersionId(),
+                publishedSopId
+        );
+    }
+
+    // List all change requests
+    @Transactional(readOnly = true)
+    public List<ChangeRequestDto> listAll() {
+        return changeRequestRepository.findAll().stream().map(this::toChangeRequestDto).toList();
+    }
+
+    // List change requests by status
+    @Transactional(readOnly = true)
+    public List<ChangeRequestDto> listByStatus(ChangeStatus status) {
+        return changeRequestRepository
+                .findByChangeStatus(status)
+                .stream()
+                .map(this::toChangeRequestDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ChangeRequestDto get(Long changeRequestId) {
+        return toChangeRequestDto(
+                changeRequestRepository.findById(changeRequestId).orElseThrow()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChangeRequestDto> findByRequestor(Integer userId) {
+        return changeRequestRepository
+                .findByRequestedByUser_Id(userId)
+                .stream()
+                .map(this::toChangeRequestDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChangeRequestDto> findPendingForApprover(Integer userId) {
+        // List only what is pending
+        List<ChangeApproval> approvals = changeApprovalRepository
+                .findByApprover_IdAndDecision(
+                        userId,
+                        ApprovalDecision.PENDING
+                );
+
+        return approvals
+                .stream()
+                .map(ChangeApproval::getChangeRequest)
+                .map(this::toChangeRequestDto)
+                .toList();
+
     }
 
 }
