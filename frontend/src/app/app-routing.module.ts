@@ -9,8 +9,12 @@ import { BusinessProcessesPageComponent} from "./features/admin/business-process
 import { BusinessProcessFormComponent} from "./features/admin/business-processes/business-process-form.component";
 import { BusinessProcessFamiliesPageComponent} from "./features/admin/business-process-families/business-process-families-page.component";
 import { BusinessProcessFamilyFormComponent} from "./features/admin/business-process-families/business-process-family-form.component";
+import { ChangeRequestPageComponent } from "./features/sops/change-requests/change-request-page/change-request-page.component";
 import {LoginComponent} from "./features/authorization/login.component";
 import {AuthGuard} from "./features/authorization/auth.guard";
+import {
+  ChangeRequestReviewComponent
+} from "./features/sops/change-requests/change-request-review/change-request-review.component";
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'sops' },
@@ -35,6 +39,10 @@ const routes: Routes = [
   { path: 'admin/business-process-families', component: BusinessProcessFamiliesPageComponent, canActivate: [AuthGuard] },
   { path: 'admin/business-process-families/new', component: BusinessProcessFamilyFormComponent, canActivate: [AuthGuard] },
   { path: 'admin/business-process-families/:id', component: BusinessProcessFamilyFormComponent, canActivate: [AuthGuard] },
+
+  { path: 'change-requests', component: ChangeRequestPageComponent, canActivate: [AuthGuard] },
+  { path: 'change-requests/:id/review', loadComponent: () => import('./features/sops/change-requests/change-request-review/change-request-review.component').then(m => m.ChangeRequestReviewComponent), canActivate: [AuthGuard] },
+
   { path: 'reports', loadComponent: () => import('./features/reports/reports-home.component').then(m => m.ReportsHomeComponent), canActivate: [AuthGuard] },
   { path: 'reports/org-hierarchy', loadComponent: () => import('./features/reports/org-hierarchy-report.component').then(m => m.OrgHierarchyReportComponent), canActivate: [AuthGuard] },
   { path: '**', redirectTo: 'sops' }

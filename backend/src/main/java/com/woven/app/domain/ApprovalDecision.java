@@ -1,7 +1,7 @@
 package com.woven.app.domain;
 
 public enum ApprovalDecision {
-    PENDING,
+    IN_REVIEW,
     APPROVED,
     REJECTED
 }

@@ -9,14 +9,17 @@ import {Router} from "@angular/router";
   standalone: true,
   imports: [CommonModule],
   templateUrl: './sops-list.component.html',
-  styleUrls: ['./sops-list.component.css']
+  styleUrls: ['../../../../styles.css']
 })
 export class SopsListComponent implements OnInit {
   sops: Sop[] = [];
   loading = false;
   error?: string;
 
-  constructor(private svc: SopService, private router: Router) { }
+  constructor(
+    private svc: SopService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.refresh();
@@ -47,6 +50,13 @@ export class SopsListComponent implements OnInit {
       next: () => this.refresh(),
       error: () => this.error = 'Delete failed.'
     });
+  }
+
+  requestChange(row: Sop): void {
+    /*** TODO: Beyond MVP - direct to new cr form with this.sopId ***/
+    /*** TODO: Beyond MVP - check to see if there is already a pending change request to this SOP ***/
+    /*** TODO: update to /change-request/new when ready ***/
+    this.router.navigate(['/change-requests']);
   }
 
   trackByID(_: number, s: Sop) { return s.sopId ?? -1; }

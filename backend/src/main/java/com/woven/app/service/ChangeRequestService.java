@@ -226,7 +226,7 @@ public class ChangeRequestService {
         changeApproval.setChangeRequest(changeRequest);
         changeApproval.setApprover(currentProcessOwner);
         changeApproval.setRole(ApproverRole.PROCESS_OWNER);
-        changeApproval.setDecision(ApprovalDecision.PENDING);
+        changeApproval.setDecision(ApprovalDecision.IN_REVIEW);
 
         changeApprovalRepository.save(changeApproval);
 
@@ -350,7 +350,7 @@ public class ChangeRequestService {
         List<ChangeApproval> approvals = changeApprovalRepository
                 .findByApprover_IdAndDecision(
                         userId,
-                        ApprovalDecision.PENDING
+                        ApprovalDecision.IN_REVIEW
                 );
 
         return approvals

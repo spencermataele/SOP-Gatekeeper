@@ -15,6 +15,8 @@ import {RouterModule} from "@angular/router";
 import {LoginComponent} from "./features/authorization/login.component";
 import {CommonModule} from "@angular/common";
 import {JwtInterceptor} from "./features/authorization/jwt.interceptor";
+import { ChangeRequestPageComponent } from './features/sops/change-requests/change-request-page/change-request-page.component';
+import { ChangeRequestReviewComponent } from './features/sops/change-requests/change-request-review/change-request-review.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +37,9 @@ import {JwtInterceptor} from "./features/authorization/jwt.interceptor";
     SopsListComponent,
     SopsFormComponent,
     ReportsHomeComponent,
-    CommonModule
+    CommonModule,
+    ChangeRequestPageComponent,
+    ChangeRequestReviewComponent
   ],
   providers: [
     {
