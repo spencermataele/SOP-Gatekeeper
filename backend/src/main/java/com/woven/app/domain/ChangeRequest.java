@@ -20,8 +20,12 @@ public class ChangeRequest {
     private Long changeRequestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sop_id", nullable = false)
-    private Sop sop;
+    @JoinColumn(name = "original_sop_id", nullable = false)
+    private Sop originalSop;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proposed_sop_id", nullable = false)
+    private Sop proposedSop;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requested_by_user_id", nullable = false)

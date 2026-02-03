@@ -98,6 +98,13 @@ public class Sop {
     @JoinColumn(name = "change_request_id")
     private ChangeRequest changeRequest;
 
+    @Column(name = "supersedes_sop_id")
+    private Integer supersedesSopId;
+
+    @NotBlank
+    @Column(name = "status", nullable = false, length = 20)
+    private String status;
+
     @PrePersist
     public void prePersist() {
         System.out.println(">>> PrePersist fired. sopDescription before: " + sopDescription);
@@ -106,7 +113,11 @@ public class Sop {
         }
 
         if (this.isActive == null) {
-            this.isActive = true;
+            this.isActive = false;
+        }
+
+        if (this.status == null) {
+            this.status = "DRAFT";
         }
 
     }

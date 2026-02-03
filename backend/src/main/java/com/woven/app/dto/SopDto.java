@@ -49,11 +49,8 @@ public record SopDto(
         @NotNull
         Integer parentProcessId,
 
-        /*
-        @Size(max = 255)
-        String sopLocationPath,
-        */
         Instant createdTimestamp,
+
         Instant updatedTimestamp,
 
         @NotBlank
@@ -61,10 +58,10 @@ public record SopDto(
         String versionId,
 
         @NotBlank
-        String sopDescription, // LONGTEXT column, holds body text (Markdown/Plain Text)
+        String sopDescription,
 
         @NotBlank
-        String sopDetails  // LONGTEXT column, holds body text (Markdown/Plain Text)
+        String sopDetails
 
 ) {}
 

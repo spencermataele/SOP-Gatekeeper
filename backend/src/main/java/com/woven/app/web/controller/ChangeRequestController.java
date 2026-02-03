@@ -24,10 +24,9 @@ public class ChangeRequestController {
     @PostMapping("/{id}/publish")
     public ResponseEntity<SopDto> publish(
             @PathVariable Long id,
-            @RequestBody SopPublishRequestDto dto,
             @AuthenticationPrincipal AppUserDetails currentUser
     ) {
-        SopDto sop = changeRequestService.publish(id, dto, currentUser);
+        SopDto sop = changeRequestService.publish(id, currentUser);
 
         return ResponseEntity.ok(sop);
     }
@@ -63,20 +62,20 @@ public class ChangeRequestController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> createDraft(
-            @RequestParam Integer sopId,
+    public ResponseEntity<Long> startChangeDraft(
+            @RequestParam Integer originalSop,
+            @AuthenticationPrincipal AppUserDetails currentUser,
             @RequestParam String summary,
-            @RequestParam String reason,
-            @AuthenticationPrincipal AppUserDetails currentUser
+            @RequestParam String reason
     ) {
-        ChangeRequest changeRequest = changeRequestService.createDraft(
-                sopId,
+        ChangeRequestDto changeRequest = changeRequestService.startChangeDraft(
+                originalSop,
                 currentUser.getUser().getId(),
                 summary,
                 reason
         );
 
-        return ResponseEntity.ok(changeRequest.getChangeRequestId());
+        return ResponseEntity.ok(changeRequest.changeRequestId());
     }
 
     @PostMapping("/{id}/submit")

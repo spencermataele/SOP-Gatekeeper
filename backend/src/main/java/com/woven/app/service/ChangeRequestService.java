@@ -6,6 +6,7 @@ import com.woven.app.dto.SopDto;
 import com.woven.app.dto.SopPublishRequestDto;
 import com.woven.app.repository.*;
 import com.woven.app.service.user.AppUserDetails;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,10 @@ public class ChangeRequestService {
     private final SopRepository sopRepository;
     private final UserRepository userRepository;
 
+    public static final String SOP_STATUS_DRAFT = "DRAFT";
+    public static final String SOP_STATUS_ACTIVE = "ACTIVE";
+    public static final String SOP_STATUS_RETIRED = "RETIRED";
+
     public ChangeRequestService(
             ChangeRequestRepository changeRequestRepository,
             ChangeApprovalRepository changeApprovalRepository,
@@ -37,19 +42,58 @@ public class ChangeRequestService {
         this.userRepository = userRepository;
     }
 
-    // Create Draft
-    public ChangeRequest createDraft(
-            Integer sopId,
+    // Start change process by drafting an edited version of existing active sop
+    public ChangeRequestDto startChangeDraft(
+            Integer originalSop,
             Integer requestedByUser,
             String changeSummary,
             String changeReason
     ) {
-        Sop sop = sopRepository.findById(sopId).orElseThrow();
+        Sop original = sopRepository.findById(originalSop).orElseThrow(
+                () -> new EntityNotFoundException("Original SOP not found: " + originalSop)
+        );
+
+        if (!Boolean.TRUE.equals(original.getIsActive()) || !SOP_STATUS_ACTIVE.equals(original.getStatus())) {
+            throw new IllegalStateException("Only ACTIVE SOPs can be edited");
+        }
+
+        User requester = userRepository.findById(requestedByUser).orElseThrow(
+                () -> new EntityNotFoundException("Requester not found: " + requestedByUser)
+        );
+
+        //Clone SOP into the draft to be edited
+        Sop changeDraft = cloneForDraft(original);
+        //Save the clone to add the draft to db
+        changeDraft = sopRepository.save(changeDraft);
+
+
+        ChangeRequest changeRequest = new ChangeRequest();
+        changeRequest.setOriginalSop(original);
+        changeRequest.setProposedSop(changeDraft);
+        changeRequest.setRequestedByUser(requester);
+        changeRequest.setChangeSummary(changeSummary);
+        changeRequest.setChangeReason(changeReason);
+        changeRequest.setChangeStatus(ChangeStatus.DRAFT);
+
+        ChangeRequest saved = changeRequestRepository.save(changeRequest);
+
+        return toChangeRequestDto(saved);
+    }
+
+    // TODO: DISCARD createDraft?
+    /*
+    public ChangeRequest createDraft(
+            Integer originalSop,
+            Integer requestedByUser,
+            String changeSummary,
+            String changeReason
+    ) {
+        Sop sop = sopRepository.findById(originalSop).orElseThrow();
 
         User requester = userRepository.findById(requestedByUser).orElseThrow();
 
         ChangeRequest changeRequest = new ChangeRequest();
-        changeRequest.setSop(sop);
+        changeRequest.setOriginalSop(sop);
         changeRequest.setRequestedByUser(requester);
         changeRequest.setChangeSummary(changeSummary);
         changeRequest.setChangeReason(changeReason);
@@ -59,10 +103,13 @@ public class ChangeRequestService {
 
         return changeRequestRepository.save(changeRequest);
     }
+    */
 
     // Submit Draft
     public void submitForReview(Long changeRequestId) {
-        ChangeRequest changeRequest = changeRequestRepository.findById(changeRequestId).orElseThrow();
+        ChangeRequest changeRequest = changeRequestRepository.findById(changeRequestId).orElseThrow(
+                () -> new EntityNotFoundException("ChangeRequest not found: " + changeRequestId)
+        );
 
         // Prevent duplicate submission of drafts
         if (changeRequest.getChangeStatus() != ChangeStatus.DRAFT) {
@@ -77,6 +124,8 @@ public class ChangeRequestService {
         changeRequestRepository.save(changeRequest);
 
         createApprovals(changeRequest);
+
+        //Create notification of submitted change request
         createNotifications(changeRequest, NotificationType.SUBMITTED);
 
     }
@@ -88,10 +137,8 @@ public class ChangeRequestService {
             String comments
     ) {
         ChangeApproval approval = changeApprovalRepository.findById(changeApprovalId).orElseThrow(
-                () ->
-                        new IllegalArgumentException(
-                                "Approval not found: " + changeApprovalId
-                        ));
+                () -> new IllegalArgumentException("Approval not found: " + changeApprovalId)
+        );
 
 
         if (approval.getApprover().getId() != approver) {
@@ -107,68 +154,51 @@ public class ChangeRequestService {
         changeRequest.setChangeStatus(ChangeStatus.APPROVED);
 
         changeApprovalRepository.save(approval);
+
+        // Create notification of approved change request
+        createNotifications(changeRequest, NotificationType.APPROVED);
     }
 
     // Publish upon approval
     public SopDto publish(
-            Long id,
-            SopPublishRequestDto dto,
+            Long changeRequestId,
             AppUserDetails user
     ) {
         // Smoke test
-        System.out.println(">>> ENTERED publish() for changeRequest " + id);
+        System.out.println(">>> ENTERED publish() for changeRequest " + changeRequestId);
 
-        ChangeRequest changeRequest = changeRequestRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("ChangeRequest not found " + id));
+        ChangeRequest changeRequest = changeRequestRepository.findById(changeRequestId).orElseThrow(() ->
+                new IllegalArgumentException("ChangeRequest not found " + changeRequestId));
 
         if (changeRequest.getChangeStatus() != ChangeStatus.APPROVED) {
-            throw new IllegalStateException(
-                    "Only approved changes can be published"
-            );
+            throw new IllegalStateException("Only approved changes can be published");
         }
 
-        Sop oldSop = changeRequest.getSop();
+        Sop original = originalSop(changeRequest);
+        Sop proposed = draftSop(changeRequest);
 
         // Make sure correct process owner is the approver
-        Integer ownerId = oldSop.getCurrentProcessOwnerId();
+        Integer ownerId = original.getCurrentProcessOwnerId();
 
         if (!ownerId.equals(user.getUser().getId())) {
             throw new SecurityException("You are not authorized to publish changes to this SOP");
         }
 
-        // Update active flag on old sop
-        oldSop.setIsActive(false);
-        sopRepository.save(oldSop);
+        // Update active flag and status to retired for original
+        original.setIsActive(false);
+        original.setStatus(SOP_STATUS_RETIRED);
+        sopRepository.save(original);
 
-        // Create new SOP version
-        Sop newSop = new Sop();
+        // Update propsed sop draft to active and isActive
+        proposed.setIsActive(true);
+        proposed.setStatus(SOP_STATUS_ACTIVE);
+        proposed.setPublishedTimestamp(Instant.now());
+        sopRepository.save(proposed);
 
-        newSop.setTitle(dto.title());
-        newSop.setAuthorId(user.getUser().getId());
-        newSop.setOrgId(dto.orgId());
-        newSop.setOrgGroupId(dto.orgGroupId());
-        newSop.setDepartmentId(dto.departmentId());
-        newSop.setDeptSubgroupId(dto.deptSubgroupId());
-        newSop.setCurrentProcessOwnerId(dto.currentProcessOwnerId());
-        newSop.setCurrentProcessOwnerPositionId(dto.currentProcessOwnerPositionId());
-        newSop.setProcessId(dto.processId());
-        newSop.setProcessName(dto.processName());
-        newSop.setProcessFamilyId(dto.processFamilyId());
-        newSop.setParentProcessId(dto.parentProcessId());
-        newSop.setSopDescription(dto.sopDescription());
-        newSop.setSopDetails(dto.sopDetails());
-        newSop.setIsActive(true);
-        newSop.setPublishedTimestamp(Instant.now());
-        newSop.setChangeRequest(changeRequest);
-        newSop.setVersionId(incrementVersion(oldSop.getVersionId()));
+        //Create notification of published change
+        createNotifications(changeRequest, NotificationType.PUBLISHED);
 
-        Sop saved = sopRepository.save(newSop);
-
-        // Associate change request with new sop
-        changeRequest.setSop(saved);
-        changeRequestRepository.save(changeRequest);
-
-        return toDto(saved);
+        return toDto(proposed);
 
     }
 
@@ -178,7 +208,9 @@ public class ChangeRequestService {
             Integer approver,
             String comments
     ) {
-        ChangeApproval approval = changeApprovalRepository.findById(changeApprovalId).orElseThrow();
+        ChangeApproval approval = changeApprovalRepository.findById(changeApprovalId).orElseThrow(
+                () -> new IllegalArgumentException("Approval not found: " + changeApprovalId)
+        );
 
         if (approval.getApprover().getId() != approver) {
             throw new SecurityException("Wrong approver");
@@ -189,10 +221,57 @@ public class ChangeRequestService {
         //approval.setCreatedTimestamp(Instant.now());
         approval.setUpdatedTimestamp(Instant.now());
 
+        changeApprovalRepository.save(approval);
+
         ChangeRequest changeRequest = approval.getChangeRequest();
         changeRequest.setChangeStatus(ChangeStatus.REJECTED);
 
-        changeApprovalRepository.save(approval);
+        changeRequestRepository.save(changeRequest);
+
+        //Create notification of rejected change
+        createNotifications(changeRequest, NotificationType.REJECTED);
+    }
+
+    private Sop originalSop(ChangeRequest changeRequest) {
+        if (changeRequest.getOriginalSop() == null) {
+            throw new IllegalStateException("ChangeRequest missing original SOP");
+        }
+
+        return changeRequest.getOriginalSop();
+    }
+
+    private Sop draftSop(ChangeRequest changeRequest) {
+        if (changeRequest.getProposedSop() == null) {
+            throw new IllegalStateException("ChangeRequest missing draft SOP");
+        }
+
+        return changeRequest.getProposedSop();
+    }
+
+    private Sop cloneForDraft(Sop original) {
+        Sop draft = new Sop();
+
+        draft.setTitle(original.getTitle());
+        draft.setAuthorId(original.getAuthorId());
+        draft.setOrgId(original.getOrgId());
+        draft.setOrgGroupId(original.getOrgGroupId());
+        draft.setDepartmentId(original.getDepartmentId());
+        draft.setDeptSubgroupId(original.getDeptSubgroupId());
+        draft.setCurrentProcessOwnerId(original.getCurrentProcessOwnerId());
+        draft.setCurrentProcessOwnerPositionId(original.getCurrentProcessOwnerPositionId());
+        draft.setProcessId(original.getProcessId());
+        draft.setProcessName(original.getProcessName());
+        draft.setProcessFamilyId(original.getProcessFamilyId());
+        draft.setParentProcessId(original.getParentProcessId());
+        draft.setVersionId(original.getVersionId());
+        draft.setSopDescription(original.getSopDescription());
+        draft.setSopDetails(original.getSopDetails());
+        draft.setIsActive(false);
+        draft.setPublishedTimestamp(null);
+        draft.setSupersedesSopId(original.getSopId());
+        draft.setVersionId(incrementVersion(original.getVersionId()));
+
+        return draft;
     }
 
     // Upon submit, create approvals
@@ -206,21 +285,18 @@ public class ChangeRequestService {
         );
          */
 
-        Sop sop = changeRequest.getSop();
+        Sop original = originalSop(changeRequest);
 
-        Integer currentProcessOwnerId = sop.getCurrentProcessOwnerId();
+        Integer currentProcessOwnerId = original.getCurrentProcessOwnerId();
 
         //Shouldn't happen, but just in case there is no process owner
         if (currentProcessOwnerId == null) {
-            throw new IllegalStateException(
-                    "SOP has no current process owner"
-            );
+            throw new IllegalStateException("SOP has no current process owner");
         }
 
         User currentProcessOwner = userRepository.findById(currentProcessOwnerId).orElseThrow(()
-                -> new IllegalStateException(
-                        "Process owner not found: " + currentProcessOwnerId
-        ));
+                -> new IllegalStateException("Process owner not found: " + currentProcessOwnerId)
+        );
 
         ChangeApproval changeApproval = new ChangeApproval();
         changeApproval.setChangeRequest(changeRequest);
@@ -287,18 +363,20 @@ public class ChangeRequestService {
 
     private ChangeRequestDto toChangeRequestDto(ChangeRequest changeRequest) {
 
-        // Change request list could include approved changes with new published sop versions
+        Sop original = changeRequest.getOriginalSop();
+        Sop proposed = changeRequest.getProposedSop();
+
         Integer publishedSopId = null;
 
         if (changeRequest.getChangeStatus() == ChangeStatus.APPROVED
-                && changeRequest.getSop() != null
-                && Boolean.TRUE.equals(changeRequest.getSop().getIsActive())) {
-            publishedSopId = changeRequest.getSop().getSopId();
+                && proposed != null
+                && Boolean.TRUE.equals(proposed.getIsActive())) {
+            publishedSopId = proposed.getSopId();
         }
 
         return new ChangeRequestDto(
                 changeRequest.getChangeRequestId(),
-                changeRequest.getSop().getSopId(),
+                original != null ? original.getSopId() : null,
                 changeRequest.getRequestedByUser().getId(),
                 changeRequest.getChangeSummary(),
                 changeRequest.getChangeReason(),
@@ -306,8 +384,8 @@ public class ChangeRequestService {
                 changeRequest.getCreatedTimestamp(),
                 changeRequest.getUpdatedTimestamp(),
                 changeRequest.getRequestedByUser().getFullName(),
-                changeRequest.getSop().getTitle(),
-                changeRequest.getSop().getVersionId(),
+                original != null ? original.getTitle() : null,
+                original != null ? original.getVersionId(): null,
                 publishedSopId
         );
     }

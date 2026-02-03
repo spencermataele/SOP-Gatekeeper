@@ -1,0 +1,72 @@
+<h2>Review Change Request</h2>
+
+<div *ngIf="loading" class="muted">
+  Loading change request...
+</div>
+
+<div *ngIf="errorMsg" class="error">
+  {{ errorMsg }}
+</div>
+
+<section *ngIf="!loading && changeRequest" class="review-card">
+  <div class="meta-grid">
+
+    <div>
+      <strong>ID:</strong>
+      {{ changeRequest.changeRequestId }}
+    </div>
+    <div>
+      <strong>Status:</strong>
+      {{ changeRequest.changeStatus }}
+    </div>
+    <div>
+      <strong>SOP:</strong>
+      {{ changeRequest.sopTitle }}
+    </div>
+    <div>
+      <strong>Version:</strong>
+      {{ changeRequest.sopVersion }}
+    </div>
+    <div>
+      <strong>Requested By:</strong>
+      {{ changeRequest.requestByName }}
+    </div>
+    <div>
+      <strong>Date Submitted:</strong>
+      {{ changeRequest.updatedTimestamp | date:'short' }}
+    </div>
+
+
+  </div>
+
+  <hr />
+
+  <div class="block">
+    <h3>Change Summary</h3>
+    <p>{{ changeRequest.changeSummary }}</p>
+  </div>
+
+  <div class="block">
+    <h3>Reason for Change</h3>
+    <p>{{ changeRequest.changeReason }}</p>
+  </div>
+
+  <hr />
+
+  <div class="actions">
+    <label>
+      Comments:
+      <textarea
+        rows="4" [(ngModel)]="comments"
+        placeholder="Enter approval or rejection comments...">
+      </textarea>
+    </label>
+
+    <div class="buttons">
+      <button class="approve" (click)="approve()" [disabled]="submitting">Approve & Publish</button>
+      <button class="reject" (click)="reject()" [disabled]="submitting">Reject</button>
+      <button class="secondary" routerLink="/change-request">Back</button>
+    </div>
+  </div>
+</section>
+

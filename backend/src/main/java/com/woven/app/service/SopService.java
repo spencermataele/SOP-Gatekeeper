@@ -8,6 +8,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -35,12 +36,22 @@ public class SopService {
         apply(dto, entity);
         //Set authorId as current user's
         entity.setAuthorId(currentUser.getUser().getId());
+        //Set status to "ACTIVE"
+        entity.setStatus("ACTIVE");
+        entity.setIsActive(true);
+        entity.setPublishedTimestamp(Instant.now());
         Sop saved = sopRepository.save(entity);
         return toDto(saved);
     }
 
+    // Updates need to only be allowed within change management workflow
     public SopDto update(Integer id, SopDto dto) {
-        Sop entity = findOrThrow(id);
+        Sop entity = new Sop();
+
+        if (!"DRAFT".equals(entity.getStatus())) {
+            throw new IllegalStateException("Only DRAFT SOPs may be edited");
+        }
+
         entity.setSopId(id);
         apply(dto, entity);
         Sop saved = sopRepository.save(entity);
@@ -89,7 +100,7 @@ public class SopService {
         entity.setTitle(dto.title());
         entity.setAuthorId(dto.authorId());
         entity.setOrgId(dto.orgId());
-        entity.setOrgId(dto.orgGroupId());
+        entity.setOrgGroupId(dto.orgGroupId());
         entity.setDepartmentId(dto.departmentId());
         entity.setDeptSubgroupId(dto.deptSubgroupId());
         entity.setCurrentProcessOwnerId(dto.currentProcessOwnerId());

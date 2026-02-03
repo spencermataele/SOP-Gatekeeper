@@ -1,0 +1,120 @@
+<h2>Change Requests</h2>
+
+<div class="section">
+
+  <h3>My Requests</h3>
+
+  <table class="table" *ngIf="myRequests?.length; else notMine">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>SOP</th>
+        <th>Version</th>
+        <th>Summary</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let cr of myRequests">
+        <td>{{ cr.changeRequestId }}</td>
+        <td>{{ cr.sopTitle }}</td>
+        <td>{{ cr.sopVersion }}</td>
+        <td>{{ cr.changeSummary }}</td>
+        <td>{{ cr.changeStatus }}</td>
+        <td>{{ cr.createdTimestamp | date:'short' }}</td>
+        <!-- Actions needed: Submit if draft,
+             If approved and published, see new SOP (link)-->
+        <td>
+          <button *ngIf="cr.changeStatus === 'DRAFT' " (click)="submit(cr.changeRequestId)">
+            Submit
+          </button>
+          <!-- OR -->
+          <a *ngIf="cr.publishedSopId" [routerLink]="['/sops', cr.publishedSopId]">
+            Your change request was approved! View new SOP.
+          </a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #notMine>
+    <p class="muted">No change request created yet.</p>
+  </ng-template>
+
+</div>
+
+<hr />
+
+<div class="section">
+
+  <h3>Pending My Approval</h3>
+
+  <table class="table" *ngIf="pendingApprovals?.length; else noPending">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Requested By</th>
+        <th>SOP</th>
+        <th>Version</th>
+        <th>Summary</th>
+        <th>Status</th>
+        <th>Date Submitted</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let cr of pendingApprovals">
+        <td>{{ cr.changeRequestId }}</td>
+        <td>{{ cr.requestByName }}</td>
+        <td>{{ cr.sopTitle }}</td>
+        <td>{{ cr.sopVersion }}</td>
+        <td>{{ cr.changeSummary }}</td>
+        <td>{{ cr.changeStatus }}</td>
+        <td>{{ cr.updatedTimestamp | date:'short' }}</td>
+        <td>
+          <button (click)="goToApproval(cr.changeRequestId)">
+            Review
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #noPending>
+    <p class="muted">No approvals pending.</p>
+  </ng-template>
+
+</div>
+
+<hr />
+
+<div class="section">
+  <h2>Create New Change Request</h2>
+
+  <div class="section card">
+    <form (ngSubmit)="create()" #form="ngForm">
+
+      <div class="field">
+        <label>SOP ID</label>
+        <input type="number" required [(ngModel)]="newRequest.sopId" name="sopId"/>
+      </div>
+
+      <div class="field">
+        <label>Summary</label>
+        <input type="text" required [(ngModel)]="newRequest.summary" name="summary">
+      </div>
+
+      <div class="field">
+        <label>Reason</label>
+        <input type="text" required [(ngModel)]="newRequest.reason" name="reason"/>
+      </div>
+
+      <button type="submit" [disabled]="form.invalid || loading">Create Draft</button>
+
+    </form>
+  </div>
+</div>
