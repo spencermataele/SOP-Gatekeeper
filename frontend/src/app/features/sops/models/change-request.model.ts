@@ -1,6 +1,7 @@
 export interface ChangeRequest {
   changeRequestId: number;
-  sopId: number;
+  originalSopId: number;
+  proposedSopId: number;
   requestedByUser: number;
   changeSummary: string;
   changeReason: string;

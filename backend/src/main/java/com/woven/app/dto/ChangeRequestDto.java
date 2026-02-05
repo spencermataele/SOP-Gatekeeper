@@ -7,7 +7,7 @@ import java.time.Instant;
 public record ChangeRequestDto(
 
         Long changeRequestId,
-        Integer sopId,
+        Integer originalSopId,
         Integer requestedByUser,
         String changeSummary,
         String changeReason,
@@ -17,9 +17,9 @@ public record ChangeRequestDto(
         // To show requested by full name
         String requestByName,
         // To show sop title
-        String sopTitle,
+        String originalSopTitle,
         // To show current sop version
-        String sopVersion,
+        String originalSopVersion,
         // new sop id after change published
         Integer publishedSopId
 

@@ -98,12 +98,13 @@ public class Sop {
     @JoinColumn(name = "change_request_id")
     private ChangeRequest changeRequest;
 
-    @Column(name = "supersedes_sop_id")
-    private Integer supersedesSopId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supersedes_sop_id")
+    private Sop supersedesSopId;
 
-    @NotBlank
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    private SopStatus status;
 
     @PrePersist
     public void prePersist() {
@@ -117,7 +118,7 @@ public class Sop {
         }
 
         if (this.status == null) {
-            this.status = "DRAFT";
+            this.status = SopStatus.DRAFT;
         }
 
     }

@@ -456,7 +456,7 @@ export class SopsFormComponent implements OnInit {
     this.steps.push(this.newStep());
   }
 
-  //  submit, update, delete
+  //  submit, updateDraft, delete
   submit() {
     //Makes process owner id numerical, comes as string for some reason
     const payload = {
@@ -520,19 +520,19 @@ export class SopsFormComponent implements OnInit {
       sopDetails: structuredDetails,
     };
 
-    // Create, Update, or Approve and update to new version
+    // Create, Update, or Approve and updateDraft to new version
     let obs: Observable<any>;
 
     if (this.mode === 'approve') {
       obs = this.changeRequestSvc.publishChangeRequest(
-        this.changeRequest!.changeRequestId, body
+        this.changeRequest!.changeRequestId
       );
     }
     else if (this.id == null) {
       obs = this.sopSvc.create(body);
     }
     else {
-      obs = this.sopSvc.update(this.id, body)
+      obs = this.sopSvc.updateDraft(this.id, body)
     }
 
     obs.subscribe({
@@ -556,15 +556,5 @@ export class SopsFormComponent implements OnInit {
     });
   }
 
-  delete() {
-    if (this.id == null) return;
-    const ok = confirm('Delete this SOP?');
-    if (!ok) return;
-
-    this.sopSvc.delete(this.id).subscribe({
-      next: () => this.router.navigate(['/sops']),
-      error: err => alert(err?.error?.message ?? 'Failed to delete SOP')
-    });
-  }
 }
 

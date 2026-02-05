@@ -13,11 +13,11 @@ export class ChangeRequestService {
   constructor(private http: HttpClient) { }
 
   // Create new
-  createDraft(sopId: number, summary: string, reason: string) {
-    return this.http.post<number>(
-      `${environment.apiBaseUrl}/change-requests`, null, {
+  createDraft(originalSopId: number, summary: string, reason: string) {
+    return this.http.post<ChangeRequest>(
+      `${environment.apiBaseUrl}/change-requests/start`, null, {
         params: {
-          sopId,
+          originalSopId,
           summary,
           reason
         }
@@ -27,26 +27,12 @@ export class ChangeRequestService {
 
   // Publish upon approval
   publishChangeRequest(
-    changeRequestId: number,
-    body: {
-      title: string;
-      orgId: number | null;
-      orgGroupId: number | null;
-      departmentId: number | null;
-      deptSubgroupId: number | null;
-      currentProcessOwnerId: number | null;
-      processId: number | null;
-      processName: string;
-      processFamilyId: number | null;
-      parentProcessId: number;
-      sopDescription: string;
-      sopDetails: string;
-    }
+    changeRequestId: number
   ): Observable<Sop> {
 
     return this.http.post<Sop>(
       `${environment.apiBaseUrl}/change-requests/${changeRequestId}/publish`,
-      body
+      {}
     );
   }
 

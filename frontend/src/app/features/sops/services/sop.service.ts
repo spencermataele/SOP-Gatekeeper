@@ -32,16 +32,14 @@ export class SopService {
     processName: string;
     processFamilyId: number | null;
     parentProcessId: number;
-    versionId: string;
     sopDescription: string;
     sopDetails: string
   }): Observable<Sop> {
     return this.http.post<Sop>(this.base, body);
   }
 
-  update(id: number, body: {
+  updateDraft(id: number, body: {
     title: string;
-    authorId: number | null;
     orgId: number | null;
     orgGroupId: number | null
     departmentId: number | null;
@@ -52,14 +50,9 @@ export class SopService {
     processName: string;
     processFamilyId: number | null;
     parentProcessId: number;
-    versionId: string;
     sopDescription: string;
     sopDetails: string
   }): Observable<Sop> {
     return this.http.put<Sop>(`${this.base}/${id}`, body);
-  }
-
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}`);
   }
 }

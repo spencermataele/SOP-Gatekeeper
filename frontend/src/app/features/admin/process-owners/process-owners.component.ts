@@ -71,7 +71,7 @@ export class ProcessOwnersComponent implements OnInit {
         error: () => this.error = 'Create failed'
       });
     } else {
-      // update
+      // updateDraft
       this.svc.update(this.editingId, payload).subscribe({
         next: updated => {
           this.owners = this.owners.map(o => o.businessProcessOwnerId === updated.businessProcessOwnerId ? updated : o);

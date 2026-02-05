@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/sops")
 public class SopController {
+
     private final SopService sopService;
 
     public SopController(SopService sopService) {
@@ -25,26 +26,29 @@ public class SopController {
     }
 
     @GetMapping("/{id}")
-    public SopDto get(@PathVariable Integer id) {
+    public SopDto get(
+            @PathVariable Integer id
+    ) {
         return sopService.get(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SopDto create(@RequestBody SopDto sopDto,
-                         // For automating current user as the author
-                         @AuthenticationPrincipal AppUserDetails currentUser) {
+    public SopDto create(
+            @RequestBody SopDto sopDto,
+            // For automating current user as the author
+            @AuthenticationPrincipal AppUserDetails currentUser
+    ) {
         return sopService.create(sopDto, currentUser);
     }
 
     @PutMapping("/{id}")
-    public SopDto update(@PathVariable Integer id, @Valid @RequestBody SopDto sopDto) {
+    public SopDto update(
+            @PathVariable Integer id,
+            @Valid @RequestBody SopDto sopDto
+    ) {
         return sopService.update(id, sopDto);
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Integer id) {
-        sopService.delete(id);
-    }
+    //No delete() needed with version control
 }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import {Sop} from "../models/sop.model";
 import {SopService} from "../services/sop.service";
 import {Router} from "@angular/router";
+import {ChangeRequestService} from "../services/change-request.service";
 
 @Component({
   selector: 'app-sops-list',
@@ -18,6 +19,7 @@ export class SopsListComponent implements OnInit {
 
   constructor(
     private svc: SopService,
+    private changeRequestService: ChangeRequestService,
     private router: Router
   ) {}
 
@@ -30,8 +32,9 @@ export class SopsListComponent implements OnInit {
     this.svc.list().subscribe({
       next: data => {
         this.sops = data;
-        this.loading = false;},
-      error: err => { this.error = "Failed to load SOPs."; this.loading = false; }
+        this.loading = false;
+        },
+      error: () => { this.error = "Failed to load SOPs."; this.loading = false; }
     });
   }
 
@@ -39,24 +42,35 @@ export class SopsListComponent implements OnInit {
     this.router.navigate(['/sops/new']);
   }
 
-  edit(row: Sop): void {
-    if (row.sopId != null) this.router.navigate(['/sops', row.sopId, 'edit']);
-  }
-
-  delete(row: Sop): void {
-    if (row.sopId == null) { return; }
-    if (!confirm(`Delete SOP "${row.title}"?`)) { return; }
-    this.svc.delete(row.sopId).subscribe({
-      next: () => this.refresh(),
-      error: () => this.error = 'Delete failed.'
-    });
-  }
-
   requestChange(row: Sop): void {
-    /*** TODO: Beyond MVP - direct to new cr form with this.sopId ***/
-    /*** TODO: Beyond MVP - check to see if there is already a pending change request to this SOP ***/
-    /*** TODO: update to /change-request/new when ready ***/
-    this.router.navigate(['/change-requests']);
+
+    if (!row.sopId) return;
+
+    this.loading = true;
+
+    this.changeRequestService.createDraft(
+      row.sopId,
+      'Change Requested',
+      'Initial draft created'
+    ).subscribe({
+      next: changeRequest => {
+        const proposedSopId = changeRequest.proposedSopId;
+
+        if (!proposedSopId) {
+          this.error = "Draft not created.";
+          this.loading = false;
+          return;
+        }
+
+        this.router.navigate(['/sops', proposedSopId, 'edit']);
+      },
+
+      error: () => {
+        this.error = "Failed to start change.";
+        this.loading = false;
+      }
+
+    });
   }
 
   trackByID(_: number, s: Sop) { return s.sopId ?? -1; }

@@ -61,21 +61,21 @@ public class ChangeRequestController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping
-    public ResponseEntity<Long> startChangeDraft(
-            @RequestParam Integer originalSop,
+    @PostMapping("/start")
+    public ResponseEntity<ChangeRequestDto> startChangeDraft(
+            @RequestParam Integer originalSopId,
             @AuthenticationPrincipal AppUserDetails currentUser,
             @RequestParam String summary,
             @RequestParam String reason
     ) {
         ChangeRequestDto changeRequest = changeRequestService.startChangeDraft(
-                originalSop,
+                originalSopId,
                 currentUser.getUser().getId(),
                 summary,
                 reason
         );
 
-        return ResponseEntity.ok(changeRequest.changeRequestId());
+        return ResponseEntity.ok(changeRequest);
     }
 
     @PostMapping("/{id}/submit")

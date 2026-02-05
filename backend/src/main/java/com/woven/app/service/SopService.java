@@ -1,6 +1,7 @@
 package com.woven.app.service;
 
 import com.woven.app.domain.Sop;
+import com.woven.app.domain.SopStatus;
 import com.woven.app.dto.SopDto;
 import com.woven.app.repository.SopRepository;
 import com.woven.app.service.user.AppUserDetails;
@@ -14,6 +15,7 @@ import java.util.List;
 @Service
 @Transactional
 public class SopService {
+
     private final SopRepository sopRepository;
 
     public SopService(SopRepository sopRepository) {
@@ -23,7 +25,7 @@ public class SopService {
     @Transactional(readOnly = true)
     public List<SopDto> list() {
         //show only active sops
-        return sopRepository.findByIsActiveTrue().stream().map(this::toDto).toList();
+        return sopRepository.findByStatus(SopStatus.ACTIVE).stream().map(this::toDto).toList();
     }
 
     @Transactional(readOnly = true)
@@ -37,7 +39,7 @@ public class SopService {
         //Set authorId as current user's
         entity.setAuthorId(currentUser.getUser().getId());
         //Set status to "ACTIVE"
-        entity.setStatus("ACTIVE");
+        entity.setStatus(SopStatus.ACTIVE);
         entity.setIsActive(true);
         entity.setPublishedTimestamp(Instant.now());
         Sop saved = sopRepository.save(entity);
@@ -46,24 +48,25 @@ public class SopService {
 
     // Updates need to only be allowed within change management workflow
     public SopDto update(Integer id, SopDto dto) {
-        Sop entity = new Sop();
+        Sop entity = findOrThrow(id);
 
-        if (!"DRAFT".equals(entity.getStatus())) {
+        if (entity.getStatus() != SopStatus.DRAFT) {
             throw new IllegalStateException("Only DRAFT SOPs may be edited");
         }
 
-        entity.setSopId(id);
         apply(dto, entity);
         Sop saved = sopRepository.save(entity);
         return toDto(saved);
     }
 
+    /*  Delete not necessary with version control
     public void delete(Integer id) {
         if (!sopRepository.existsById(id)) {
             throw new EntityNotFoundException("Sop not found" + id);
         }
         sopRepository.deleteById(id);
     }
+    */
 
     private SopDto toDto(Sop sop) {
         return new SopDto(
@@ -111,7 +114,7 @@ public class SopService {
         entity.setParentProcessId(dto.parentProcessId());
         // created_timestamp created by db trigger
         // updated_timestamp created by db trigger
-        entity.setVersionId(dto.versionId());
+        // version updated when creating draft
         entity.setSopDescription(dto.sopDescription());
         entity.setSopDetails(dto.sopDetails());
     }

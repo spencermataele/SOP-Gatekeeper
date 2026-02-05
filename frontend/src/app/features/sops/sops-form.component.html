@@ -193,7 +193,6 @@
     <button type="submit" [disabled]="saving">
       {{ mode === 'approve' ? 'Approve & Publish' : id == null ? 'Create SOP' : 'Save Changes' }}
     </button>
-    <button *ngIf="id != null && mode !== 'approve'" type="button" class="danger" (click)="delete()">Delete</button>
     <span class="err" *ngIf="errorMsg">{{ errorMsg }}</span>
   </div>
 

@@ -24,10 +24,6 @@ public class ChangeRequestService {
     private final SopRepository sopRepository;
     private final UserRepository userRepository;
 
-    public static final String SOP_STATUS_DRAFT = "DRAFT";
-    public static final String SOP_STATUS_ACTIVE = "ACTIVE";
-    public static final String SOP_STATUS_RETIRED = "RETIRED";
-
     public ChangeRequestService(
             ChangeRequestRepository changeRequestRepository,
             ChangeApprovalRepository changeApprovalRepository,
@@ -53,7 +49,7 @@ public class ChangeRequestService {
                 () -> new EntityNotFoundException("Original SOP not found: " + originalSop)
         );
 
-        if (!Boolean.TRUE.equals(original.getIsActive()) || !SOP_STATUS_ACTIVE.equals(original.getStatus())) {
+        if (!Boolean.TRUE.equals(original.getIsActive()) || original.getStatus() != SopStatus.ACTIVE) {
             throw new IllegalStateException("Only ACTIVE SOPs can be edited");
         }
 
@@ -186,12 +182,12 @@ public class ChangeRequestService {
 
         // Update active flag and status to retired for original
         original.setIsActive(false);
-        original.setStatus(SOP_STATUS_RETIRED);
+        original.setStatus(SopStatus.RETIRED);
         sopRepository.save(original);
 
         // Update propsed sop draft to active and isActive
         proposed.setIsActive(true);
-        proposed.setStatus(SOP_STATUS_ACTIVE);
+        proposed.setStatus(SopStatus.ACTIVE);
         proposed.setPublishedTimestamp(Instant.now());
         sopRepository.save(proposed);
 
@@ -268,7 +264,7 @@ public class ChangeRequestService {
         draft.setSopDetails(original.getSopDetails());
         draft.setIsActive(false);
         draft.setPublishedTimestamp(null);
-        draft.setSupersedesSopId(original.getSopId());
+        draft.setSupersedesSopId(original.getSupersedesSopId());
         draft.setVersionId(incrementVersion(original.getVersionId()));
 
         return draft;
