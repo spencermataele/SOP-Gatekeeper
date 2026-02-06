@@ -30,7 +30,10 @@ public class SopService {
 
     @Transactional(readOnly = true)
     public SopDto get(Integer id) {
-        return toDto(findOrThrow(id));
+        Sop sop = sopRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Sop not found")
+        );
+        return toDto(sop);
     }
 
     public SopDto create(SopDto dto, AppUserDetails currentUser) {

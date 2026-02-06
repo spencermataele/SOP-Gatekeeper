@@ -12,6 +12,7 @@ import { BusinessProcessFamilyFormComponent} from "./features/admin/business-pro
 import { ChangeRequestPageComponent } from "./features/sops/change-requests/change-request-page/change-request-page.component";
 import {LoginComponent} from "./features/authorization/login.component";
 import {AuthGuard} from "./features/authorization/auth.guard";
+import { SopViewComponent} from "./features/sops/sops-view/sop-view/sop-view.component";
 import {
   ChangeRequestReviewComponent
 } from "./features/sops/change-requests/change-request-review/change-request-review.component";
@@ -22,6 +23,7 @@ const routes: Routes = [
   { path: 'sops', component: SopsListComponent },
   { path: 'sops/new', component: SopsFormComponent, canActivate: [AuthGuard] },
   { path: 'sops/:id/edit', component: SopsFormComponent, canActivate: [AuthGuard] },
+  { path: 'sops/:id/view', component: SopViewComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminHomeComponent, canActivate: [AuthGuard] },
   { path: 'admin/users', loadComponent: () => import('./features/admin/users/user-page.component').then(m => m.UsersPageComponent), canActivate: [AuthGuard] },
   { path: 'admin/orgs', loadComponent: () => import('./features/admin/orgs/orgs-page.component').then(m => m.OrgsPageComponent), canActivate: [AuthGuard] },

@@ -3,7 +3,6 @@ package com.woven.app.service;
 import com.woven.app.domain.*;
 import com.woven.app.dto.ChangeRequestDto;
 import com.woven.app.dto.SopDto;
-import com.woven.app.dto.SopPublishRequestDto;
 import com.woven.app.repository.*;
 import com.woven.app.service.user.AppUserDetails;
 import jakarta.persistence.EntityNotFoundException;
@@ -59,8 +58,12 @@ public class ChangeRequestService {
 
         //Clone SOP into the draft to be edited
         Sop changeDraft = cloneForDraft(original);
+        changeDraft.setSopId(null);
+        changeDraft.setStatus(SopStatus.DRAFT);
+        changeDraft.setIsActive(false);
+
         //Save the clone to add the draft to db
-        changeDraft = sopRepository.save(changeDraft);
+        sopRepository.save(changeDraft);
 
 
         ChangeRequest changeRequest = new ChangeRequest();
@@ -73,33 +76,12 @@ public class ChangeRequestService {
 
         ChangeRequest saved = changeRequestRepository.save(changeRequest);
 
+        //link new draft to this change request
+        changeDraft.setChangeRequest(saved);
+        sopRepository.save(changeDraft);
+
         return toChangeRequestDto(saved);
     }
-
-    // TODO: DISCARD createDraft?
-    /*
-    public ChangeRequest createDraft(
-            Integer originalSop,
-            Integer requestedByUser,
-            String changeSummary,
-            String changeReason
-    ) {
-        Sop sop = sopRepository.findById(originalSop).orElseThrow();
-
-        User requester = userRepository.findById(requestedByUser).orElseThrow();
-
-        ChangeRequest changeRequest = new ChangeRequest();
-        changeRequest.setOriginalSop(sop);
-        changeRequest.setRequestedByUser(requester);
-        changeRequest.setChangeSummary(changeSummary);
-        changeRequest.setChangeReason(changeReason);
-        changeRequest.setChangeStatus(ChangeStatus.DRAFT);
-        changeRequest.setCreatedTimestamp(Instant.now());
-        changeRequest.setUpdatedTimestamp(Instant.now());
-
-        return changeRequestRepository.save(changeRequest);
-    }
-    */
 
     // Submit Draft
     public void submitForReview(Long changeRequestId) {
@@ -264,7 +246,7 @@ public class ChangeRequestService {
         draft.setSopDetails(original.getSopDetails());
         draft.setIsActive(false);
         draft.setPublishedTimestamp(null);
-        draft.setSupersedesSopId(original.getSupersedesSopId());
+        draft.setSupersedesSopId(original);
         draft.setVersionId(incrementVersion(original.getVersionId()));
 
         return draft;
@@ -362,12 +344,10 @@ public class ChangeRequestService {
         Sop original = changeRequest.getOriginalSop();
         Sop proposed = changeRequest.getProposedSop();
 
-        Integer publishedSopId = null;
+        Integer proposedSopId  = null;
 
-        if (changeRequest.getChangeStatus() == ChangeStatus.APPROVED
-                && proposed != null
-                && Boolean.TRUE.equals(proposed.getIsActive())) {
-            publishedSopId = proposed.getSopId();
+        if (proposed != null) {
+            proposedSopId  = proposed.getSopId();
         }
 
         return new ChangeRequestDto(
@@ -382,7 +362,7 @@ public class ChangeRequestService {
                 changeRequest.getRequestedByUser().getFullName(),
                 original != null ? original.getTitle() : null,
                 original != null ? original.getVersionId(): null,
-                publishedSopId
+                proposedSopId
         );
     }
 

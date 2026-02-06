@@ -31,6 +31,7 @@
         <td>{{ s.versionId }}</td>
         <td>{{ s.updatedTimestamp | date:'short' }}</td>
         <td>
+          <button (click)="view(s)">View SOP</button>
           <button (click)="requestChange(s)">Request Change</button>
         </td>
       </tr>

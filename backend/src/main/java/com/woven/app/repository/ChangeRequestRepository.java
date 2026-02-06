@@ -11,8 +11,11 @@ public interface ChangeRequestRepository extends JpaRepository<ChangeRequest, Lo
     // Find by status
     List<ChangeRequest> findByChangeStatus(ChangeStatus changeStatus);
 
-    // Find by SOP id
-    List<ChangeRequest> findBySop_SopId(Integer sopId);
+    // Find by original SOP id
+    List<ChangeRequest> findByOriginalSop_SopId(Integer sopId);
+
+    // Find by proposed SOP id
+    List<ChangeRequest> findByProposedSop_SopId(Integer sopId);
 
     // Find by requested by user
     List<ChangeRequest> findByRequestedByUser_Id(Integer userId);

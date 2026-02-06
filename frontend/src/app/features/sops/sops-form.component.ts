@@ -37,10 +37,12 @@ export class SopsFormComponent implements OnInit {
   loading = false;
   saving = false;
   errorMsg?: string;
+  private loadingExisting = false;
   userId: number | null = null;
   existingSopDetails = '';
   mode: 'edit' | 'approve' = 'edit';
   changeRequest?: any;
+
 
   // master lists
   orgs: OrgDto[] = [];
@@ -113,15 +115,18 @@ export class SopsFormComponent implements OnInit {
       this.id = Number(idParam);
     }
 
-    // author always comes from auth
-    const user = this.auth.currentUser();
-    if (user) {
-      this.form.patchValue({ authorName: user.fullName });
-      this.userId = user.id;
+    const crParam = this.route.snapshot.queryParamMap.get('cr');
+
+    if (crParam) {
+      this.mode = 'edit'; // still editing draft
+      this.changeRequestSvc.get(+crParam).subscribe(change => {
+        this.changeRequest = change;
+      });
     }
 
     // load ALL reference data first
     forkJoin({
+
       orgs: this.orgSvc.list(),
       groups: this.groupSvc.list(),
       depts: this.deptSvc.list(),
@@ -150,11 +155,24 @@ export class SopsFormComponent implements OnInit {
         if (this.id != null) {
           this.loadSopForEdit();
         }
+
+        if (this.changeRequest?.originalSopId) {
+          this.id = this.changeRequest.proposedSopId;
+          this.loadSopForEdit();
+        }
+
+        // author always comes from auth
+        const user = this.auth.currentUser();
+        if (user) {
+          this.form.patchValue({ authorName: user.fullName });
+          this.userId = user.id;
+        }
       },
       error: () => {
         this.errorMsg = 'Failed to load reference data';
       }
     });
+
   }
 
   // Load existing sop data for edit
@@ -180,15 +198,23 @@ export class SopsFormComponent implements OnInit {
           sopDescription: sop.sopDescription ?? ''
         });
 
-        this.existingSopDetails = sop.sopDetails ?? '';
+        this.populateStepsFromDetails(sop.sopDetails);
 
         this.reapplyCascadeLogic();
+
+        this.loadingExisting = false;
       },
       error: () => {
         this.errorMsg = 'Failed to load SOP';
         this.loading = false;
       }
     });
+
+    const user = this.auth.currentUser();
+    if (user) {
+      this.form.patchValue({ authorName: user.fullName });
+    }
+
   }
 
   private reapplyCascadeLogic(): void {
@@ -350,10 +376,12 @@ export class SopsFormComponent implements OnInit {
     const famId = this.form.value.businessProcessFamilyId ?? null;
 
     // Clear downstream fields
-    this.form.patchValue({
-      businessProcessId: null,
-      parentProcessId: null
-    });
+    if (!this.loadingExisting) {
+      this.form.patchValue({
+        businessProcessId: null,
+        parentProcessId: null
+      });
+    }
 
     const fam = famId ? this.businessProcessFamilyId.get(famId) : undefined;
     if (fam && fam.departmentId && this.form.value.departmentId !== fam.departmentId) {
@@ -363,28 +391,52 @@ export class SopsFormComponent implements OnInit {
   }
 
   onProcessChange() {
-    const procId = this.form.value.businessProcessId ?? null;
-    if (!procId) {
+
+    const raw = this.form.value.businessProcessId;
+
+    const procId = raw != null ? Number(raw) : null;
+
+    if (!this.loadingExisting && !procId) {
       this.form.patchValue({ parentProcessId: null });
       return;
     }
 
-    const proc = this.businessProcessById.get(procId);
+    const proc = procId
+      ? this.businessProcessById.get(procId)
+      : undefined;
+
     if (proc) {
+
       // Auto-fill parent id
-      this.form.patchValue({ parentProcessId: proc.parentProcessId ?? null });
+      this.form.patchValue({
+        parentProcessId: proc.parentProcessId ?? null
+      });
 
-      if (proc.businessProcessFamilyId && this.form.value.businessProcessFamilyId !== proc.businessProcessFamilyId) {
-        this.form.patchValue({ businessProcessFamilyId: proc.businessProcessFamilyId });
+      if (
+        proc.businessProcessFamilyId &&
+        this.form.value.businessProcessFamilyId !== proc.businessProcessFamilyId
+      ) {
+        this.form.patchValue({
+          businessProcessFamilyId: proc.businessProcessFamilyId
+        });
       }
 
-      if (proc.businessProcessName && this.form.value.businessProcessName !== proc.businessProcessName) {
-        this.form.patchValue({ businessProcessName: proc.businessProcessName });
+      if (
+        proc.businessProcessName &&
+        this.form.value.businessProcessName !== proc.businessProcessName
+      ) {
+        this.form.patchValue({
+          businessProcessName: proc.businessProcessName
+        });
       }
+
     } else {
+
       this.form.patchValue({ parentProcessId: null });
+
     }
   }
+
 
   onParentProcessChange() {
     const parentId = this.form.value.parentProcessId ?? null;
@@ -412,7 +464,7 @@ export class SopsFormComponent implements OnInit {
   onProcessOwnerChange() {
     const ownerId = this.form.get('businessProcessOwnerId')?.value;
 
-    if (!ownerId) {
+    if (!this.loadingExisting && !ownerId) {
       this.form.patchValue({ positionId: null });
       return;
     }
@@ -454,6 +506,32 @@ export class SopsFormComponent implements OnInit {
 
   addStep() {
     this.steps.push(this.newStep());
+  }
+
+  private populateStepsFromDetails(details: string | null | undefined): void {
+    this.steps.clear();
+
+    if (!details) return;
+
+    const stepBlocks = details.split(/\n\nStep \d+:/g);
+
+    stepBlocks.forEach(block => {
+      if (!block.trim()) return;
+
+      const titleMatch = block.match(/^(.+)/);
+      const whoMatch = block.match(/Who:\s*(.+)/);
+      const whereMatch = block.match(/Where:\s*(.+)/);
+      const detailsMatch = block.match(/Details:\n([\s\S]+)/);
+
+      this.steps.push(
+        this.fb.group({
+          title: titleMatch?.[1]?.trim() ?? '',
+          who: whoMatch?.[1]?.trim() ?? '',
+          where: whereMatch?.[1]?.trim() ?? '',
+          details: detailsMatch?.[1]?.trim() ?? ''
+        })
+      );
+    });
   }
 
   //  submit, updateDraft, delete

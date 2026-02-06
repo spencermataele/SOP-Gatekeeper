@@ -17,6 +17,7 @@ import {CommonModule} from "@angular/common";
 import {JwtInterceptor} from "./features/authorization/jwt.interceptor";
 import { ChangeRequestPageComponent } from './features/sops/change-requests/change-request-page/change-request-page.component';
 import { ChangeRequestReviewComponent } from './features/sops/change-requests/change-request-review/change-request-review.component';
+import { SopViewComponent } from './features/sops/sops-view/sop-view/sop-view.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { ChangeRequestReviewComponent } from './features/sops/change-requests/ch
     ProcessOwnerFormComponent,
     ProcessOwnersComponent,
     AdminHomeComponent,
-    LoginComponent
+    LoginComponent,
+    SopViewComponent
   ],
   imports: [
     BrowserModule,

@@ -42,6 +42,12 @@ export class SopsListComponent implements OnInit {
     this.router.navigate(['/sops/new']);
   }
 
+  view(s: Sop): void {
+    if (s.sopId) {
+      this.router.navigate(['/sops', s.sopId, 'view']);
+    }
+  }
+
   requestChange(row: Sop): void {
 
     if (!row.sopId) return;
@@ -62,7 +68,10 @@ export class SopsListComponent implements OnInit {
           return;
         }
 
-        this.router.navigate(['/sops', proposedSopId, 'edit']);
+        this.router.navigate(['/sops', proposedSopId, 'edit'], {
+          queryParams: { cr: changeRequest.changeRequestId }
+        });
+
       },
 
       error: () => {
