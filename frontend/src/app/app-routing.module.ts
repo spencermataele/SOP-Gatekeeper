@@ -18,9 +18,9 @@ import {
 } from "./features/sops/change-requests/change-request-review/change-request-review.component";
 
 const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'sops' },
+  { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: 'login', component: LoginComponent },
-  { path: 'sops', component: SopsListComponent },
+  { path: 'sops', component: SopsListComponent, canActivate: [AuthGuard] },
   { path: 'sops/new', component: SopsFormComponent, canActivate: [AuthGuard] },
   { path: 'sops/:id/edit', component: SopsFormComponent, canActivate: [AuthGuard] },
   { path: 'sops/:id/view', component: SopViewComponent, canActivate: [AuthGuard] },
@@ -47,7 +47,7 @@ const routes: Routes = [
 
   { path: 'reports', loadComponent: () => import('./features/reports/reports-home.component').then(m => m.ReportsHomeComponent), canActivate: [AuthGuard] },
   { path: 'reports/org-hierarchy', loadComponent: () => import('./features/reports/org-hierarchy-report.component').then(m => m.OrgHierarchyReportComponent), canActivate: [AuthGuard] },
-  { path: '**', redirectTo: 'sops' }
+  { path: '**', redirectTo: 'login' }
 ];
 
 

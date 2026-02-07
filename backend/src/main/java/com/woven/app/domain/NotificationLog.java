@@ -33,4 +33,7 @@ public class NotificationLog {
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type")
     private NotificationType notificationType;
+
+    @Column(name = "read_timestamp")
+    private Instant readTimestamp;
 }

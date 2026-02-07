@@ -4,6 +4,7 @@ import {Router, RouterModule} from "@angular/router";
 import {ChangeRequest} from "../../models/change-request.model";
 import {ChangeRequestService} from "../../services/change-request.service";
 import {FormsModule} from "@angular/forms";
+import {NotificationService} from "../../../notifications/notification.service";
 
 @Component({
   selector: 'app-change-request-page',
@@ -27,12 +28,36 @@ export class ChangeRequestPageComponent implements OnInit {
 
   constructor(
     private changeRequestService: ChangeRequestService,
+    private notificationService: NotificationService,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
 
     this.load();
+
+    //Mark all unread notifications as read
+    this.notificationService.myNotifications().subscribe(list => {
+
+      const unread = list.filter(n => !n.read);
+
+      if (unread.length === 0) return;
+
+      let completed = 0;
+
+      unread.forEach( notification => {
+        this.notificationService.markRead(notification.notificationId).subscribe({
+          next: () => {
+            completed++;
+
+            //after last check, refresh count
+            if (completed === unread.length) {
+              this.notificationService.unreadCount().subscribe();
+            }
+          }
+        });
+      });
+    });
 
   }
 
@@ -42,7 +67,8 @@ export class ChangeRequestPageComponent implements OnInit {
     //My requests
     this.changeRequestService.listMine().subscribe({
       next: req => this.myRequests = req,
-      error: () => this.errorMsg = 'Failed to load your change requests'
+      error: () => this.errorMsg = 'Failed to load your change requests',
+      complete: () => this.loading = false
     });
 
     //My pending approvals
@@ -51,7 +77,6 @@ export class ChangeRequestPageComponent implements OnInit {
       error: () => this.errorMsg = 'Failed to load your pending approvals'
     });
 
-    this.loading = false;
   }
 
   //create
