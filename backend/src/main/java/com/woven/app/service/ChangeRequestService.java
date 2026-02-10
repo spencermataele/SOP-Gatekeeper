@@ -210,6 +210,31 @@ public class ChangeRequestService {
         createNotifications(changeRequest, NotificationType.REJECTED);
     }
 
+    // Cancel Change Request
+    public void cancelChangeRequest(Long changeRequestId) {
+
+        ChangeRequest changeRequest = changeRequestRepository.findById(changeRequestId).orElseThrow();
+
+        if (changeRequest.getChangeStatus() != ChangeStatus.DRAFT) {
+            throw new IllegalStateException("Only pending change requests can be cancelled");
+        }
+
+        Sop draft = sopRepository.findBySopIdAndStatus(
+                changeRequest.getProposedSop().getSopId(),
+                changeRequest.getProposedSop().getStatus()
+        ).orElseThrow();
+
+        if (!draft.getStatus().equals(SopStatus.DRAFT)) {
+            throw new IllegalStateException("Only pending change requests can be cancelled");
+        }
+
+        changeRequest.setChangeStatus(ChangeStatus.CANCELLED);
+        draft.setStatus(SopStatus.CANCELLED);
+
+        sopRepository.save(draft);
+        changeRequestRepository.save(changeRequest);
+    }
+
     private Sop originalSop(ChangeRequest changeRequest) {
         if (changeRequest.getOriginalSop() == null) {
             throw new IllegalStateException("ChangeRequest missing original SOP");

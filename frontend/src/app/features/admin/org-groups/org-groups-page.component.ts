@@ -71,19 +71,7 @@ import { OrgGroupDto } from '../models/org-group.model';
       <a [routerLink]="['/admin/dept-subgroups']">Dept Subgroups</a>
     </p>
   `,
-  styles: [`
-    .form { display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:1rem; }
-    .form label { display:flex; flex-direction:column; gap:4px; }
-    .error { color:#b00020; margin-left:.5rem; }
-
-    .list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem; }
-    .row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:.75rem 1rem; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
-    .row.edit { gap:8px; }
-    .muted { color:#6b7280; font-size:.9rem; }
-    .actions { display:flex; gap:.5rem; }
-    .danger { color:#b00020; }
-    .footer { margin-top:1rem; color:#6b7280; }
-  `]
+  styleUrls: ['../../../../styles.css']
 })
 export class OrgGroupsPageComponent implements OnInit {
   orgs: OrgDto[] = [];

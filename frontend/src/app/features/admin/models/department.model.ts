@@ -8,6 +8,6 @@ export interface DepartmentDto {
   departmentId: number;
   departmentName: string;
   orgGroupId: number;
-  subgroups: DeptSubgroupSlimDto[]; // always an array
+  subgroups: DeptSubgroupSlimDto[] | null; // always an array
 }
 

@@ -26,8 +26,14 @@ export class AuthService {
     );
   }
 
-  logout() { localStorage.removeItem('token'); this.me$.next(null); }
-  token(): string | null {return localStorage.getItem('token');}
+  logout() {
+    localStorage.removeItem('token');
+    this.me$.next(null);
+  }
+
+  token(): string | null {
+    return localStorage.getItem('token');
+  }
 
   me(): Observable<MeResponse | null> { return this.me$.asObservable(); }
 

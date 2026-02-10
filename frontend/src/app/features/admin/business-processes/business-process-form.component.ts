@@ -18,7 +18,8 @@ interface SubgroupLite { departmentId: number; deptSubgroupName: string; }
     ReactiveFormsModule,
     CommonModule
   ],
-  standalone: true
+  standalone: true,
+  styleUrls: ['../../../../styles.css']
 })
 export class BusinessProcessFormComponent implements OnInit {
   id?: number;

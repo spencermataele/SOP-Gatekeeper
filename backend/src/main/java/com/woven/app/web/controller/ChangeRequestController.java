@@ -120,5 +120,12 @@ public class ChangeRequestController {
                 .findPendingForApprover(user.getUser().getId());
     }
 
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancel(@PathVariable Long id) {
+        changeRequestService.cancelChangeRequest(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }
 

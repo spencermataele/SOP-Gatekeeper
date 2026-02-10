@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
   <div class="container">
     <h2>Process Owners</h2>
 
@@ -9,10 +7,6 @@
     <div class="toolbar">
       <input placeholder="Search by name…" [(ngModel)]="filterName">
       <input type="number" placeholder="Search by ID…" [(ngModel)]="filterId">
-      <!--
-      <button (click)="refresh()">Refresh</button>
-      <button (click)="startCreate()">New</button>
-      -->
     </div>
 
     <!-- Create/Edit form -->
@@ -23,7 +17,7 @@
           <input formControlName="name" />
         </label>
         <label>Position ID
-          <input type="number" formControlName="currentProcessOwnerPositionId" />
+          <input type="number" formControlName="positionId" />
         </label>
         <button type="submit" [disabled]="form.invalid">{{ editingId ? 'Update' : 'Create' }}</button>
         <button type="button" (click)="cancel()">Cancel</button>
@@ -60,4 +54,4 @@
 
     <p *ngIf="!loading && !filtered().length">No owners.</p>
   </div>
-</html>
+

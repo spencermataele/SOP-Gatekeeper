@@ -9,7 +9,7 @@ export interface ChangeRequest {
   createdTimestamp: string;
   updatedTimestamp: string;
   requestByName: string;
-  sopTitle: string;
-  sopVersion: string;
+  originalSopTitle: string;
+  originalSopVersion: string;
   publishedSopId?: number;
 }

@@ -4,7 +4,7 @@
   <form [formGroup]="form" (ngSubmit)="save()">
     <label>
       Name
-      <input formControlName="processName" maxlength="255">
+      <input formControlName="businessProcessName" maxlength="255">
     </label>
 
     <label>
@@ -18,7 +18,7 @@
     </label>
 
     <label>
-      Parent Process (same family)
+      Parent Process
       <select formControlName="parentProcessId">
         <option [ngValue]="null">None</option>
         <option *ngFor="let p of parents" [ngValue]="p.businessProcessId">
@@ -28,14 +28,15 @@
     </label>
 
     <label>
-      Department (derived)
+      Department
       <input formControlName="departmentId" [disabled]="true">
     </label>
 
     <label>
       Dept Subgroups
-      <select formControlName="deptSubgroupIds" multiple size="6">
-        <option *ngFor="let s of filteredSubgroups()" [ngValue]="s.departmentId">
+      <select formControlName="deptSubgroupIds">
+        <option [ngValue]="null">None</option>
+        <option *ngFor="let s of subgroups" [ngValue]="s.departmentId">
           {{ s.deptSubgroupName }}
         </option>
       </select>

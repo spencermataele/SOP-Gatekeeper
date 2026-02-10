@@ -80,6 +80,12 @@ export class ChangeRequestService {
     );
   }
 
+  cancel(id: number) {
+    return this.http.post<void>(
+      `${environment.apiBaseUrl}/change-requests/${id}/cancel`, {}
+    );
+  }
+
 }
 
 

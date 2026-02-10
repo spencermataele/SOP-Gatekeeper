@@ -5,6 +5,7 @@ import {ChangeRequest} from "../../models/change-request.model";
 import {ChangeRequestService} from "../../services/change-request.service";
 import {FormsModule} from "@angular/forms";
 import {NotificationService} from "../../../notifications/notification.service";
+import {error} from "@angular/compiler-cli/src/transformers/util";
 
 @Component({
   selector: 'app-change-request-page',
@@ -116,6 +117,16 @@ export class ChangeRequestPageComponent implements OnInit {
     this.changeRequestService.submit(id).subscribe({
       next: () => this.load(),
       error: err => alert(err?.error?.message ?? 'Failed to submit this change request.')
+    });
+  }
+
+  cancel(id: number) {
+    const ok = confirm("Cancel this change request?");
+    if (!ok) return;
+
+    this.changeRequestService.cancel(id).subscribe({
+      next: () => this.load(),
+      error: err =>  alert(err?.error?.message ?? 'Failed to cancel this change request.')
     });
   }
 

@@ -2,11 +2,12 @@ import {Component, OnInit} from '@angular/core';
 import {NotificationService} from "./features/notifications/notification.service";
 import {NavigationEnd, Router} from "@angular/router";
 import {filter} from "rxjs";
+import {AuthService} from "./features/authorization/auth.service";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['../styles.css']
 })
 export class AppComponent implements OnInit {
 
@@ -14,6 +15,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     private notificationService: NotificationService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
@@ -40,6 +42,11 @@ export class AppComponent implements OnInit {
 
   goToChangeRequest() {
     this.router.navigate(['/change-requests']);
+  }
+
+  public logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
 }

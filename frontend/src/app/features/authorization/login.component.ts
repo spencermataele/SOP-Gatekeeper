@@ -4,7 +4,11 @@ import {AuthService} from "./auth.service";
 import {Router} from "@angular/router";
 
 
-@Component({ selector: 'app-login', templateUrl: "./login.component.html" })
+@Component({
+  selector: 'app-login',
+  templateUrl: "./login.component.html",
+  styleUrls: ['../../../styles.css']
+})
 export class LoginComponent implements OnInit{
 
   form = this.fb.group(

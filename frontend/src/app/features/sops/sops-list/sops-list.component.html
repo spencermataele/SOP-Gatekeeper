@@ -1,15 +1,11 @@
-<!-- FIXME define class -->
 <div class="container">
   <h2>SOPs</h2>
 
   <div *ngIf="loading">Loading...</div>
   <div *ngIf="error" class="error">{{ error }}</div>
-  <!-- FIXME define class -->
   <div class="toolbar">
     <button (click)="create()">Create New SOP</button>
     <button (click)="refresh()">Refresh</button>
-  </div>
-  <!-- FIXME style -->
   <table *ngIf="!loading && sops?.length" border="1" cellpadding="6" cellspacing="0">
     <thead>
       <tr>

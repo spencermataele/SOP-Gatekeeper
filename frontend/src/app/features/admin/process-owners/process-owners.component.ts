@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ProcessOwnerService } from '../services/process-owner.service';
 import { ProcessOwner } from '../../sops/models/process-owner.model';
 
@@ -24,6 +24,7 @@ export class ProcessOwnersComponent implements OnInit {
   constructor(private fb: FormBuilder, private svc: ProcessOwnerService) {}
 
   ngOnInit(): void {
+
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(255)]],
       positionId: [null, [Validators.required]]

@@ -4,5 +4,6 @@ public enum ChangeStatus {
     DRAFT,
     IN_REVIEW,
     APPROVED,
-    REJECTED
+    REJECTED,
+    CANCELLED
 }

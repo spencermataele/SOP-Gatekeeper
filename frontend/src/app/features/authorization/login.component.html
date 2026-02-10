@@ -1,6 +1,16 @@
-<form [formGroup]="form" (ngSubmit)="submit()">
-  <label>Username <input formControlName="username" /></label>
-  <label>Password <input type="password" formControlName="password" /></label>
-  <button type="submit">Login</button>
-  <div *ngIf="err" class="err">{{err}}</div>
-</form>
+<div class="login-shell">
+
+  <div class="login-panel">
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>Username <input formControlName="username" /></label>
+      <label>Password <input type="password" formControlName="password" /></label>
+      <button class="btn-primary" type="submit">Login</button>
+      <div *ngIf="err" class="err">{{err}}</div>
+    </form>
+
+  </div>
+
+</div>
+
+

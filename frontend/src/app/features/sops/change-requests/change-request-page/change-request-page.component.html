@@ -20,8 +20,8 @@
     <tbody>
       <tr *ngFor="let cr of myRequests">
         <td>{{ cr.changeRequestId }}</td>
-        <td>{{ cr.sopTitle }}</td>
-        <td>{{ cr.sopVersion }}</td>
+        <td>{{ cr.originalSopTitle  }}</td>
+        <td>{{ cr.originalSopVersion  }}</td>
         <td>{{ cr.changeSummary }}</td>
         <td>{{ cr.changeStatus }}</td>
         <td>{{ cr.createdTimestamp | date:'short' }}</td>
@@ -30,6 +30,9 @@
         <td>
           <button *ngIf="cr.changeStatus === 'DRAFT' " (click)="submit(cr.changeRequestId)">
             Submit
+          </button>
+          <button *ngIf="cr.changeStatus === 'DRAFT' " (click)="cancel(cr.changeRequestId)">
+            Cancel
           </button>
           <!-- OR -->
           <a *ngIf="cr.publishedSopId" [routerLink]="['/sops', cr.publishedSopId]">
@@ -70,8 +73,8 @@
       <tr *ngFor="let cr of pendingApprovals">
         <td>{{ cr.changeRequestId }}</td>
         <td>{{ cr.requestByName }}</td>
-        <td>{{ cr.sopTitle }}</td>
-        <td>{{ cr.sopVersion }}</td>
+        <td>{{ cr.originalSopTitle }}</td>
+        <td>{{ cr.originalSopVersion }}</td>
         <td>{{ cr.changeSummary }}</td>
         <td>{{ cr.changeStatus }}</td>
         <td>{{ cr.updatedTimestamp | date:'short' }}</td>
