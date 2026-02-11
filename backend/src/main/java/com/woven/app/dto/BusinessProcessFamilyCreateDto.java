@@ -9,5 +9,6 @@ public record BusinessProcessFamilyCreateDto(
         String businessProcessFamilyName,
         @NotNull
         Integer departmentId
+
 ) {
 }

@@ -1,5 +1,6 @@
 package com.woven.app.dto;
 
+import java.time.Instant;
 import java.util.List;
 
 public record BusinessProcessFamilyDto(
@@ -7,6 +8,8 @@ public record BusinessProcessFamilyDto(
         String businessProcessFamilyName,
         Integer departmentId,
         String departmentName,
-        List<BusinessProcessDto> businessProcesses
+        List<BusinessProcessDto> businessProcesses,
+        Instant createdTimestamp,
+        Instant lastUpdatedTimestamp
 ) {
 }

@@ -34,7 +34,9 @@ public class BusinessProcessFamilyService {
                 saved.getBusinessProcessFamilyName(),
                 dept.getDepartmentId(),
                 dept.getDepartmentName(),
-                List.of()
+                List.of(),
+                saved.getCreatedTimestamp(),
+                saved.getLastUpdatedTimestamp()
         );
     }
 
@@ -87,7 +89,9 @@ public class BusinessProcessFamilyService {
                 bpf.getBusinessProcessFamilyName(),
                 bpf.getDepartment() != null ? bpf.getDepartment().getDepartmentId().intValue() : null,
                 bpf.getDepartment() != null ? bpf.getDepartment().getDepartmentName() : null,
-                List.of()
+                List.of(),
+                bpf.getCreatedTimestamp(),
+                bpf.getLastUpdatedTimestamp()
         );
     }
 

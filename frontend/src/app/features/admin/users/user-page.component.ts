@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, ElementRef, OnInit, ViewChild} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn} from "@angular/forms";
 import {RouterModule} from "@angular/router";
@@ -11,80 +11,124 @@ import {UserService} from "../services/user.service";
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
-    <h2>Users</h2>
+    <section class="container">
+      <h2>Users</h2>
 
-    <!-- Create -->
-    <form [formGroup]="createForm" (ngSubmit)="create()" class="form">
-      <label>User Name
-        <input formControlName="username"/>
-      </label>
-      <!-- TODO: Add form email validation -->
-      <label type="email">email
-        <input formControlName="email"/>
-      </label>
-      <!-- TODO: Add form password cover up -->
-      <label type="password">Password
-        <input formControlName="password"/>
-      </label>
-      <label>First & Last Name
-        <input formControlName="fullName"/>
-      </label>
-      <label>Role
-        <select formControlName="role">
+      <!-- Create -->
+      <form [formGroup]="createForm" (ngSubmit)="create()" class="form">
+        <label>User Name
+          <input formControlName="username" required/>
+        </label>
+        <label>Email
+          <input type="email" formControlName="email" required/>
+        </label>
+        <label>Password
+          <input type="password" formControlName="password" required/>
+        </label>
+        <label>First & Last Name
+          <input formControlName="fullName" required/>
+        </label>
+        <label>Role
+          <select formControlName="role" required>
+              <option value="" disabled>Select role</option>
+              <option *ngFor="let r of roles" [value]="r"> {{ r }}</option>
+          </select>
+        </label>
+        <hr/>
+        <button type="submit" [disabled]="createForm.invalid || savingCreate">Add User</button>
+        <span class="error" *ngIf="errorCreate">{{ errorCreate }}</span>
+      </form>
+    </section>
+
+    <div>
+      <hr/>
+    </div>
+
+    <section class="container">
+      <h3>All Users</h3>
+      <table>
+        <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Full Name</th>
+          <th>Role</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.fullName }}</td>
+          <td>{{ user.role }}</td>
+          <td>
+            <button (click)="startEdit(user)">Edit</button>
+            <button class="danger" (click)="delete(user)">Delete</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div>
+      <hr/>
+    </div>
+
+    <section class="container">
+      <form
+        #editSection
+        *ngIf="editingId !== null"
+        [formGroup]="editForm"
+        (ngSubmit)="saveEdit(editingId!)"
+        class="form">
+
+        <h3>Edit User</h3>
+
+        <label>User Name
+          <input formControlName="username"/>
+        </label>
+
+        <label>Email
+          <input type="email" formControlName="email"/>
+        </label>
+
+        <label>Password
+          <input type="password" formControlName="password"/>
+        </label>
+
+        <label>First & Last Name
+          <input formControlName="fullName"/>
+        </label>
+
+        <label>Role
+          <select formControlName="role">
             <option value="" disabled>Select role</option>
-            <option *ngFor="let r of roles" [value]="r"> {{ r }}</option>
-        </select>
-      </label>
-      <button type="submit" [disabled]="createForm.invalid || savingCreate">Add User</button>
-      <span class="error" *ngIf="errorCreate">{{ errorCreate }}</span>
-    </form>
+            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          </select>
+        </label>
 
-    <h3>All Users</h3>
-    <ul class="list">
-      <li *ngFor="let user of users">
-        <!-- Inline edit mode -->
-        <ng-container *ngIf="editingId === user.id; else viewRow">
-          <form [formGroup]="editForm" (ngSubmit)="saveEdit(user.id)" class="row edit">
-            <input formControlName="username"/>
-            <button type="submit" [disabled]="editForm.invalid || savingEdit">Save</button>
-            <button type="button" (click)="cancelEdit()">Cancel</button>
-          </form>
-        </ng-container>
+        <div class="actions">
+          <button type="submit" [disabled]="editForm.invalid || savingEdit">
+            Save
+          </button>
 
-        <!-- View mode -->
-        <ng-template #viewRow>
-          <div class="row">
-            <div>
-              <strong>{{ user.username }}</strong>
-              <strong>{{ user.fullName }}</strong>
-              <strong>{{ user.role }}</strong>
-            </div>
-            <div class="actions">
-              <button type="button" (click)="startEdit(user)">Edit</button>
-              <button type="button" class="danger" (click)="delete(user)">Delete</button>
-            </div>
-          </div>
-        </ng-template>
-      </li>
-    </ul>
+          <button type="button" class="secondary" (click)="cancelEdit()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </section>
   `,
-  styles: [`
-    .form { display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:1rem; }
-    .form label { display:flex; flex-direction:column; gap:4px; }
-    .error { color:#b00020; margin-left:.5rem; }
-
-    .list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem; }
-    .row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:.75rem 1rem; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
-    .row.edit { gap:8px; }
-    .muted { color:#6b7280; font-size:.9rem; }
-    .actions { display:flex; gap:.5rem; }
-    .danger { color:#b00020; }
-    .footer { margin-top:1rem; color:#6b7280; }
-  `]
+  styleUrls: ['../../../../styles.css']
 })
 export class UsersPageComponent implements OnInit {
   users: UserDto[] = [];
   readonly roles = ['ADMIN', 'USER'] as const;
+
+  // autoscroll to the edit section
+  @ViewChild('editSection')
+  editsection?: ElementRef<HTMLFormElement>;
 
   // create
   createForm = this.fb.group({
@@ -174,6 +218,14 @@ export class UsersPageComponent implements OnInit {
       password: '',
       fullName: user.fullName ?? '',
       role: user.role ?? ''
+    });
+
+    // autoscroll
+    setTimeout(() => {
+      this.editsection?.nativeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
     });
   }
 

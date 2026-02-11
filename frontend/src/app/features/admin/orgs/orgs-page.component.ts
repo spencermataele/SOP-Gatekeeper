@@ -58,7 +58,6 @@ import { RouterModule } from '@angular/router';
       <a [routerLink]="['/admin/dept-subgroups']">Dept Subgroups</a>
     </p>
   `,
-
   styleUrls: ['../../../../styles.css']
 })
 export class OrgsPageComponent implements OnInit {

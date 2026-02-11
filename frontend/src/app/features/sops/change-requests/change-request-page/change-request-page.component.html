@@ -92,32 +92,3 @@
   </ng-template>
 
 </div>
-
-<hr />
-
-<div class="section">
-  <h2>Create New Change Request</h2>
-
-  <div class="section card">
-    <form (ngSubmit)="create()" #form="ngForm">
-
-      <div class="field">
-        <label>SOP ID</label>
-        <input type="number" required [(ngModel)]="newRequest.sopId" name="sopId"/>
-      </div>
-
-      <div class="field">
-        <label>Summary</label>
-        <input type="text" required [(ngModel)]="newRequest.summary" name="summary">
-      </div>
-
-      <div class="field">
-        <label>Reason</label>
-        <input type="text" required [(ngModel)]="newRequest.reason" name="reason"/>
-      </div>
-
-      <button type="submit" [disabled]="form.invalid || loading">Create Draft</button>
-
-    </form>
-  </div>
-</div>

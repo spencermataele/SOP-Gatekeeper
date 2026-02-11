@@ -137,7 +137,6 @@ public class BusinessProcessService {
     private BusinessProcessDto toDto(BusinessProcess businessProcess) {
         var family = businessProcess.getBusinessProcessFamily();
         var parentProcess = businessProcess.getParentBusinessProcess();
-        var children = businessProcess.getChildren();
 
         var subgroupIds = businessProcess.getDeptSubgroups().stream()
                 .map(DeptSubgroup::getDeptSubgroupId)
@@ -147,19 +146,26 @@ public class BusinessProcessService {
                 .map(DeptSubgroup::getDeptSubgroupName)
                 .toList();
 
-        Integer deptId = (family != null && family.getDepartment() != null)
-                ? family.getDepartment().getDepartmentId().intValue(): null;
+        Integer deptId = null;
+        String deptName = null;
 
-
+        if (family != null && family.getDepartment().getDepartmentName() != null) {
+            deptId = family.getDepartment().getDepartmentId().intValue();
+            deptName = family.getDepartment().getDepartmentName();
+        }
 
         return new BusinessProcessDto(
                 businessProcess.getBusinessProcessId() != null ? businessProcess.getBusinessProcessId().intValue(): null,
                 businessProcess.getBusinessProcessName(),
-                family != null && family.getBusinessProcessFamilyId() != null ? family.getBusinessProcessFamilyId().intValue(): null,
+                family != null ? family.getBusinessProcessFamilyId() : null,
                 family != null ? family.getBusinessProcessFamilyName() : null,
-                parentProcess != null && parentProcess.getBusinessProcessId() != null ? parentProcess.getBusinessProcessId().intValue(): null,
+                parentProcess != null ? parentProcess.getBusinessProcessId().intValue() : null,
+                parentProcess != null ? parentProcess.getBusinessProcessName() : null,
                 deptId,
-                List.of()
+                deptName,
+                subgroupIds,
+                subgroupNames,
+                businessProcess.getLastUpdatedTimestamp()
         );
     }
 }

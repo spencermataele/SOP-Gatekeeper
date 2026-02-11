@@ -14,10 +14,10 @@
         <div class="row">
           <div>
             <strong> {{ f.businessProcessFamilyName }}</strong>
-            <div class="muted" *ngIf="!f.businessProcesses?.length">
-              {{ f.businessProcesses.length}} process{{ f.businessProcesses.length === 1 ? '' : 'es' }}
+            <div class="muted" *ngIf="(f.businessProcesses?.length ?? 0) > 0" >
+              {{ f.businessProcesses.length }} process{{ f.businessProcesses.length === 1 ? '' : 'es' }}
             </div>
-            <div class="muted" *ngIf="!f.businessProcesses?.length"> No related business processes yet.</div>
+            <div class="muted" *ngIf="(f.businessProcesses?.length ?? 0) === 0"> No related business processes yet.</div>
           </div>
           <div class="actions">
             <button type="button" (click)="edit(f.businessProcessFamilyId)">Edit</button>
@@ -33,7 +33,12 @@
   <table class="table" *ngIf="!loading; else busy">
     <thead class="thead">
     <tr>
-      <th>ID</th><th>Name</th><th>Department</th><th>Created</th><th>Updated</th><th></th>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Department</th>
+      <th>Created</th>
+      <th>Updated</th>
+      <th>Actions</th>
     </tr>
     </thead>
     <tbody>
@@ -41,6 +46,8 @@
       <td class="tbody td">{{ f.businessProcessFamilyId }}</td>
       <td>{{ f.businessProcessFamilyName }}</td>
       <td>{{ f.departmentName }}</td>
+      <td>{{ f.createdTimestamp }}</td>
+      <td>{{ f.lastUpdatedTimestamp }}</td>
       <td>
         <button (click)="edit(f.businessProcessFamilyId)">Edit</button>
         <button (click)="remove(f.businessProcessFamilyId, f.businessProcessFamilyName)">Delete</button>
