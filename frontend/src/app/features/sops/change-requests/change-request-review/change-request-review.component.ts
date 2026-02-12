@@ -4,6 +4,8 @@ import {ActivatedRoute, Router, RouterModule} from "@angular/router";
 import {FormsModule} from "@angular/forms";
 import {ChangeRequest} from "../../models/change-request.model";
 import {ChangeRequestService} from "../../services/change-request.service";
+import {SopService} from "../../services/sop.service";
+import {Sop} from "../../models/sop.model";
 
 @Component({
   selector: 'app-change-request-review',
@@ -18,6 +20,7 @@ export class ChangeRequestReviewComponent implements OnInit {
   loading = false;
   submitting = false;
   errorMsg?: string;
+  proposedSop?: Sop;
 
   comments = '';
 
@@ -25,6 +28,7 @@ export class ChangeRequestReviewComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private changeRequestService: ChangeRequestService,
+    private sopService: SopService,
   ) {}
 
   ngOnInit(): void {
@@ -47,7 +51,22 @@ export class ChangeRequestReviewComponent implements OnInit {
     this.changeRequestService.get(id).subscribe({
       next: changeReq => {
         this.changeRequest = changeReq;
-        this.loading = false;
+        //also load the proposed SOP draft
+        if (changeReq.proposedSopId) {
+          this.sopService.get(changeReq.proposedSopId).subscribe({
+            next: sop => {
+              this.proposedSop = sop;
+              this.loading = false;
+            },
+            error: () => {
+              this.errorMsg = 'Failed to load SOP.';
+              this.loading = false;
+            }
+          })
+        } else {
+          this.loading = false;
+        }
+
       },
       error: err => {
         console.error(err);

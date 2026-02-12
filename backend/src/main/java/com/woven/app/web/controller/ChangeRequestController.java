@@ -46,7 +46,7 @@ public class ChangeRequestController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/approvals/{approvalId}/reject")
+    @PostMapping("/{changeRequestId}/reject")
     public ResponseEntity<Void> reject(
             @PathVariable Long approvalId,
             @RequestParam String comments,

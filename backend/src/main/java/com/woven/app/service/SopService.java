@@ -117,7 +117,7 @@ public class SopService {
         entity.setParentProcessId(dto.parentProcessId());
         // created_timestamp created by db trigger
         // updated_timestamp created by db trigger
-        // version updated when creating draft
+        entity.setVersionId(dto.versionId());
         entity.setSopDescription(dto.sopDescription());
         entity.setSopDetails(dto.sopDetails());
     }

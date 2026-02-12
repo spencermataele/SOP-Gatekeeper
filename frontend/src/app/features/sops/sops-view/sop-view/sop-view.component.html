@@ -1,32 +1,33 @@
-<div *ngIf="loading">Loading SOP...</div>
+<div *ngIf="loading" xmlns="http://www.w3.org/1999/html">Loading SOP...</div>
 <div *ngIf="error" class="error">{{ error }}</div>
 
 <div *ngIf="sop">
 
   <h1>{{ sop.title }}</h1>
+  <section class="container">
+    <p><strong>Version:</strong> {{ sop.versionId }}</p>
+    <p><strong>Process:</strong> {{ sop.processName }}</p>
 
-  <p><strong>Version:</strong> {{ sop.versionId }}</p>
-  <p><strong>Process:</strong> {{ sop.processName }}</p>
+    <hr />
 
-  <hr />
+    <section>
+      <h3>Description</h3>
+      <div class="sop-block">
+        {{ sop.sopDescription }}
+      </div>
+    </section>
 
-  <section>
-    <h3>Description</h3>
-    <div class="sop-block">
-      {{ sop.sopDescription }}
+    <section>
+      <h3>Details</h3>
+      <pre class="sop-details">{{ sop.sopDetails }}</pre>
+    </section>
+
+    <hr />
+
+    <div class="actions">
+      <button (click)="back()">Back</button>
+      <button (click)="requestChange()">Request Change</button>
     </div>
   </section>
-
-  <section>
-    <h3>Details</h3>
-    <pre class="sop-details">{{ sop.sopDetails }}</pre>
-  </section>
-  <!--TODO: ADD SOP-BLOCK AND SOP-DETAILS TO STYLES-->
-  <hr />
-
-  <div class="actions">
-    <button (click)="back()">Back</button>
-    <button (click)="requestChange()">Request Change</button>
-  </div>
 
 </div>

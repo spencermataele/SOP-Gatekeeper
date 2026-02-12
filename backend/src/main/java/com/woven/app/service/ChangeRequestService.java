@@ -110,17 +110,20 @@ public class ChangeRequestService {
 
     // Approve Change Request
     public void approve(
-            Long changeApprovalId,
-            Integer approver,
+            Long changeRequestId,
+            Integer approverId,
             String comments
     ) {
-        ChangeApproval approval = changeApprovalRepository.findById(changeApprovalId).orElseThrow(
-                () -> new IllegalArgumentException("Approval not found: " + changeApprovalId)
+        ChangeApproval approval = changeApprovalRepository.findByChangeRequest_ChangeRequestIdAndApprover_Id(
+                changeRequestId,
+                approverId
+        ).orElseThrow(
+                () -> new SecurityException("Approval not found for this user")
         );
 
 
-        if (approval.getApprover().getId() != approver) {
-            throw new SecurityException("Wrong approver");
+        if (approval.getDecision() != ApprovalDecision.IN_REVIEW) {
+            throw new IllegalStateException("Approval decision is not in REVIEW");
         }
 
         approval.setDecision(ApprovalDecision.APPROVED);

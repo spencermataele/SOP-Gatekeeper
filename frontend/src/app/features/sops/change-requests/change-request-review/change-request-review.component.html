@@ -12,16 +12,16 @@
   <div class="meta-grid">
 
     <div>
+      <strong>SOP:</strong>
+      {{ changeRequest.originalSopTitle }}
+    </div>
+    <div>
       <strong>ID:</strong>
       {{ changeRequest.changeRequestId }}
     </div>
     <div>
       <strong>Status:</strong>
       {{ changeRequest.changeStatus }}
-    </div>
-    <div>
-      <strong>SOP:</strong>
-      {{ changeRequest.originalSopTitle }}
     </div>
     <div>
       <strong>Version:</strong>
@@ -35,9 +35,42 @@
       <strong>Date Submitted:</strong>
       {{ changeRequest.updatedTimestamp | date:'short' }}
     </div>
-
-
   </div>
+
+  <hr />
+
+  <div class="meta-grid">
+    <div>
+      <strong>Business Process:</strong>
+      {{ proposedSop?.processName  }}
+    </div>
+    <div>
+      <strong>Org Group:</strong>
+      {{ proposedSop?.orgGroupId  }}
+    </div>
+    <div>
+      <strong>Department:</strong>
+      {{ proposedSop?.departmentId  }}
+    </div>
+    <div>
+      <strong>Department Subgroup:</strong>
+      {{ proposedSop?.deptSubgroupId  }}
+    </div>
+  </div>
+
+  <hr />
+
+  <section class="block">
+    <strong>SOP Description</strong>
+    {{ proposedSop?.sopDescription  }}
+  </section>
+
+  <hr />
+
+  <section class="block">
+    <strong>SOP Details</strong>
+    <div class="sop-details">{{ proposedSop?.sopDetails  }}</div>
+  </section>
 
   <hr />
 

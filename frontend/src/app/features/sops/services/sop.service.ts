@@ -31,7 +31,8 @@ export class SopService {
     processId: number | null;
     processName: string;
     processFamilyId: number | null;
-    parentProcessId: number;
+    parentProcessId: number | null;
+    versionId: string;
     sopDescription: string;
     sopDetails: string
   }): Observable<Sop> {

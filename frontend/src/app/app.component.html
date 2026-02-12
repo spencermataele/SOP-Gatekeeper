@@ -20,7 +20,7 @@
     <header class="app-header">
       <span class="page-title">SOP Gatekeeper</span>
       <div class="header-right">
-        <span class="bell">
+        <span class="bell" (click)="goToChangeRequest()">
           🔔
           <span class="badge" *ngIf="unreadCount > 0">
             {{ unreadCount }}

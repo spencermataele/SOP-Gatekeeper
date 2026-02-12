@@ -593,7 +593,7 @@ export class SopsFormComponent implements OnInit {
       processName: f.businessProcessName!,
       processFamilyId: f.businessProcessFamilyId ?? null,
       parentProcessId: f.parentProcessId ?? 0,
-      versionId: String(f.versionId ?? '1.0'),
+      versionId: f.versionId && f.versionId.trim() || '1.0',
       sopDescription: f.sopDescription!,
       sopDetails: structuredDetails,
     };

@@ -5,6 +5,7 @@ import com.woven.app.domain.ChangeApproval;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ChangeApprovalRepository extends JpaRepository<ChangeApproval, Long> {
 
@@ -12,7 +13,7 @@ public interface ChangeApprovalRepository extends JpaRepository<ChangeApproval, 
     List<ChangeApproval> findByChangeRequest_ChangeRequestId(Long changeRequestId);
 
 
-    boolean existsByChangeRequest_ChangeRequestIdAndApprover_Id(
+    Optional<ChangeApproval> findByChangeRequest_ChangeRequestIdAndApprover_Id(
             Long changeRequestId,
             Integer approverId
     );

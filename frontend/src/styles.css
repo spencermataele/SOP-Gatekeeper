@@ -258,6 +258,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.required {
+  color: #b00020;
+}
+
+
 .error {
   color: #b00020;
   margin-bottom: 1rem;
@@ -450,6 +455,13 @@ form.form {
   box-shadow: var(--shadow-sm);
 }
 
+.sop-details {
+  white-space: pre-wrap;      /* preserve formatting but allow wrapping */
+  word-break: break-word;     /* break long words if needed */
+  overflow-wrap: anywhere;    /* modern wrap support */
+}
+
+
 /* Change Request Panel */
 
 .change-panel {
@@ -582,7 +594,7 @@ form.form {
   margin-top: 1.5rem;
   padding-top: 1rem;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   gap: 1rem;
   align-items: stretch;
 }

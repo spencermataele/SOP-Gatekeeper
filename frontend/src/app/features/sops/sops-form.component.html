@@ -15,16 +15,13 @@
 <form [formGroup]="form" (ngSubmit)="submit()" class="form">
   <div class="grid">
     <label>Title
-      <input formControlName="title" />
+      <span class="required" *ngIf="form.get('title')?.invalid">*</span>
+      <input formControlName="title"/>
     </label>
     <div class="err" *ngIf="form.get('title')?.touched && form.get('title')?.errors">
       <span *ngIf="form.get('title')?.hasError('required')">Required.</span>
       <span *ngIf="form.get('title')?.hasError('maxlength')">Max 255 chars.</span>
       <span *ngIf="form.get('title')?.errors?.['api']">{{ form.get('title')?.errors?.['api'] }}</span>
-    </div>
-
-    <div class="err" *ngIf="form.get('title')?.touched && form.get('title')?.invalid">
-      <span *ngIf="form.get('title')?.hasError('required')">Required.</span>
     </div>
 
     <label>Author
@@ -33,7 +30,8 @@
 
     <div>
       <label>Business Process
-        <select formControlName="businessProcessId"  (change)="onProcessChange()">
+        <span class="required" *ngIf="form.get('businessProcessId')?.invalid">*</span>
+        <select formControlName="businessProcessId" required (change)="onProcessChange()">
           <option [ngValue]="null">-- select process --</option>
           <option *ngFor="let p of filteredProcesses()" [ngValue]="p.businessProcessId">
             {{ p.businessProcessName }}
@@ -50,7 +48,8 @@
 
 
     <label>Business Process Family
-      <select formControlName="businessProcessFamilyId" (change)="onProcessFamilyChange()">
+      <span class="required" *ngIf="form.get('businessProcessFamilyId')?.invalid">*</span>
+      <select formControlName="businessProcessFamilyId" required (change)="onProcessFamilyChange()">
         <option [ngValue]="null">-- select family --</option>
         <option *ngFor="let f of filteredFamilies()" [ngValue]="f.businessProcessFamilyId">
           {{ f.businessProcessFamilyName }}
@@ -63,7 +62,7 @@
     </div>
 
     <label>Parent Process
-      <select formControlName="parentProcessId"  (change)="onParentProcessChange()">
+      <select formControlName="parentProcessId" (change)="onParentProcessChange()">
         <option [ngValue]="null"> --select parent process (optional)--</option>
         <option *ngFor="let p of filteredParentProcesses()" [ngValue]="p.businessProcessId">
           {{ p.businessProcessName }}
@@ -72,7 +71,8 @@
     </label>
 
     <label>Version ID
-      <input formControlName="versionId" [readonly]="mode === 'approve'" />
+      <span class="required" *ngIf="form.get('versionId')?.invalid">*</span>
+      <input formControlName="versionId" required [readonly]="mode === 'approve'" />
     </label>
     <div class="err" *ngIf="form.get('versionId')?.touched && form.get('versionId')?.errors">
       <span *ngIf="form.get('versionId')?.hasError('required')">Required.</span>
@@ -92,7 +92,8 @@
   <!-- Hierarchy -->
   <div class="grid">
     <label>Org
-      <select formControlName="orgId" (change)="onOrgChange()">
+      <span class="required" *ngIf="form.get('orgId')?.invalid">*</span>
+      <select formControlName="orgId" required (change)="onOrgChange()">
         <option [ngValue]="null">-- select org --</option>
         <option *ngFor="let o of filteredOrgs()" [ngValue]="o.orgId">{{ o.orgName }}</option>
       </select>
@@ -103,7 +104,8 @@
     </div>
 
     <label>Org Group
-      <select formControlName="orgGroupId" (change)="onGroupChange()">
+      <span class="required" *ngIf="form.get('orgGroupId')?.invalid">*</span>
+      <select formControlName="orgGroupId" required (change)="onGroupChange()">
         <option [ngValue]="null">-- select group --</option>
         <option *ngFor="let g of filteredGroups()" [ngValue]="g.orgGroupId">{{ g.orgGroupName }}</option>
       </select>
@@ -114,7 +116,8 @@
     </div>
 
     <label>Department
-      <select formControlName="departmentId" (change)="onDeptChange()">
+      <span class="required" *ngIf="form.get('departmentId')?.invalid">*</span>
+      <select formControlName="departmentId" required (change)="onDeptChange()">
         <option [ngValue]="null">-- select department --</option>
         <option *ngFor="let d of filteredDepts()" [ngValue]="d.departmentId">{{ d.departmentName }}</option>
       </select>
@@ -125,7 +128,8 @@
     </div>
 
     <label>Dept Subgroup
-      <select formControlName="deptSubgroupId" (change)="onSubChange()">
+      <span class="required" *ngIf="form.get('deptSubgroupId')?.invalid">*</span>
+      <select formControlName="deptSubgroupId" required (change)="onSubChange()">
         <option [ngValue]="null">-- select subgroup --</option>
         <option *ngFor="let s of filteredSubs()" [ngValue]="s.deptSubgroupId">{{ s.deptSubgroupName }}</option>
       </select>
@@ -137,7 +141,8 @@
 
     <div>
       <label>Process Owner
-        <select formControlName="businessProcessOwnerId" (change)="onProcessOwnerChange()">
+        <span class="required" *ngIf="form.get('businessProcessOwnerId')?.invalid">*</span>
+        <select formControlName="businessProcessOwnerId" required (change)="onProcessOwnerChange()">
           <option [ngValue]="null">-- select owner --</option>
           <option *ngFor="let p of filteredOwners()" [value]="p.businessProcessOwnerId">
             {{ p.name }}
@@ -155,8 +160,10 @@
 
   <div>
     <div class="sop-description">
-      <h3>SOP Description</h3>
-      <input formControlName="sopDescription" placeholder="Brief description of this SOP" />
+      <label>SOP Description
+        <span class="required" *ngIf="form.get('sopDescription')?.invalid">*</span>
+        <input formControlName="sopDescription" required placeholder="Brief description of this SOP" />
+      </label>
     </div>
 
     <div *ngIf="id != null" class="readonly-preview">
@@ -169,20 +176,24 @@
       <div *ngFor="let step of steps.controls; let i = index" [formGroupName]="i" class="step-card">
         <h4>Step {{ i + 1 }}</h4>
         <label>Step Title
-          <input formControlName="title" placeholder="Enter step title" />
+          <span class="required" *ngIf="form.get('title')?.invalid">*</span>
+          <input formControlName="title" required placeholder="Enter step title" />
         </label>
 
         <div class="step-meta">
           <label>Who
-            <input formControlName="who" placeholder="Who performs this step?" />
+            <span class="required" *ngIf="form.get('who')?.invalid">*</span>
+            <input formControlName="who" required placeholder="Who performs this step?" />
           </label>
           <label>Where
-            <input formControlName="where" placeholder="Where it happens" />
+            <span class="required" *ngIf="form.get('where')?.invalid">*</span>
+            <input formControlName="where" required placeholder="Where it happens" />
           </label>
         </div>
 
         <label>Step Details
-          <textarea rows="4" formControlName="details" placeholder="Describe what happens in this step..."></textarea>
+          <span class="required" *ngIf="form.get('details')?.invalid">*</span>
+          <textarea rows="4" formControlName="details" required placeholder="Describe what happens in this step..."></textarea>
         </label>
       </div>
     </div>
@@ -190,7 +201,7 @@
   </div>
 
   <div class="actions">
-    <button type="submit" [disabled]="saving">
+    <button type="submit" [disabled]="form.invalid || saving">
       {{ mode === 'approve' ? 'Approve & Publish' : id == null ? 'Create SOP' : 'Save Changes' }}
     </button>
     <span class="err" *ngIf="errorMsg">{{ errorMsg }}</span>
