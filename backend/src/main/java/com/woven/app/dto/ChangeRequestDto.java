@@ -21,6 +21,7 @@ public record ChangeRequestDto(
         // To show current sop version
         String originalSopVersion,
         // new sop id after change published
-        Integer proposedSopId
+        Integer proposedSopId,
+        Long approvalId
 
 ) {}

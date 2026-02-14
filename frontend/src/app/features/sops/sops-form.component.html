@@ -28,38 +28,29 @@
       <input formControlName="authorName" readonly />
     </label>
 
-    <div>
-      <label>Business Process
-        <span class="required" *ngIf="form.get('businessProcessId')?.invalid">*</span>
-        <select formControlName="businessProcessId" required (change)="onProcessChange()">
-          <option [ngValue]="null">-- select process --</option>
-          <option *ngFor="let p of filteredProcesses()" [ngValue]="p.businessProcessId">
-            {{ p.businessProcessName }}
-          </option>
-        </select>
-      </label>
-
-      <div class="err" *ngIf="form.get('businessProcessId')?.touched && form.get('businessProcessId')?.invalid">
-        <span *ngIf="form.get('businessProcessId')?.hasError('required')">Required.</span>
-      </div>
-
-      <button type="button" class="small-btn" (click)="goToNewBusinessProcess()">Add New Process</button>
-    </div>
-
-
-    <label>Business Process Family
-      <span class="required" *ngIf="form.get('businessProcessFamilyId')?.invalid">*</span>
-      <select formControlName="businessProcessFamilyId" required (change)="onProcessFamilyChange()">
-        <option [ngValue]="null">-- select family --</option>
-        <option *ngFor="let f of filteredFamilies()" [ngValue]="f.businessProcessFamilyId">
-          {{ f.businessProcessFamilyName }}
-        </option>
-      </select>
-    </label>
-
     <div class="err" *ngIf="form.get('businessProcessFamilyId')?.touched && form.get('businessProcessFamilyId')?.invalid">
       <span *ngIf="form.get('businessProcessFamilyId')?.hasError('required')">Required.</span>
     </div>
+
+    <label>Org
+      <span class="required" *ngIf="form.get('orgId')?.invalid">*</span>
+      <select formControlName="orgId" required (change)="onOrgChange()">
+        <option [ngValue]="null">-- select org --</option>
+        <option *ngFor="let o of filteredOrgs()" [ngValue]="o.orgId">{{ o.orgName }}</option>
+      </select>
+    </label>
+
+    <div class="err" *ngIf="form.get('orgId')?.touched && form.get('orgId')?.invalid">
+      <span *ngIf="form.get('orgId')?.hasError('required')">Required.</span>
+    </div>
+
+    <label>Org Group
+      <span class="required" *ngIf="form.get('orgGroupId')?.invalid">*</span>
+      <select formControlName="orgGroupId" required (change)="onGroupChange()">
+        <option [ngValue]="null">-- select group --</option>
+        <option *ngFor="let g of filteredGroups()" [ngValue]="g.orgGroupId">{{ g.orgGroupName }}</option>
+      </select>
+    </label>
 
     <label>Parent Process
       <select formControlName="parentProcessId" (change)="onParentProcessChange()">
@@ -91,29 +82,38 @@
 
   <!-- Hierarchy -->
   <div class="grid">
-    <label>Org
-      <span class="required" *ngIf="form.get('orgId')?.invalid">*</span>
-      <select formControlName="orgId" required (change)="onOrgChange()">
-        <option [ngValue]="null">-- select org --</option>
-        <option *ngFor="let o of filteredOrgs()" [ngValue]="o.orgId">{{ o.orgName }}</option>
-      </select>
-    </label>
-
-    <div class="err" *ngIf="form.get('orgId')?.touched && form.get('orgId')?.invalid">
-      <span *ngIf="form.get('orgId')?.hasError('required')">Required.</span>
-    </div>
-
-    <label>Org Group
-      <span class="required" *ngIf="form.get('orgGroupId')?.invalid">*</span>
-      <select formControlName="orgGroupId" required (change)="onGroupChange()">
-        <option [ngValue]="null">-- select group --</option>
-        <option *ngFor="let g of filteredGroups()" [ngValue]="g.orgGroupId">{{ g.orgGroupName }}</option>
-      </select>
-    </label>
 
     <div class="err" *ngIf="form.get('orgGroupId')?.touched && form.get('orgGroupId')?.invalid">
       <span *ngIf="form.get('orgGroupId')?.hasError('required')">Required.</span>
     </div>
+
+    <div>
+      <label>Business Process
+        <span class="required" *ngIf="form.get('businessProcessId')?.invalid">*</span>
+        <select formControlName="businessProcessId" required (change)="onProcessChange()">
+          <option [ngValue]="null">-- select process --</option>
+          <option *ngFor="let p of filteredProcesses()" [ngValue]="p.businessProcessId">
+            {{ p.businessProcessName }}
+          </option>
+        </select>
+      </label>
+
+      <div class="err" *ngIf="form.get('businessProcessId')?.touched && form.get('businessProcessId')?.invalid">
+        <span *ngIf="form.get('businessProcessId')?.hasError('required')">Required.</span>
+      </div>
+
+      <button type="button" class="small-btn" (click)="goToNewBusinessProcess()">Add New Process</button>
+    </div>
+
+    <label>Business Process Family
+      <span class="required" *ngIf="form.get('businessProcessFamilyId')?.invalid">*</span>
+      <select formControlName="businessProcessFamilyId" required (change)="onProcessFamilyChange()">
+        <option [ngValue]="null">-- select family --</option>
+        <option *ngFor="let f of filteredFamilies()" [ngValue]="f.businessProcessFamilyId">
+          {{ f.businessProcessFamilyName }}
+        </option>
+      </select>
+    </label>
 
     <label>Department
       <span class="required" *ngIf="form.get('departmentId')?.invalid">*</span>

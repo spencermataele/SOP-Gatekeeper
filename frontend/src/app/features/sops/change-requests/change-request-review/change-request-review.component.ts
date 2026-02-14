@@ -85,7 +85,7 @@ export class ChangeRequestReviewComponent implements OnInit {
     this.submitting = true;
 
     this.changeRequestService.approve(
-      this.changeRequest.changeRequestId,
+      this.changeRequest.approvalId,
       this.comments).subscribe({
       next: () => {
         this.router.navigate(['/change-requests']);
@@ -107,7 +107,7 @@ export class ChangeRequestReviewComponent implements OnInit {
     this.submitting = true;
 
     this.changeRequestService.reject(
-      this.changeRequest.changeRequestId,
+      this.changeRequest.approvalId,
       this.comments).subscribe({
       next: () => {
         this.router.navigate(['/change-requests']);

@@ -36,20 +36,23 @@ public class ChangeRequestController {
             @PathVariable Long approvalId,
             @RequestParam(required = false) String comments,
             @AuthenticationPrincipal AppUserDetails currentUser) {
+        // Verify correct approver
+        System.out.println("currentUser = " + currentUser.getUser().getUsername());
 
         changeRequestService.approve(
                 approvalId,
                 currentUser.getUser().getId(),
-                comments
+                comments,
+                currentUser
         );
 
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{changeRequestId}/reject")
+    @PostMapping("/approvals/{approvalId}/reject")
     public ResponseEntity<Void> reject(
             @PathVariable Long approvalId,
-            @RequestParam String comments,
+            @RequestParam(required = false) String comments,
             @AuthenticationPrincipal AppUserDetails currentUser) {
 
         changeRequestService.reject(
@@ -60,6 +63,7 @@ public class ChangeRequestController {
 
         return ResponseEntity.ok().build();
     }
+
 
     @PostMapping("/start")
     public ResponseEntity<ChangeRequestDto> startChangeDraft(

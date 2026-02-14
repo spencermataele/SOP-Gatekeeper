@@ -12,4 +12,5 @@ export interface ChangeRequest {
   originalSopTitle: string;
   originalSopVersion: string;
   publishedSopId?: number;
+  approvalId: number;
 }

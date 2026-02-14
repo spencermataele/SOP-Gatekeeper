@@ -179,6 +179,7 @@ export class SopsFormComponent implements OnInit {
 
   private loadSopForEdit(): void {
     this.loading = true;
+    this.loadingExisting = true;
 
     this.sopSvc.get(this.id!).subscribe({
       next: sop => {
@@ -200,13 +201,16 @@ export class SopsFormComponent implements OnInit {
 
         this.populateStepsFromDetails(sop.sopDetails);
 
+        this.loadingExisting = false;
+
         this.reapplyCascadeLogic();
 
-        this.loadingExisting = false;
+        this.loading = false;
       },
       error: () => {
         this.errorMsg = 'Failed to load SOP';
         this.loading = false;
+        this.loadingExisting = false;
       }
     });
 
@@ -282,13 +286,13 @@ export class SopsFormComponent implements OnInit {
     const orgId = this.form.value.orgId ?? null;
 
     const group = this.form.value.orgGroupId ? this.groupById.get(this.form.value.orgGroupId) : undefined;
-    if (group && group.orgId !== orgId) {
+    if (!this.loadingExisting && group && group.orgId !== orgId) {
       this.form.patchValue({ orgGroupId: null, departmentId: null, deptSubgroupId: null });
       return;
     }
 
     const dept = this.form.value.departmentId ? this.deptById.get(this.form.value.departmentId) : undefined;
-    if (dept) {
+    if (!this.loadingExisting && dept) {
       const deptGroup = this.groupById.get(dept.orgGroupId);
       if (!deptGroup || deptGroup.orgId !== orgId) {
         this.form.patchValue({ orgGroupId: null, departmentId: null, deptSubgroupId: null });
@@ -297,7 +301,7 @@ export class SopsFormComponent implements OnInit {
     }
 
     const sub = this.form.value.deptSubgroupId ? this.subgroupById.get(this.form.value.deptSubgroupId) : undefined;
-    if (sub) {
+    if (!this.loadingExisting && sub) {
       const subDept = this.deptById.get(sub.departmentId);
       const subGroup = subDept ? this.groupById.get(subDept.orgGroupId) : undefined;
       if (!subDept || !subGroup || subGroup.orgId !== orgId) {
@@ -310,18 +314,18 @@ export class SopsFormComponent implements OnInit {
     const groupId = this.form.value.orgGroupId ?? null;
     const group = groupId ? this.groupById.get(groupId) : undefined;
 
-    if (group && this.form.value.orgId !== group.orgId) {
+    if (!this.loadingExisting && group && this.form.value.orgId !== group.orgId) {
       this.form.patchValue({ orgId: group.orgId });
     }
 
     const dept = this.form.value.departmentId ? this.deptById.get(this.form.value.departmentId) : undefined;
-    if (dept && dept.orgGroupId !== groupId) {
+    if (!this.loadingExisting && dept && dept.orgGroupId !== groupId) {
       this.form.patchValue({ departmentId: null, deptSubgroupId: null });
       return;
     }
 
     const sub = this.form.value.deptSubgroupId ? this.subgroupById.get(this.form.value.deptSubgroupId) : undefined;
-    if (sub) {
+    if (!this.loadingExisting && sub) {
       const subDept = this.deptById.get(sub.departmentId);
       if (!subDept || subDept.orgGroupId !== groupId) {
         this.form.patchValue({ deptSubgroupId: null });
@@ -333,7 +337,7 @@ export class SopsFormComponent implements OnInit {
     const deptId = this.form.value.departmentId ?? null;
     const dept = deptId ? this.deptById.get(deptId) : undefined;
 
-    if (dept) {
+    if (!this.loadingExisting && dept) {
       if (this.form.value.orgGroupId !== dept.orgGroupId) {
         this.form.patchValue({ orgGroupId: dept.orgGroupId });
       }
@@ -344,7 +348,7 @@ export class SopsFormComponent implements OnInit {
     }
 
     const sub = this.form.value.deptSubgroupId ? this.subgroupById.get(this.form.value.deptSubgroupId) : undefined;
-    if (sub && sub.departmentId !== deptId) {
+    if (!this.loadingExisting && sub && sub.departmentId !== deptId) {
       this.form.patchValue({ deptSubgroupId: null });
     }
   }
@@ -353,7 +357,7 @@ export class SopsFormComponent implements OnInit {
     const subId = this.form.value.deptSubgroupId ?? null;
     const sub = subId ? this.subgroupById.get(subId) : undefined;
 
-    if (sub) {
+    if (!this.loadingExisting && sub) {
       const dept = this.deptById.get(sub.departmentId);
       if (dept) {
         if (this.form.value.departmentId !== dept.departmentId) {
@@ -384,7 +388,7 @@ export class SopsFormComponent implements OnInit {
     }
 
     const fam = famId ? this.businessProcessFamilyId.get(famId) : undefined;
-    if (fam && fam.departmentId && this.form.value.departmentId !== fam.departmentId) {
+    if (!this.loadingExisting && fam && fam.departmentId && this.form.value.departmentId !== fam.departmentId) {
       this.form.patchValue({ departmentId: fam.departmentId });
       this.onDeptChange(); // reuse your existing cascade
     }
@@ -408,9 +412,11 @@ export class SopsFormComponent implements OnInit {
     if (proc) {
 
       // Auto-fill parent id
-      this.form.patchValue({
-        parentProcessId: proc.parentProcessId ?? null
-      });
+      if (!this.loadingExisting) {
+        this.form.patchValue({
+          parentProcessId: proc.parentProcessId ?? null
+        });
+      }
 
       if (
         proc.businessProcessFamilyId &&
@@ -436,7 +442,6 @@ export class SopsFormComponent implements OnInit {
 
     }
   }
-
 
   onParentProcessChange() {
     const parentId = this.form.value.parentProcessId ?? null;
@@ -480,7 +485,6 @@ export class SopsFormComponent implements OnInit {
       positionId: owner.positionId
     });
   }
-
 
   goToNewBusinessProcess() {
       this.router.navigate(['/admin/business-processes/new']);
@@ -616,8 +620,13 @@ export class SopsFormComponent implements OnInit {
     obs.subscribe({
       next: () => {
         this.saving = false;
-        // navigate back to SOPs list
-        this.router.navigate(['/sops']);
+        // navigate to change request page if editing
+        if (this.changeRequest?.changeRequestId) {
+          this.router.navigate(['/change-requests']);
+        }
+        else {
+          this.router.navigate(['/sops']);
+        }
       },
       error: err => {
         this.saving = false;

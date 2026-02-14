@@ -110,17 +110,25 @@ public class ChangeRequestService {
 
     // Approve Change Request
     public void approve(
-            Long changeRequestId,
+            Long approvalId,
             Integer approverId,
-            String comments
+            String comments,
+            AppUserDetails user
     ) {
-        ChangeApproval approval = changeApprovalRepository.findByChangeRequest_ChangeRequestIdAndApprover_Id(
-                changeRequestId,
-                approverId
-        ).orElseThrow(
+        System.out.println(">>> APPROVE METHOD VERSION 2 <<<");
+
+        System.out.println("approvalId = " + approvalId);
+
+        System.out.println("currentUser.id = " + approverId);
+
+
+        ChangeApproval approval = changeApprovalRepository.findById(approvalId).orElseThrow(
                 () -> new SecurityException("Approval not found for this user")
         );
 
+        if (approval.getApprover().getId() != approverId) {
+            throw new SecurityException("Not your approval");
+        }
 
         if (approval.getDecision() != ApprovalDecision.IN_REVIEW) {
             throw new IllegalStateException("Approval decision is not in REVIEW");
@@ -128,7 +136,6 @@ public class ChangeRequestService {
 
         approval.setDecision(ApprovalDecision.APPROVED);
         approval.setComments(comments);
-        //approval.setCreatedTimestamp(Instant.now());
         approval.setUpdatedTimestamp(Instant.now());
 
         ChangeRequest changeRequest = approval.getChangeRequest();
@@ -138,6 +145,9 @@ public class ChangeRequestService {
 
         // Create notification of approved change request
         createNotifications(changeRequest, NotificationType.APPROVED);
+
+        //Now that it's approved, publish the new SOP
+        publish(changeRequest.getChangeRequestId(), user);
     }
 
     // Publish upon approval
@@ -378,6 +388,17 @@ public class ChangeRequestService {
             proposedSopId  = proposed.getSopId();
         }
 
+        Long approvalId = changeApprovalRepository
+                .findByChangeRequest_ChangeRequestIdAndDecision(
+                        changeRequest.getChangeRequestId(),
+                        ApprovalDecision.IN_REVIEW
+                )
+                .stream()
+                .map(ChangeApproval::getChangeApprovalId)
+                .findFirst()
+                .orElse(null);
+
+
         return new ChangeRequestDto(
                 changeRequest.getChangeRequestId(),
                 original != null ? original.getSopId() : null,
@@ -390,7 +411,8 @@ public class ChangeRequestService {
                 changeRequest.getRequestedByUser().getFullName(),
                 original != null ? original.getTitle() : null,
                 original != null ? original.getVersionId(): null,
-                proposedSopId
+                proposedSopId,
+                approvalId
         );
     }
 

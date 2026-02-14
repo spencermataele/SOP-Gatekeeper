@@ -13,9 +13,9 @@ public interface ChangeApprovalRepository extends JpaRepository<ChangeApproval, 
     List<ChangeApproval> findByChangeRequest_ChangeRequestId(Long changeRequestId);
 
 
-    Optional<ChangeApproval> findByChangeRequest_ChangeRequestIdAndApprover_Id(
+    List<ChangeApproval> findByChangeRequest_ChangeRequestIdAndDecision(
             Long changeRequestId,
-            Integer approverId
+            ApprovalDecision decision
     );
 
     // Find by approver and decision (for pending approval notification)
