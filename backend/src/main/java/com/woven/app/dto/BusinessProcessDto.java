@@ -6,13 +6,13 @@ import java.util.List;
 public record BusinessProcessDto(
         Integer businessProcessId,
         String businessProcessName,
-        Integer businessProcessFamilyId,
+        Integer businessProcessFamily,
         String businessProcessFamilyName,
-        Integer parentBusinessProcessId,
+        Integer parentBusinessProcess,
         String parentProcessName,
         Integer departmentId,
         String departmentName,
-        List<Integer> deptSubgroupIds,
+        List<Integer> deptSubgroups,
         List<String> deptSubgroupNames,
         Instant lastUpdatedTimestamp
 ) {}

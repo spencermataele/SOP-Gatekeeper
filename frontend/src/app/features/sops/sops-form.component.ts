@@ -414,7 +414,7 @@ export class SopsFormComponent implements OnInit {
       // Auto-fill parent id
       if (!this.loadingExisting) {
         this.form.patchValue({
-          parentProcessId: proc.parentProcessId ?? null
+          parentProcessId: proc.parentBusinessProcessId ?? null
         });
       }
 

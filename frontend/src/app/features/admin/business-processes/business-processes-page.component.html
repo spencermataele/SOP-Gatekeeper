@@ -13,7 +13,6 @@
       <th>Family</th>
       <th>Parent</th>
       <th>Dept</th>
-      <th>Subgroups</th>
       <th>Updated</th>
       <th>Actions</th>
     </tr>
@@ -25,7 +24,6 @@
       <td>{{ p.businessProcessFamilyName }}</td>
       <td>{{ p.parentProcessName || '—' }}</td>
       <td>{{ p.departmentName }}</td>
-      <td>{{ (p.deptSubgroupNames || []).join(', ') }}</td>
       <td>{{ p.lastUpdatedTimestamp | date:'short' }}</td>
       <td>
         <button (click)="edit(p.businessProcessId)">Edit</button>

@@ -79,7 +79,13 @@ public class BusinessProcessService {
 
     @Transactional(readOnly = true)
     public List<BusinessProcessDto> list() {
-        return businessProcessRepository.findAll().stream().map(
+        return businessProcessRepository.findForProcessStreamReport(
+                null,
+                null,
+                null,
+                null,
+                null
+        ).stream().map(
                 this::toDto
         ).toList();
     }
@@ -133,25 +139,24 @@ public class BusinessProcessService {
         businessProcessRepository.deleteById(businessProcessId);
     }
 
-    // Mapper
     private BusinessProcessDto toDto(BusinessProcess businessProcess) {
         var family = businessProcess.getBusinessProcessFamily();
         var parentProcess = businessProcess.getParentBusinessProcess();
 
-        var subgroupIds = businessProcess.getDeptSubgroups().stream()
+        var deptSubgroupIds = businessProcess.getDeptSubgroups().stream()
                 .map(DeptSubgroup::getDeptSubgroupId)
                 .map(Integer::intValue).toList();
 
-        var subgroupNames = businessProcess.getDeptSubgroups().stream()
+        var deptSubgroupNames = businessProcess.getDeptSubgroups().stream()
                 .map(DeptSubgroup::getDeptSubgroupName)
                 .toList();
 
-        Integer deptId = null;
-        String deptName = null;
+        Integer departmentId = null;
+        String departmentName = null;
 
         if (family != null && family.getDepartment().getDepartmentName() != null) {
-            deptId = family.getDepartment().getDepartmentId().intValue();
-            deptName = family.getDepartment().getDepartmentName();
+            departmentId = family.getDepartment().getDepartmentId().intValue();
+            departmentName = family.getDepartment().getDepartmentName();
         }
 
         return new BusinessProcessDto(
@@ -161,10 +166,10 @@ public class BusinessProcessService {
                 family != null ? family.getBusinessProcessFamilyName() : null,
                 parentProcess != null ? parentProcess.getBusinessProcessId().intValue() : null,
                 parentProcess != null ? parentProcess.getBusinessProcessName() : null,
-                deptId,
-                deptName,
-                subgroupIds,
-                subgroupNames,
+                departmentId,
+                departmentName,
+                deptSubgroupIds,
+                deptSubgroupNames,
                 businessProcess.getLastUpdatedTimestamp()
         );
     }

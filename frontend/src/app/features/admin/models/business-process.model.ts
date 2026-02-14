@@ -5,7 +5,7 @@ export interface BusinessProcess {
   businessProcessFamilyId: number;
   businessProcessFamilyName?: string;
 
-  parentProcessId?: number | null;
+  parentBusinessProcessId?: number | null;
   parentProcessName?: string | null;
 
   departmentId: number;

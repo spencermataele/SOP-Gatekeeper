@@ -19,7 +19,7 @@
 
     <label>
       Parent Process
-      <select formControlName="parentProcessId">
+      <select formControlName="parentBusinessProcessId">
         <option [ngValue]="null">None</option>
         <option *ngFor="let p of parents" [ngValue]="p.businessProcessId">
           {{ p.businessProcessName }}
@@ -36,7 +36,7 @@
       Dept Subgroups
       <select formControlName="deptSubgroupIds">
         <option [ngValue]="null">None</option>
-        <option *ngFor="let s of subgroups" [ngValue]="s.departmentId">
+        <option *ngFor="let s of subgroups" [ngValue]="s.deptSubgroupId">
           {{ s.deptSubgroupName }}
         </option>
       </select>

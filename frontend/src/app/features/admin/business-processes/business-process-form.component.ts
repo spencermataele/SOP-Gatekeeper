@@ -9,7 +9,11 @@ import { BusinessProcessFamily } from '../models/business-process-family.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 
-interface SubgroupLite { departmentId: number; deptSubgroupName: string; }
+interface SubgroupLite {
+  deptSubgroupId: number;
+  departmentId: number;
+  deptSubgroupName: string;
+}
 
 @Component({
   selector: 'app-business-process-form',
@@ -34,7 +38,7 @@ export class BusinessProcessFormComponent implements OnInit {
   form = this.fb.group({
     businessProcessName: ['', [Validators.required, Validators.maxLength(255)]],
     businessProcessFamilyId: [null as number | null, Validators.required],
-    parentProcessId: [null as number | null],
+    parentBusinessProcessId: [null as number | null],
     departmentId: [{ value: null as number | null, disabled: true }], // derived from family
     deptSubgroupIds: [[] as number[]],
   });
@@ -60,7 +64,7 @@ export class BusinessProcessFormComponent implements OnInit {
           this.form.patchValue({
             businessProcessName: p.businessProcessName,
             businessProcessFamilyId: p.businessProcessFamilyId,
-            parentProcessId: p.parentProcessId ?? null,
+            parentBusinessProcessId: p.parentBusinessProcessId ?? null,
             departmentId: p.departmentId,
             deptSubgroupIds: p.deptSubgroupIds || []
           });
@@ -131,7 +135,7 @@ export class BusinessProcessFormComponent implements OnInit {
     const payload = {
       businessProcessName: v.businessProcessName!,
       businessProcessFamilyId: v.businessProcessFamilyId!,
-      parentProcessId: v.parentProcessId ?? null,
+      parentBusinessProcessId: v.parentBusinessProcessId ?? null,
       departmentId: v.departmentId!,             // server validates it matches family's department
       deptSubgroupIds: v.deptSubgroupIds || [],
     };

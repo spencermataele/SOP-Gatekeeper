@@ -23,20 +23,34 @@ export class BusinessProcessesPageComponent implements OnInit {
   loading = false;
   q = '';
 
-  constructor(private svc: BusinessProcessService, private router: Router) {}
+  constructor(
+    private svc: BusinessProcessService,
+    private router: Router
+  ) {}
 
-  ngOnInit() { this.load(); }
+  ngOnInit() {
+    this.load();
+  }
 
   load() {
     this.loading = true;
     this.svc.list().subscribe({
-      next: data => { this.rows = data; this.loading = false; },
-      error: () => { this.loading = false; }
+      next: data => {
+        this.rows = data;
+        this.loading = false;
+        },
+      error: () => {
+        this.loading = false;
+      }
     });
   }
 
-  create() { this.router.navigate(['/admin/business-processes/new']); }
-  edit(id: number) { this.router.navigate(['/admin/business-processes', id]); }
+  create() {
+    this.router.navigate(['/admin/business-processes/new']);
+  }
+  edit(id: number) {
+    this.router.navigate(['/admin/business-processes', id]);
+  }
 
   remove(id: number, name: string) {
     if (!confirm(`Delete business process "${name}"?`)) return;
