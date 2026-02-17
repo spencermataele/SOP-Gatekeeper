@@ -10,16 +10,52 @@ INSERT INTO org (org_id, org_name) VALUES
 ON DUPLICATE KEY UPDATE org_name = VALUES(org_name);
 
 INSERT INTO org_group (org_group_id, org_id, org_group_name) VALUES
-  (1, 1, 'IT - Information Technology')
+  (1, 1, 'IT - Information Technology'),
+  (2, 1, 'Customer Service'),
+  (3, 1, 'Human Resources')
 ON DUPLICATE KEY UPDATE org_group_name = VALUES(org_group_name), org_id = VALUES(org_id);
 
 INSERT INTO department (department_id, org_group_id, department_name) VALUES
-  (10, 1, 'Process Governance')
+  (10, 1, 'Process Governance'),
+  (11, 1, 'Technical Support'),
+  (12, 1, 'DevOps'),
+
+  (20, 2, 'Implementations'),
+  (21, 2, 'Rapid Response'),
+  (22, 2, 'Customer Relations'),
+
+  (30, 3, 'Payroll'),
+  (31, 3, 'Talent Acquisitions'),
+  (32, 3, 'Employee Relations')
 ON DUPLICATE KEY UPDATE department_name = VALUES(department_name), org_group_id = VALUES(org_group_id);
 
 INSERT INTO dept_subgroup (dept_subgroup_id, department_id, dept_subgroup_name) VALUES
   (101, 10, 'Standard Operating Procedures'),
-  (102, 10, 'Admin')
+  (102, 10, 'Admin'),
+
+  (111, 11, 'Help Desk'),
+  (112, 11, 'Admin Support'),
+
+  (121, 12, 'Software Development'),
+  (122, 12, 'Software Engineering'),
+
+  (201, 20, 'Onboarding'),
+  (202, 20, 'Training & Development'),
+
+  (211, 21, 'Issue Resolution'),
+  (212, 21, 'Leadership'),
+
+  (221, 22, 'Sales Support'),
+  (222, 22, 'Solutions Services'),
+
+  (301, 30, 'Health & Benefits'),
+  (302, 30, 'Payroll Operations'),
+
+  (311, 31, 'Recruiting'),
+  (312, 31, 'Planning'),
+
+  (321, 32, 'Compensation'),
+  (322, 32, 'HR Operations')
 ON DUPLICATE KEY UPDATE dept_subgroup_name = VALUES(dept_subgroup_name), department_id = VALUES(department_id);
 
 -- Users

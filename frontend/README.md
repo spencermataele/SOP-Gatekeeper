@@ -45,7 +45,9 @@ B.  Design and develop a fully functional full stack (mobile or web) software pr
 *** An example of this can be found in backend/main/java/com.woven/app/service/user/UsersService.java lines 52-93.
     This service controls access, utilizes DTOs, and calls the repository safely in order to modify data in the database.
 
-●  ability to generate reports with multiple columns, multiple rows, date-time stamps, and title
+●  B4 ability to generate reports with multiple columns, multiple rows, date-time stamps, and title
+-----
+*** Refer to backend/main/java/com.woven/app/service/report/ReportService.java lines 19-111.  Also, navigate to the Reports section using the UI main menu option.
 
 ●  validation functionality
 

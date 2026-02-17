@@ -16,7 +16,7 @@ public class ReportService {
 
     @PersistenceContext
     private EntityManager em;
-
+/***EVALUATOR - Task B4 - ability to generate report with multiple columns and rows. ***/
     public List<OrgHierarchyRowDto> orgHierarchy(
             Integer orgId,
             String nameLike,
