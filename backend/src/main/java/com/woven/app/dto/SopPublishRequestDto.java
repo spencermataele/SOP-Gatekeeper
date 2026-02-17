@@ -35,7 +35,6 @@ public record SopPublishRequestDto(
         @NotNull
         Integer processFamilyId,
 
-        @NotNull
         Integer parentProcessId,
 
         @NotBlank

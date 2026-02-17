@@ -64,8 +64,7 @@ public class Sop {
     @Column(name = "business_process_family_id", nullable = false)
     private Integer processFamilyId;
 
-    @NotNull
-    @Column(name = "parent_business_process_id", nullable = false)
+    @Column(name = "parent_business_process_id")
     private Integer parentProcessId;
 
     @CreationTimestamp

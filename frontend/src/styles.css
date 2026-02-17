@@ -416,6 +416,20 @@ button:disabled {
   align-items: center;
 }
 
+.back-btn {
+  background-color: var(--brand-primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.back-btn:hover {
+  opacity: 0.9;
+}
+
 .page-title {
   font-weight: 600;
   color: var(--gray-900);

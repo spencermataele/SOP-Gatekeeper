@@ -32,13 +32,13 @@ public class ProcessOwnerService {
     public ProcessOwner create(@Valid ProcessOwnerCreateDto dto) {
         ProcessOwner po = new ProcessOwner();
         applyDto(po, dto);
-        return repo.save(po); // ✅ save the ENTITY, not the DTO
+        return repo.save(po);
     }
 
     public ProcessOwner update(Integer id, @Valid ProcessOwnerCreateDto dto) {
         ProcessOwner po = get(id);
         applyDto(po, dto);
-        return repo.save(po); // ✅ save the ENTITY
+        return repo.save(po);
     }
 
     public void delete(Integer id) {
@@ -47,7 +47,7 @@ public class ProcessOwnerService {
 
     // --- helper to map DTO -> entity
     private void applyDto(ProcessOwner po, ProcessOwnerCreateDto dto) {
-        // If your record fields are processOwnerName/processOwnerPositionId:
+        po.setBusinessProcessOwnerId(dto.businessProcessOwnerId());
         po.setName(dto.name());
         po.setPositionId(dto.positionId());
     }

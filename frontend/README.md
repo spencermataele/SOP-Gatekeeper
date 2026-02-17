@@ -1,27 +1,69 @@
-# Frontend
+*** Dear Evaluator, ***
+-----
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.0.7.
+***Please use this README to assist in locating each task 3 requirement.
+-----
+A.  Create your subgroup and project by logging into GitLab using the web link provided and using the “GitLab How-To” web link, and do the following:
 
-## Development server
+●  Clone the project to the IDE.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+●  Commit with a message and push when you complete each of the tasks listed below (e.g., parts B to E).
 
-## Code scaffolding
+*** Though each task is described in one way or another, there are many commits.  So this README will help point you to examples as well.
+-----
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Note: You may commit and push whenever you want to back up your changes, even if a task is not complete.
 
-## Build
+●  Submit a copy of the GitLab repository URL and a copy of the repository branch history retrieved from your repository, which must include the commit messages and dates.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Note: Wait until you have completed all the following prompts before you create your copy of the repository branch history.
 
-## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+B.  Design and develop a fully functional full stack (mobile or web) software product that addresses your identified business problem or organizational need. Include each of the following attributes, as they are the minimum required elements for the application:
 
-## Running end-to-end tests
+●  code including inheritance, polymorphism, and encapsulation
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+*** An example of inheritance can be found at backend/main/java/com.woven/app/repository/SopRepository line 10.  
+  Here you'll notice the repository is inheriting CRUD behavior from JpaRepository.  This give save(), findById()
+  delete(), paging, and sorting.
 
-## Further help
+●  search functionality with multiple row results and displays
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+●  a database component with the functionality to securely add, modify, and delete the data
+
+●  ability to generate reports with multiple columns, multiple rows, date-time stamps, and title
+
+●  validation functionality
+
+●  industry-appropriate security features
+
+●  design elements that make the application scalable
+
+●  a user-friendly, functional GUI
+
+
+C.  Create each of the following forms of documentation for the software product you have developed:
+
+●  a design document including a class diagram and design diagram
+
+●  link to where the web app is hosted with HTML code (if applicable)
+
+●  link to the GitLab repository of the code indicating the version included in this submission
+
+●  user guide for setting up and running the application for maintenance purposes
+
+●  user guide for running the application from a user perspective
+
+
+D.  Explain how the software product was tested, including the following:
+
+●  a test plan for a unit test, including screenshots
+
+●  unit test scripts
+
+●  the results of the unit tests based on the provided test plan, including screenshots
+
+●  summaries of changes resulting from completed tests
+
+
+E.  Provide a Panopto video recording that includes a demonstration of the functionality of the software application and a summary of the tool or tools used.

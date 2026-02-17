@@ -11,7 +11,6 @@ import java.time.Instant;
 public class ProcessOwner {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "business_process_owner_id")
     private Integer businessProcessOwnerId;
 

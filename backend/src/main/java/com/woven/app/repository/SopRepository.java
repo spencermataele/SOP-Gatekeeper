@@ -7,13 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+
 public interface SopRepository extends JpaRepository<Sop, Integer> {
 
-    // For sop list, show only active sops
-    // TODO: Depreciate isActive
-    List<Sop> findByIsActiveTrue();
-
-    List<Sop> findByStatus(SopStatus currentStatus);
+        List<Sop> findByStatus(SopStatus currentStatus);
 
     // For creating change request draft
     Optional<Sop> findBySopIdAndStatus(Integer sopId, SopStatus currentStatus);

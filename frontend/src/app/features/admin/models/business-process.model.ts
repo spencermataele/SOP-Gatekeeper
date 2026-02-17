@@ -2,10 +2,10 @@ export interface BusinessProcess {
   businessProcessId: number;
   businessProcessName: string;
 
-  businessProcessFamilyId: number;
+  businessProcessFamily: number;
   businessProcessFamilyName?: string;
 
-  parentBusinessProcessId?: number | null;
+  parentBusinessProcess?: number | null;
   parentProcessName?: string | null;
 
   departmentId: number;

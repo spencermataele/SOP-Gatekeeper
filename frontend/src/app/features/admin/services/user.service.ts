@@ -4,7 +4,6 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {UserDto} from "../../sops/models/user.model";
 
-
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private base = `${environment.apiBaseUrl}/admin/users`;

@@ -46,7 +46,6 @@ public record SopDto(
         @NotNull
         Integer processFamilyId,
 
-        @NotNull
         Integer parentProcessId,
 
         Instant createdTimestamp,

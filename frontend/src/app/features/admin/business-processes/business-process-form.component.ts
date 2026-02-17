@@ -63,12 +63,12 @@ export class BusinessProcessFormComponent implements OnInit {
         next: p => {
           this.form.patchValue({
             businessProcessName: p.businessProcessName,
-            businessProcessFamilyId: p.businessProcessFamilyId,
-            parentBusinessProcessId: p.parentBusinessProcessId ?? null,
+            businessProcessFamilyId: p.businessProcessFamily,
+            parentBusinessProcessId: p.parentBusinessProcess ?? null,
             departmentId: p.departmentId,
             deptSubgroupIds: p.deptSubgroupIds || []
           });
-          this.onFamilyChanged(p.businessProcessFamilyId);
+          this.onFamilyChanged(p.businessProcessFamily);
           this.loading = false;
         },
         error: () => { this.error = 'Failed to load.'; this.loading = false; }

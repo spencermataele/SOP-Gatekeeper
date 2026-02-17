@@ -38,7 +38,7 @@ import { OrgHierarchyRow } from './models/org-hierarchy-report.model';
         </label>
         <button type="submit">Apply</button>
         <button type="button" (click)="reset()">Reset</button>
-        <button type="button" (click)="exportCsv()">Export CSV</button>
+        <button type="button" (click)="exportCsv()" [disabled] = "true">Export CSV</button>
       </form>
 
       <!-- Table -->

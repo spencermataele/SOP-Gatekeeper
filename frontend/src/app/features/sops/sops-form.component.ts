@@ -38,11 +38,11 @@ export class SopsFormComponent implements OnInit {
   saving = false;
   errorMsg?: string;
   private loadingExisting = false;
+  private suppressFamilyCascade = false;
   userId: number | null = null;
   existingSopDetails = '';
   mode: 'edit' | 'approve' = 'edit';
   changeRequest?: any;
-
 
   // master lists
   orgs: OrgDto[] = [];
@@ -263,18 +263,23 @@ export class SopsFormComponent implements OnInit {
       .filter(f => this.match(f.businessProcessFamilyName));
   }
   filteredProcesses() {
+
     const famId = this.form.value.businessProcessFamilyId ?? null;
-    return this.businessProcess
-      .filter(p => (!famId || p.businessProcessFamilyId === famId))
+
+    const result = this.businessProcess
+      .filter(p => (!famId || p.businessProcessFamily === famId))
       .filter(p => this.match(p.businessProcessName));
+
+    return result;
   }
+
   filteredParentProcesses() {
     const famId = this.form.value.businessProcessFamilyId ?? null;
     const currentProcId = this.form.value.businessProcessId ?? null;
 
     return this.businessProcess
       .filter(p =>
-        (!famId || p.businessProcessFamilyId === famId) &&
+        (!famId || p.businessProcessFamily === famId) &&
         p.businessProcessId !== currentProcId
       )
       .sort((a, b) => a.businessProcessName.localeCompare(b.businessProcessName))
@@ -377,10 +382,19 @@ export class SopsFormComponent implements OnInit {
   }
 
   onProcessFamilyChange() {
+
+    if (this.suppressFamilyCascade) return;
+
     const famId = this.form.value.businessProcessFamilyId ?? null;
 
+    const currentProcId = this.form.value.businessProcessId ?? null;
+
+    const procId = currentProcId ? this.businessProcessById.get(currentProcId) : undefined;
+
+    const procBelongsToFamily = procId && procId.businessProcessFamily === famId;
+
     // Clear downstream fields
-    if (!this.loadingExisting) {
+    if (!this.loadingExisting && !procBelongsToFamily) {
       this.form.patchValue({
         businessProcessId: null,
         parentProcessId: null
@@ -388,9 +402,10 @@ export class SopsFormComponent implements OnInit {
     }
 
     const fam = famId ? this.businessProcessFamilyId.get(famId) : undefined;
+
     if (!this.loadingExisting && fam && fam.departmentId && this.form.value.departmentId !== fam.departmentId) {
       this.form.patchValue({ departmentId: fam.departmentId });
-      this.onDeptChange(); // reuse your existing cascade
+      this.onDeptChange();
     }
   }
 
@@ -414,17 +429,21 @@ export class SopsFormComponent implements OnInit {
       // Auto-fill parent id
       if (!this.loadingExisting) {
         this.form.patchValue({
-          parentProcessId: proc.parentBusinessProcessId ?? null
+          parentProcessId: proc.parentBusinessProcess ?? null
         });
       }
 
       if (
-        proc.businessProcessFamilyId &&
-        this.form.value.businessProcessFamilyId !== proc.businessProcessFamilyId
+        proc.businessProcessFamily && this.form.value.businessProcessFamilyId !== proc.businessProcessFamily
       ) {
+
+        this.suppressFamilyCascade = true;
+
         this.form.patchValue({
-          businessProcessFamilyId: proc.businessProcessFamilyId
+          businessProcessFamilyId: proc.businessProcessFamily
         });
+
+        this.suppressFamilyCascade = false;
       }
 
       if (
@@ -452,14 +471,14 @@ export class SopsFormComponent implements OnInit {
 
     //Update the family automatically if different
     if (
-      parentProc.businessProcessFamilyId &&
-      this.form.value.businessProcessFamilyId !== parentProc.businessProcessFamilyId
+      parentProc.businessProcessFamily &&
+      this.form.value.businessProcessFamilyId !== parentProc.businessProcessFamily
     ) {
-      this.form.patchValue({ businessProcessFamilyId: parentProc.businessProcessFamilyId });
+      this.form.patchValue({ businessProcessFamilyId: parentProc.businessProcessFamily });
     }
 
     //Update department if applicable
-    const family = this.businessProcessFamilyId.get(parentProc.businessProcessFamilyId);
+    const family = this.businessProcessFamilyId.get(parentProc.businessProcessFamily);
     if ( family && family.departmentId && this.form.value.departmentId !== family.departmentId ) {
       this.form.patchValue({ departmentId: family.departmentId });
       this.onDeptChange();
@@ -491,7 +510,7 @@ export class SopsFormComponent implements OnInit {
   }
 
   goToNewProcessOwner() {
-      this.router.navigate(['/admin/process-owners/new']);
+      this.router.navigate(['/admin/process-owners']);
   }
 
   //SOP details steps

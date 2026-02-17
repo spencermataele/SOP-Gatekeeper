@@ -3,6 +3,7 @@ import {NotificationService} from "./features/notifications/notification.service
 import {NavigationEnd, Router} from "@angular/router";
 import {filter} from "rxjs";
 import {AuthService} from "./features/authorization/auth.service";
+import {Location} from "@angular/common";
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ export class AppComponent implements OnInit {
   constructor(
     private notificationService: NotificationService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +49,10 @@ export class AppComponent implements OnInit {
   public logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
 }
