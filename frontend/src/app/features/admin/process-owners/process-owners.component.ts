@@ -121,7 +121,7 @@ export class ProcessOwnersComponent implements OnInit {
       error: () => this.error = 'Delete failed (possibly in use by an SOP)'
     });
   }
-
+/***EVALUATOR - Task B2 - Search functionality ***/
   filtered(): ProcessOwner[] {
     const name = this.filterName.trim().toLowerCase();
     const id = this.filterId && Number.isFinite(this.filterId) ? Number(this.filterId) : undefined;

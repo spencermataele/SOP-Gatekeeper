@@ -24,9 +24,20 @@ ON DUPLICATE KEY UPDATE dept_subgroup_name = VALUES(dept_subgroup_name), departm
 
 -- Users
 INSERT INTO users (id, username, email, password, full_name, role) VALUES
-  (1, 'Admin', 'admin@woven.com', '$2a$10$GruJr8hVNWnPUljSLmTdruoHohapg8G9VBsiBKTsTCzbV.zIGTs3e', 'System Admin', 'ADMIN')
+  (1, 'Admin', 'admin@woven.com', '$2a$10$GruJr8hVNWnPUljSLmTdruoHohapg8G9VBsiBKTsTCzbV.zIGTs3e', 'System Admin', 'ADMIN'),
+  (2, 'JohnA', 'johna@woven.com', '$2a$10$GruJr8hVNWnPUljSLmTdruoHohapg8G9VBsiBKTsTCzbV.zIGTs3e', 'John Anderson', 'USER'),
+  (3, 'JohnB', 'johnb@woven.com', '$2a$10$GruJr8hVNWnPUljSLmTdruoHohapg8G9VBsiBKTsTCzbV.zIGTs3e', 'John Benito', 'USER'),
+  (4, 'JaneA', 'janea@woven.com', '$2a$10$GruJr8hVNWnPUljSLmTdruoHohapg8G9VBsiBKTsTCzbV.zIGTs3e', 'Jane Anderson', 'USER')
 ON DUPLICATE KEY UPDATE
   username=VALUES(username), email=VALUES(email), full_name=VALUES(full_name), role=VALUES(role);
+
+INSERT INTO business_process_owner (business_process_owner_id, business_process_owner_name, business_process_owner_position_id) VALUES
+  (1, 'System Admin', 100),
+  (2, 'John Anderson', 200),
+  (3, 'John Benito', 200),
+  (4, 'Jane Anderson', 200)
+ON DUPLICATE KEY UPDATE
+  business_process_owner_id=VALUES(business_process_owner_id), business_process_owner_name=VALUES(business_process_owner_name), business_process_owner_position_id=VALUES(business_process_owner_position_id);
 
 -- Business process
 INSERT INTO business_process_family (business_process_family_id, business_process_family_name, department_id) VALUES
@@ -383,7 +394,7 @@ ON DUPLICATE KEY UPDATE
   is_active=VALUES(is_active), status=VALUES(status), supersedes_sop_id=VALUES(supersedes_sop_id);
 
 -- Make sure not to collide with seeded rows
-ALTER TABLE users AUTO_INCREMENT = 2;
+ALTER TABLE users AUTO_INCREMENT = 5;
 ALTER TABLE sop AUTO_INCREMENT = 10;
 
 SET foreign_key_checks = 1;

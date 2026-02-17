@@ -21,8 +21,8 @@ Note: Wait until you have completed all the following prompts before you create 
 
 B.  Design and develop a fully functional full stack (mobile or web) software product that addresses your identified business problem or organizational need. Include each of the following attributes, as they are the minimum required elements for the application:
 
-●  code including inheritance, polymorphism, and encapsulation
-
+●  B1 code including inheritance, polymorphism, and encapsulation
+-----
 *** INHERITANCE An example of inheritance can be found at backend/main/java/com.woven/app/repository/SopRepository.java line 10. 
                       Here you'll notice the repository is inheriting CRUD behavior from JpaRepository.  This give save(), findById(), delete(), paging, and sorting.
                 Another example can be found at backend/main/java/com.woven/app/service/user/AppUserDetails.java line 11.
@@ -34,7 +34,11 @@ B.  Design and develop a fully functional full stack (mobile or web) software pr
 
 *** ENCAPSULATION You'll find that this app uses several DTO layers to isolate the DB from API contracts.  Refer to backend/main/java/com.woven/app/SopDto.java. 
 
-●  search functionality with multiple row results and displays
+●  B2 search functionality with multiple row results and displays
+-----
+*** A search tool implementation can be found at fronted/src/app/features/admin/process-owners/process-owners.componenet.ts line 125.  
+      You may also navigate to the Process Owners page in the UI by selecting the Admin option in the main menu and then the Process Owners option.
+      Test by searching for "John" and also by "Anderson".  You see the list filter to all rows containing those values.
 
 ●  a database component with the functionality to securely add, modify, and delete the data
 
