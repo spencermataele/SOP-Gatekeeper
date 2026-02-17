@@ -121,7 +121,7 @@ public class ChangeRequestService {
 
         System.out.println("currentUser.id = " + approverId);
 
-
+/*** EVALUATOR - Task B5 - Validation functionality ***/
         ChangeApproval approval = changeApprovalRepository.findById(approvalId).orElseThrow(
                 () -> new SecurityException("Approval not found for this user")
         );

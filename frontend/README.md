@@ -49,7 +49,11 @@ B.  Design and develop a fully functional full stack (mobile or web) software pr
 -----
 *** Refer to backend/main/java/com.woven/app/service/report/ReportService.java lines 19-111.  Also, navigate to the Reports section using the UI main menu option.
 
-●  validation functionality
+●  B5 validation functionality
+-----
+*** Example 1: backend/main/java/com.woven/app/dto/ProcessOwnerCreateDto.java.  This implements Jakarta validation annotation to prevent null/blank values.
+    Example 2: backend/main/java/com.woven/app/service/ChangeRequestService.java lines 124-135.  You'll find validators to check a change approval id, to make sure
+      the current user is a valid approver, and that the approval is in a valid status prior making modifications.
 
 ●  industry-appropriate security features
 
