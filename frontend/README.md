@@ -55,7 +55,13 @@ B.  Design and develop a fully functional full stack (mobile or web) software pr
     Example 2: backend/main/java/com.woven/app/service/ChangeRequestService.java lines 124-135.  You'll find validators to check a change approval id, to make sure
       the current user is a valid approver, and that the approval is in a valid status prior making modifications.
 
-●  industry-appropriate security features
+●  B6 industry-appropriate security features
+-----
+*** Example 1: backend/main/java/com.woven/app/config/PasswordConfig.java where you'll see that I implement BCryptPasswordEncoder() to make sure passwords are encrypted 
+      and never stored in plain text.  
+    Example 2: backend/main/java/com.woven/app/service/userAuth/JwtService.java line 30.  Here I use JWT authentication by using a secure token exchange with expiration.
+    Example 3: backend/main/java/com.woven/app/service/ChangeRequestService.java line 174.  New SOP are not able to be published unless the current user is the original 
+      SOP's process owner for data integrity and a primary governance feature.
 
 ●  design elements that make the application scalable
 

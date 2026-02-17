@@ -25,7 +25,7 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;
     }
-
+/*** EVALUATOR - Task B6 - Security features ***/
     // Generate token
     public String generateToken(String username) {
         Date now = new Date();
