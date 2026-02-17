@@ -293,14 +293,6 @@ public class ChangeRequestService {
     // Upon submit, create approvals
     private void createApprovals(ChangeRequest changeRequest) {
 
-        /* For MVP, approver will be process owner for now
-        List<ApproverRole> roles = List.of(
-                ApproverRole.PROCESS_OWNER,
-                ApproverRole.DEPARTMENT_HEAD,
-                ApproverRole.QUALITY_ASSURANCE
-        );
-         */
-
         Sop original = originalSop(changeRequest);
 
         Integer currentProcessOwnerId = original.getCurrentProcessOwnerId();

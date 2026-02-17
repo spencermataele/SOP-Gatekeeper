@@ -62,15 +62,6 @@ public class SopService {
         return toDto(saved);
     }
 
-    /*  Delete not necessary with version control
-    public void delete(Integer id) {
-        if (!sopRepository.existsById(id)) {
-            throw new EntityNotFoundException("Sop not found" + id);
-        }
-        sopRepository.deleteById(id);
-    }
-    */
-
     private SopDto toDto(Sop sop) {
         return new SopDto(
                 sop.getSopId(),
@@ -115,8 +106,6 @@ public class SopService {
         entity.setProcessName(dto.processName());
         entity.setProcessFamilyId(dto.processFamilyId());
         entity.setParentProcessId(dto.parentProcessId());
-        // created_timestamp created by db trigger
-        // updated_timestamp created by db trigger
         entity.setVersionId(dto.versionId());
         entity.setSopDescription(dto.sopDescription());
         entity.setSopDetails(dto.sopDetails());

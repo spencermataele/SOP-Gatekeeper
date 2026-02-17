@@ -48,7 +48,7 @@ public class UsersService implements UserDetailsService {
                 .map(this::toDto)
                 .toList();
     }
-
+/***EVALUATOR - Task B3 - Service interacts with dto and repo to add, modify, and delete data in the database***/
     @Transactional
     public UserDto create(UserCreateDto dto) {
         User entity = new User();

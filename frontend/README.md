@@ -28,7 +28,7 @@ B.  Design and develop a fully functional full stack (mobile or web) software pr
                 Another example can be found at backend/main/java/com.woven/app/service/user/AppUserDetails.java line 11.
                       Here you will see that AppUserDetails inherits UserDetails from springframework.secuity.
 
-*** POLYMORPHISM A good example of polymorphism can be found at backend/main/java/com.woven/app/service/ChangeRequestService.java line 421.
+*** POLYMORPHISM A good example of polymorphism can be found at backend/main/java/com.woven/app/service/ChangeRequestService.java line 413.
                       Here the findAll() method uses variable type ChangeRequestRepository changeRequestRepository.  Spring uses this as a parent
                       type and refers to a child implementation (SimpleJpaRepository) at runtime.
 
@@ -40,7 +40,10 @@ B.  Design and develop a fully functional full stack (mobile or web) software pr
       You may also navigate to the Process Owners page in the UI by selecting the Admin option in the main menu and then the Process Owners option.
       Test by searching for "John" and also by "Anderson".  You see the list filter to all rows containing those values.
 
-●  a database component with the functionality to securely add, modify, and delete the data
+●  B3 a database component with the functionality to securely add, modify, and delete the data
+-----
+*** An example of this can be found in backend/main/java/com.woven/app/service/user/UsersService.java lines 52-93.
+    This service controls access, utilizes DTOs, and calls the repository safely in order to modify data in the database.
 
 ●  ability to generate reports with multiple columns, multiple rows, date-time stamps, and title
 
