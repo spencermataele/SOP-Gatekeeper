@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 
-/*** Used by the controller to send/receive SOP data without exposing the JPA entity directly. ***/
+/*** EVALUATOR - Task B1 - Encapsulation ***/
 public record SopDto(
 
         Integer sopId,

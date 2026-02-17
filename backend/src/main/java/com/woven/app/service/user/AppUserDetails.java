@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-
+/*** EVALUATOR - Task B1 - Inheritance ***/
 public class AppUserDetails implements UserDetails {
 
     private final User user;

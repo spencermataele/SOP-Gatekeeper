@@ -23,9 +23,16 @@ B.  Design and develop a fully functional full stack (mobile or web) software pr
 
 ●  code including inheritance, polymorphism, and encapsulation
 
-*** An example of inheritance can be found at backend/main/java/com.woven/app/repository/SopRepository line 10.  
-  Here you'll notice the repository is inheriting CRUD behavior from JpaRepository.  This give save(), findById()
-  delete(), paging, and sorting.
+*** INHERITANCE An example of inheritance can be found at backend/main/java/com.woven/app/repository/SopRepository.java line 10. 
+                      Here you'll notice the repository is inheriting CRUD behavior from JpaRepository.  This give save(), findById(), delete(), paging, and sorting.
+                Another example can be found at backend/main/java/com.woven/app/service/user/AppUserDetails.java line 11.
+                      Here you will see that AppUserDetails inherits UserDetails from springframework.secuity.
+
+*** POLYMORPHISM A good example of polymorphism can be found at backend/main/java/com.woven/app/service/ChangeRequestService.java line 421.
+                      Here the findAll() method uses variable type ChangeRequestRepository changeRequestRepository.  Spring uses this as a parent
+                      type and refers to a child implementation (SimpleJpaRepository) at runtime.
+
+*** ENCAPSULATION You'll find that this app uses several DTO layers to isolate the DB from API contracts.  Refer to backend/main/java/com.woven/app/SopDto.java. 
 
 ●  search functionality with multiple row results and displays
 

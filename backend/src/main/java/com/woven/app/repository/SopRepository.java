@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-
+/*** EVALUATOR - Task B1 - Inheritance ***/
 public interface SopRepository extends JpaRepository<Sop, Integer> {
 
         List<Sop> findByStatus(SopStatus currentStatus);
