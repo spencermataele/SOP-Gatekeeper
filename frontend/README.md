@@ -1,23 +1,14 @@
 *** Dear Evaluator, ***
 -----
 
-***Please use this README to assist in locating each task 3 requirement.
+***Please use this README to assist in locating each task 3 section B requirement.
 -----
-A.  Create your subgroup and project by logging into GitLab using the web link provided and using the “GitLab How-To” web link, and do the following:
-
-●  Clone the project to the IDE.
-
 ●  Commit with a message and push when you complete each of the tasks listed below (e.g., parts B to E).
 
 *** Though each task is described in one way or another, there are many commits.  So this README will help point you to examples as well.
 -----
 
 Note: You may commit and push whenever you want to back up your changes, even if a task is not complete.
-
-●  Submit a copy of the GitLab repository URL and a copy of the repository branch history retrieved from your repository, which must include the commit messages and dates.
-
-Note: Wait until you have completed all the following prompts before you create your copy of the repository branch history.
-
 
 B.  Design and develop a fully functional full stack (mobile or web) software product that addresses your identified business problem or organizational need. Include each of the following attributes, as they are the minimum required elements for the application:
 
@@ -63,33 +54,16 @@ B.  Design and develop a fully functional full stack (mobile or web) software pr
     Example 3: backend/main/java/com.woven/app/service/ChangeRequestService.java line 174.  New SOP are not able to be published unless the current user is the original 
       SOP's process owner for data integrity and a primary governance feature.
 
-●  design elements that make the application scalable
+●  B7 design elements that make the application scalable
+-----
+*** Example 1: This is evident in my use of layered architecture that separate responsibilities. Each process flow includes 
+      Controller -> Service -> Repo -> Database.  I.e. ChangeRequestController -> ChangeRequestService -> ChangeRequestRepository -> MySQL Database.
+    Example 2: I also make consistent use of DTOs that prevent over-fetching data.  I.e. SopDto, SopPublishRequestDto, ProcessOwnerCreateDto, etc.
 
-●  a user-friendly, functional GUI
+●  B8 a user-friendly, functional GUI
+-----
+*** Some good examples of this can be found in frontend/src/app/features/sops/sops-form.component.ts.
+      Lines 240 - 514.  As the user selects values from drop menus, other drop menus will filter their values if related so that the menu options decrease as you select parent
+        options.  This also results in a quick experience if you pick the last child as each parent up the family tree will autofill.
+    Also, on the corresponding html (frontend/src/app/features/sops/sops-form.component.html) page, each field includes form validators as well as style validation on required fields.
 
-
-C.  Create each of the following forms of documentation for the software product you have developed:
-
-●  a design document including a class diagram and design diagram
-
-●  link to where the web app is hosted with HTML code (if applicable)
-
-●  link to the GitLab repository of the code indicating the version included in this submission
-
-●  user guide for setting up and running the application for maintenance purposes
-
-●  user guide for running the application from a user perspective
-
-
-D.  Explain how the software product was tested, including the following:
-
-●  a test plan for a unit test, including screenshots
-
-●  unit test scripts
-
-●  the results of the unit tests based on the provided test plan, including screenshots
-
-●  summaries of changes resulting from completed tests
-
-
-E.  Provide a Panopto video recording that includes a demonstration of the functionality of the software application and a summary of the tool or tools used.
