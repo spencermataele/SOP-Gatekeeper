@@ -66,4 +66,3 @@ B.  Design and develop a fully functional full stack (mobile or web) software pr
       Lines 240 - 514.  As the user selects values from drop menus, other drop menus will filter their values if related so that the menu options decrease as you select parent
         options.  This also results in a quick experience if you pick the last child as each parent up the family tree will autofill.
     Also, on the corresponding html (frontend/src/app/features/sops/sops-form.component.html) page, each field includes form validators as well as style validation on required fields.
-
