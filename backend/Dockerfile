@@ -1,16 +1,19 @@
 FROM maven:3.9.9-eclipse-temurin-21 AS build
-WORKDIR /app
-COPY pom.xml .
-COPY frontend/pom.xml frontend/pom.xml
-COPY backend/pom.xml backend/pom.xml
-RUN mvn -q -DskipTests dependency:go-offline
 
-COPY . .
-RUN mvn -q -DskipTests -pl backend -am package
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn -DskipTests package
+
 
 FROM eclipse-temurin:21-jre-jammy AS runtime
+
 WORKDIR /app
-RUN apt-get updateDraft && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
-COPY --from=build /app/backend/target/*.jar /app/app.jar
+
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+
+ENTRYPOINT ["java","-jar","app.jar"]
