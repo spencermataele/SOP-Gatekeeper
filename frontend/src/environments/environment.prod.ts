@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://woven1-frontend-production.up.railway.app'
+  apiBaseUrl: 'sop-gatekeeper-production.up.railway.app'
 };
