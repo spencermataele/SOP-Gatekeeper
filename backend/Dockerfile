@@ -1,19 +1,19 @@
+# Build stage
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
 COPY pom.xml .
-COPY src ./src
+COPY backend ./backend
 
-RUN mvn -DskipTests package
+RUN mvn -pl backend -am clean package -DskipTests
 
-
-FROM eclipse-temurin:21-jre-jammy AS runtime
+FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/backend/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
