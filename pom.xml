@@ -29,11 +29,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!-- No extra spring-boot-dependencies BOM; parent already manages versions -->
+
     <build>
         <pluginManagement>
             <plugins>
-                <!-- No explicit version needed; managed by Boot parent -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
@@ -50,4 +49,25 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <profile>
+            <id>production</id>
+
+            <properties>
+                <spring.profiles.active>prod</spring.profiles.active>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+    </profiles>
 </project>
+
