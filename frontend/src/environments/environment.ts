@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiBaseUrl: 'sop-gatekeeper-production.up.railway.app'
+  apiBaseUrl: 'https://sop-gatekeeper-production.up.railway.app'
 };
 
 /*
