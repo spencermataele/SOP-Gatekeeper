@@ -37,8 +37,9 @@ application that routes requests among client databases is not the selected arch
 | Business process | Process to which an SOP belongs; identifies its accountable process owner. |
 | SOP | Stable identity spanning every revision, with an explicit current-published revision reference. |
 | Revision | Content, metadata, original version label, lifecycle state, and provenance for one version. |
-| Change request | Submission and review of a particular revision of an SOP. |
-| Approval decision | Actor, decision, time, comments, and any self-approval exception. |
+| Change request | Review workflow retaining submitted snapshots and identifying exactly one current review candidate. |
+| Review candidate | Immutable submitted snapshot; reviewer edits create a successor candidate within the same request. |
+| Approval decision | Actor, exact candidate identity, decision, time, comments, and any self-approval exception. |
 | Historical position | Ordering within an SOP's history, independent of upload time and version label. |
 | Audit event | Durable record of a business action and its actor. |
 | Notification delivery | A recipient/channel-specific attempt to communicate a business event. |
@@ -56,6 +57,8 @@ Required invariants:
   timestamps are distinct. Never manufacture a Gatekeeper approval for an imported document.
 - The authenticated actor comes from the server's security context, not a caller-supplied user ID.
 - Client-side controls support usability; the backend enforces every permission and transition.
+- Approvals apply only to the exact candidate reviewed. Superseding a candidate preserves its
+  decisions as history but never carries their approval authority onto changed content.
 
 ## 3. Permission and approval policy
 
@@ -104,6 +107,7 @@ finer visibility policy before production; organization membership is not necess
 | Create SOP or revision draft | Within allowed processes | Yes | Within allowed processes | Yes |
 | Edit, submit, or cancel a draft | Own draft | Own draft | Own draft | Own draft; no silent override |
 | Review submitted content | When explicitly entitled | When routed | When routed | When routed |
+| Suggest edits and submit a revised candidate | No, unless separately an eligible assigned reviewer | When assigned to review | When assigned to review | When assigned to review |
 | Approve or reject | No | Per routing rules | Per routing rules | Per routing rules |
 | Self-approve | No | Yes, explicit exception | No, unless also owner/admin | Yes, explicit exception |
 | Attest imported current SOP | No | Yes, relevant process | No, unless also owner/admin | Yes |
@@ -113,12 +117,46 @@ finer visibility policy before production; organization membership is not necess
 Administrators must not be able to silently rewrite published content or approval history.
 Exceptional administrative correction/reassignment needs a separate audited operation if added.
 
+### Confirmed reviewer-editing workflow
+
+An eligible assigned approver may select **Suggest edits** to create an editable copy of the
+submitted candidate. The existing submitted snapshot is never edited in place. The working copy
+is private to the editing step and does not replace the candidate being reviewed until the editor
+selects **Submit revised candidate**.
+
+Submission preserves the author's candidate as a superseded snapshot and makes the revised
+snapshot the sole current review candidate in the same change request. Record the editor, changes,
+reason, predecessor candidate, and time. Preserve every submitted candidate for authorized
+comparison and audit. Do not require or record a rejection solely to incorporate reviewer edits.
+Rejection continues to mean that the proposed change should not proceed.
+
+Notify the original author when a revised candidate is submitted. Their acceptance is not required
+by default. Route the new candidate to eligible reviewers and retain earlier approval decisions
+as historical decisions applicable only to their original candidate.
+
+The editor becomes a participant in the revised candidate. Preserve the original author's and
+other contributors' participant IDs across the candidate lineage; copying or changing the submitter
+must not erase participation. Re-evaluate routing and reviewer eligibility after each submission:
+
+- A process owner who edits routes the candidate to their eligible manager or an administrator,
+  or uses the explicit self-approval exception with its required reason and notifications.
+- An administrator who edits normally routes the candidate to the process owner, or uses the
+  explicit self-approval exception.
+- A manager who edits cannot approve their contribution unless separately eligible for the
+  process-owner or administrator self-approval exception. Route to an eligible independent reviewer
+  under the existing policy; a nominal reviewer who is also a participant is not independent.
+
+If routing leaves no eligible independent reviewer, expose only an authorized explicit self-approval
+path or an explained block. Never silently treat a participant's decision as normal approval.
+
 ## 4. Confirmed lifecycle and concurrency rules
 
 | Action | Preconditions | Result |
 | --- | --- | --- |
 | Create draft | Authorized actor; process and owner identified | Editable DRAFT; no publication change |
 | Submit | Authorized draft author; valid content; eligible reviewer or explicit exception path | IN_REVIEW; freeze submitted content; record review assignment |
+| Suggest edits | Eligible assigned reviewer; request IN_REVIEW | Editable reviewer copy; existing candidate remains immutable |
+| Submit revised candidate | Authorized reviewer-editor; valid content; unchanged current candidate and request state | Atomically supersede previous candidate, record participants/audit/event, and reroute review; request remains IN_REVIEW |
 | Reject | Assigned eligible reviewer; request IN_REVIEW | REJECTED; reason recorded; requester notified |
 | Revise rejection | Authorized author | New editable attempt retaining the rejected submission and decision |
 | Cancel | Authorized author; DRAFT | CANCELLED; retained history; no publication change |
@@ -141,6 +179,13 @@ cancelled, or rejected request must fail without changing its history.
 An owner, manager, or role change that invalidates the assignment requires audited reassignment.
 A missing manager must not silently cause ordinary self-approval; route to an eligible admin.
 If none exists, explain the block and the permitted exception path.
+
+Candidate replacement and publication must use the same request-level concurrency check. If
+replacement wins, approval of the previous candidate fails as stale. If publication wins, submission
+of the working copy fails rather than reopening the completed request. Merely opening an editing
+copy does not indefinitely lock publication. Concurrent reviewer submissions cannot silently replace
+each other: the later submission must reconcile with the new candidate. A failed replacement leaves
+the previous candidate, decisions, and publication reference unchanged and sends no success notice.
 
 ## 5. Intake, history, and comparisons
 
@@ -203,6 +248,8 @@ Maintain separate records for:
 publication -> requester and process owner. Self-approval additionally follows the confirmed
 recipient rule in section 3. Subscriber notifications and preference controls come later;
 preferences must not silently suppress mandatory governance notifications.
+Submitting a revised review candidate also notifies the original author and its newly assigned
+reviewers. Include the candidate reference so recipients can identify and compare the exact content.
 
 The in-app notification report must support filtering by time, SOP, event, recipient, channel,
 and status. Distinguish queued, attempting, provider-accepted, failed, delivered, and bounced.
@@ -249,7 +296,7 @@ These are planned checks, not claims of implemented or passing behavior.
 | A05 | An ordinary author calls the self-approval API directly: denied, with no publication or approval event. |
 | A06 | An owner/admin self-approves: exception and reason recorded; designated approvers, manager, and admins notified once per channel. |
 | A07 | A user changes another author's draft, submits it, or cancels it by guessing its ID: denied under the proposed action matrix. |
-| A08 | A reviewer edits frozen submitted content or rejects an already published request: denied; stored decision/content unchanged. |
+| A08 | A reviewer attempts an in-place edit of frozen submitted content or rejects an already published request: denied; use the authorized copy-and-submit workflow for reviewer edits. |
 | A09 | Two edits race: the second stale save receives a conflict rather than overwriting the first. |
 | A10 | Two revisions based on the same current version are approved: only one publishes; the stale request requires reconciliation. |
 | A11 | Approval is retried: only one publication and one logical business event exist. |
@@ -267,6 +314,12 @@ These are planned checks, not claims of implemented or passing behavior.
 | A23 | Ordinary authors, managers without another qualifying role, and unrelated process owners cannot see self-approval actions; direct API attempts are denied. Authorized audit/notification recipients can still see that self-approval occurred. |
 | A24 | A participant tries normal approval after another person submits: denied; captured participant IDs persist. An eligible owner/admin must use explicit self-approval with a nonblank reason. |
 | A25 | Self-approval with a missing or blank reason: rejected with no publication, approval decision, or success notification. |
+| A26 | An eligible assigned reviewer selects Suggest edits: an editable copy is created; the submitted snapshot and current candidate remain unchanged until submission. |
+| A27 | A reviewer submits a revised candidate: both snapshots remain in the same request; the original is superseded, not rejected; the author is notified without an author-acceptance gate. |
+| A28 | A candidate changes: prior approvals remain tied to the old snapshot and cannot authorize publication of the new one; reviewers are rerouted and notified. |
+| A29 | An owner/admin/manager edits: participant IDs accumulate across the lineage, independent approval routing is re-evaluated, and only eligible owners/admins may use explicit self-approval. |
+| A30 | Candidate replacement races publication or another replacement: one transition wins, stale operations fail, and the current candidate/publication cannot silently change underneath a decision. |
+| A31 | Candidate replacement fails mid-transaction: previous candidate and decisions remain valid for that snapshot; no revised-candidate success notification is queued. |
 
 ## 9. Verification and delivery discipline
 
@@ -332,11 +385,16 @@ Confirmed in the architect's review:
    rules, report visibility, delivery statuses, and diagnostic logging practices are approved.
 8. **Storage:** a relational database for structured records and private object storage for originals,
    attachments, and snapshots, isolated per client and protected by content-access authorization.
+9. **Reviewer editing:** an assigned approver edits a copy and submits a successor candidate within
+   the same request. Preserve every submitted snapshot; supersede rather than artificially reject
+   earlier candidates. Prior approvals do not carry forward. Editing adds participation and triggers
+   fresh routing/self-approval checks. Notify the author without requiring acceptance by default;
+   serialize candidate replacement against publication and other reviewer submissions.
 
-The full proposed action matrix has not been explicitly approved as a whole. Own-draft editing
-and the precise scope of draft read access remain proposals; resolve these before implementing
-those permissions. Coauthoring/delegation is deferred. Participant tracking is confirmed regardless
-of whether collaborative editing is introduced later.
+The full proposed action matrix has not been explicitly approved as a whole. General pre-submission
+draft editing and read scope remain proposals; the assigned-reviewer copy-and-submit workflow above
+is confirmed. General coauthoring/delegation is deferred, not reviewer editing. Participant tracking
+applies to every submitted candidate regardless of whether broader collaboration is introduced later.
 
 Later design decisions: detailed process-level read visibility, source document conversion and
 template structure, retention/deletion periods, provider selection, export formats, subscription
