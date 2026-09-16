@@ -60,12 +60,17 @@ Database files persist between runs. Do not delete `.local/mysql-data` to resolv
 
 ```powershell
 ./scripts/dev.ps1 build
+./scripts/dev.ps1 prepare-tests
+./scripts/dev.ps1 test-unit
 ./scripts/dev.ps1 test-backend
 ./scripts/dev.ps1 test-frontend
 ```
 
 `build` packages the application with tests skipped; run the test actions separately.
-Backend tests require the local database. Frontend tests use installed Chrome in headless mode;
+Start local MySQL before `prepare-tests`. It creates a separate `sop_gatekeeper_test` schema with
+its own restricted account. Backend integration tests use that schema, not `woven`; unit tests
+need no database. See [TESTING.md](docs/TESTING.md) for IntelliJ debugging and report locations.
+Frontend tests use installed Chrome in headless mode;
 set `CHROME_BIN` first if Chrome is installed elsewhere.
 
 ## Recreating the local tools
@@ -79,7 +84,7 @@ and generates its credentials automatically.
 
 ## Initial engineering discussion
 
-### Verified baseline — September 16, 2026
+### Original setup baseline — September 16, 2026
 
 - Full Maven reactor production build: passed; tests run separately below.
 - Backend tests: 3 passed, including application startup against local MySQL.
@@ -96,6 +101,15 @@ and generates its credentials automatically.
 The app has been verified as separate local frontend/backend services. This does not
 establish that the packaged JAR correctly serves the SPA or that all business workflows pass.
 
+### Testing foundation update
+
+Backend verification now passes 11 tests and packages successfully. The frontend suite now
+passes 4 tests with HTML coverage. A separate test schema/account protects development data;
+the isolation tests also pass with a conflicting inherited Flyway URL. Reports and runnable
+learning exercises are documented in [TESTING.md](docs/TESTING.md). The original null-subgroups
+test was replaced by parent/child contract and error-propagation checks, backed by real-MySQL
+relationship tests. CI is configured but requires a pushed branch and hosted run for validation.
+
 ### Decisions to make
 
 - Confirm the target users and first complete SOP workflow to improve.
@@ -106,5 +120,5 @@ establish that the packaged JAR correctly serves the SPA or that all business wo
 Initial inspection found that the Docker build selects only the backend module, while the
 backend copies `frontend/dist` rather than Angular's `frontend/dist/frontend` output.
 Deployment packaging needs verification before relying on a single executable JAR or Docker image.
-The existing frontend test named `FAIL: Parent relationship missing and should be detected`
-supplies `subgroups: null` and expects a non-null result; its intended requirement needs clarification.
+The original frontend test confused child subgroups with the parent relationship. Its replacement
+and the backend relationship checks are explained in TESTING.md.

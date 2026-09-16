@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Backend unit tests" type="JUnit" factoryName="JUnit">
+    <module name="backend" />
+    <option name="TEST_OBJECT" value="pattern" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend" />
+    <patterns>
+      <pattern testClass="com.woven.app.web.controller.test.AuthControllerTest" />
+      <pattern testClass="com.woven.app.config.RequestLoggingFilterTest" />
+    </patterns>
+    <method v="2"><option name="Make" enabled="true" /></method>
+  </configuration>
+</component>

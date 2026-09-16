@@ -1,11 +1,13 @@
 param(
-    [ValidateSet('database', 'stop-database', 'backend', 'frontend', 'test-backend', 'test-frontend', 'build')]
-    [string]$Action = 'frontend'
+    [ValidateSet('database', 'stop-database', 'backend', 'frontend', 'prepare-tests', 'test-unit', 'test-backend', 'test-frontend', 'build')]
+    [string]$Action = 'frontend',
+    [string]$Test
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 Set-Location $root
 $local = Join-Path $root '.local'
+New-Item -ItemType Directory -Force "$local/logs" | Out-Null
 $jdk = Get-ChildItem "$local/tools/jdk-*" -Directory | Select-Object -First 1
 $mysql = Get-ChildItem "$local/tools/mysql-*" -Directory | Select-Object -First 1
 if (!$jdk -or !$mysql) { throw 'Project-local Java 21 and MySQL are required; see DEVELOPMENT.md.' }
@@ -61,17 +63,52 @@ GRANT ALL PRIVILEGES ON woven.* TO 'woven'@'localhost';
         try { & "$($mysql.FullName)/bin/mysqladmin.exe" --no-defaults --host=127.0.0.1 --port=3307 --user=root shutdown }
         finally { Remove-Item Env:MYSQL_PWD }
     }
-    'backend' { & ./backend/mvnw.cmd -f backend/pom.xml $repoOption spring-boot:run }
+    'backend' {
+        $env:LOGGING_FILE_NAME = "$local/logs/backend-application.log"
+        & ./backend/mvnw.cmd -f backend/pom.xml $repoOption spring-boot:run
+    }
     'frontend' {
         Push-Location frontend
         try { & $node $ng serve --host localhost --proxy-config proxy.conf.json }
         finally { Pop-Location }
     }
-    'test-backend' { & ./backend/mvnw.cmd -f backend/pom.xml $repoOption test }
+    'prepare-tests' {
+        $testConfig = "$local/test-db.properties"
+        if (!(Test-Path $testConfig)) {
+            "password=$([Guid]::NewGuid().ToString('N'))" | Set-Content $testConfig -Encoding ascii
+        }
+        $testPassword = (ConvertFrom-StringData (Get-Content $testConfig -Raw)).password
+        if ($testPassword -notmatch '^[a-f0-9]{32}$') { throw 'Unexpected local test password format.' }
+        $testSql = @'
+CREATE DATABASE IF NOT EXISTS sop_gatekeeper_test;
+CREATE USER IF NOT EXISTS 'gatekeeper_test'@'localhost' IDENTIFIED BY '{0}';
+CREATE USER IF NOT EXISTS 'gatekeeper_test'@'127.0.0.1' IDENTIFIED BY '{0}';
+GRANT ALL PRIVILEGES ON `sop\_gatekeeper\_test`.* TO 'gatekeeper_test'@'localhost';
+GRANT ALL PRIVILEGES ON `sop\_gatekeeper\_test`.* TO 'gatekeeper_test'@'127.0.0.1';
+'@ -f $testPassword
+        $previousPassword = $env:MYSQL_PWD
+        try {
+            $env:MYSQL_PWD = $settings.rootPassword
+            $testSql | & "$($mysql.FullName)/bin/mysql.exe" --no-defaults --host=127.0.0.1 --port=3307 --user=root
+            if ($LASTEXITCODE -ne 0) { throw 'Could not provision test database. Start the local database first.' }
+        } finally {
+            if ($null -eq $previousPassword) { Remove-Item Env:MYSQL_PWD -ErrorAction SilentlyContinue }
+            else { $env:MYSQL_PWD = $previousPassword }
+        }
+        Write-Host 'Prepared sop_gatekeeper_test with a dedicated account. No development tables changed.'
+    }
+    'test-unit' {
+        & ./backend/mvnw.cmd -f backend/pom.xml $repoOption '-Dtest=AuthControllerTest,RequestLoggingFilterTest' test
+    }
+    'test-backend' {
+        $testOptions = @()
+        if ($Test) { $testOptions += "-Dtest=$Test" }
+        & ./backend/mvnw.cmd -f backend/pom.xml $repoOption @testOptions test
+    }
     'test-frontend' {
         if (!$env:CHROME_BIN) { $env:CHROME_BIN = 'C:/Program Files/Google/Chrome/Application/chrome.exe' }
         Push-Location frontend
-        try { & $node $ng test --watch=false --browsers=ChromeHeadless }
+        try { & $node $ng test --watch=false --browsers=ChromeHeadless --code-coverage }
         finally { Pop-Location }
     }
     'build' { & ./backend/mvnw.cmd -f pom.xml $repoOption -DskipTests package }

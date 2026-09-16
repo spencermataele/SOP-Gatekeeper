@@ -83,31 +83,36 @@ Stop the API and frontend with Ctrl+C in their terminals, then stop MySQL:
 
 Open the repository's root `pom.xml` as a Maven project. Configure its project SDK and Maven
 runner JDK to use Java 21 (the local installation is under `.local/tools/jdk-*`). The scripts
-can be run from IntelliJ's PowerShell terminal. Named run/debug configurations and isolated
-test fixtures are planned in the testing-foundation milestone.
+can be run from IntelliJ's PowerShell terminal. Shared **Backend unit tests** and **Backend
+integration tests** configurations are provided in `.run/`. See the [testing guide](docs/TESTING.md)
+for setup, debugging exercises, and report locations.
 
 ## Build and verification
 
 ```powershell
 ./scripts/dev.ps1 build
+./scripts/dev.ps1 prepare-tests
+./scripts/dev.ps1 test-unit
 ./scripts/dev.ps1 test-backend
 ./scripts/dev.ps1 test-frontend
 ```
 
 `build` packages the application with tests skipped. Run both test commands separately.
-Backend tests currently use the local development database; keep them away from client data.
-Moving integration tests to an isolated test database is part of the next testing milestone.
+Start local MySQL before `prepare-tests`, which provisions a separate test schema and restricted
+test account. Database-backed tests never fall back to application database credentials.
 Frontend tests use headless Chrome; set `CHROME_BIN` if Chrome is installed outside the default path.
 
-The verified setup baseline was:
+The testing-foundation verification results are:
 
-- Full build: passed.
-- Backend: 3 tests passed.
-- Frontend: 2 tests passed, 1 existing failure concerning null department subgroups.
-- Local API: health, login, current-user lookup, and authenticated SOP retrieval verified.
+- Backend tests and package: passed; 11 tests cover authentication, database isolation,
+  department relationships, and request logging.
+- Frontend: 4 tests passed with a generated coverage report.
+- Isolation check: inherited Flyway connection settings cannot redirect the test database.
 
-These are baseline results, not a claim that all product workflows are tested. The inherited
-frontend failure and dependency audit findings are recorded in [DEVELOPMENT.md](DEVELOPMENT.md).
+These results do not mean all product workflows are tested. The inherited frontend failure was
+replaced with valid parent/child contract and error-propagation checks; real database tests verify
+parent enforcement. See [TESTING.md](docs/TESTING.md) for details. Initial dependency audit findings
+remain recorded in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Development direction
 
@@ -117,8 +122,10 @@ notifications, and audit/report visibility. Word and Google Docs intake and subs
 are planned features, not currently available capabilities.
 
 Changes should include relevant acceptance scenarios, automated verification, and a short manual
-walkthrough for architectural review. Planned verification includes business-rule tests, MySQL
-integration tests, permission/API tests, UI/accessibility checks, end-to-end scenarios, and CI reports.
+walkthrough for architectural review. GitHub Actions runs component builds/tests and preserves
+reports on pushes and pull requests. The workflow still needs a hosted run after pushing, and
+required-check branch rules must be configured separately. Full lifecycle permissions, browser
+end-to-end scenarios, and accessibility checks will grow with those features.
 
 ## Deployment status
 

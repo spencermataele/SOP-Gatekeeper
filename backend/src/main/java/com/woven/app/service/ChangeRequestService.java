@@ -115,11 +115,6 @@ public class ChangeRequestService {
             String comments,
             AppUserDetails user
     ) {
-        System.out.println(">>> APPROVE METHOD VERSION 2 <<<");
-
-        System.out.println("approvalId = " + approvalId);
-
-        System.out.println("currentUser.id = " + approverId);
 
         ChangeApproval approval = changeApprovalRepository.findById(approvalId).orElseThrow(
                 () -> new SecurityException("Approval not found for this user")
@@ -154,9 +149,6 @@ public class ChangeRequestService {
             Long changeRequestId,
             AppUserDetails user
     ) {
-        // Smoke test
-        System.out.println(">>> ENTERED publish() for changeRequest " + changeRequestId);
-
         ChangeRequest changeRequest = changeRequestRepository.findById(changeRequestId).orElseThrow(() ->
                 new IllegalArgumentException("ChangeRequest not found " + changeRequestId));
 

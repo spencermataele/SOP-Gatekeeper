@@ -37,7 +37,6 @@ public class ChangeRequestController {
             @RequestParam(required = false) String comments,
             @AuthenticationPrincipal AppUserDetails currentUser) {
         // Verify correct approver
-        System.out.println("currentUser = " + currentUser.getUser().getUsername());
 
         changeRequestService.approve(
                 approvalId,
