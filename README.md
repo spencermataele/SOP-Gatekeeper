@@ -1,68 +1,131 @@
-*** Dear Evaluator, ***
------
+# SOP Gatekeeper
 
-***Please use this README to assist in locating each task 3 section B requirement.
------
-●  Commit with a message and push when you complete each of the tasks listed below (e.g., parts B to E).
+SOP Gatekeeper manages standard operating procedures, their process ownership, and changes
+that require review. The product is being developed into an organization's authoritative
+source for published procedures and their revision history.
 
-*** Though each task is described in one way or another, there are many commits.  So this README will help point you to examples as well.
------
+## Current application
 
-Note: You may commit and push whenever you want to back up your changes, even if a task is not complete.
+The MVP includes authentication, organizational hierarchy and user administration, business
+processes and owners, SOP authoring, change requests, approval/publication, in-app notifications,
+and an organizational hierarchy report.
 
-B.  Design and develop a fully functional full stack (mobile or web) software product that addresses your identified business problem or organizational need. Include each of the following attributes, as they are the minimum required elements for the application:
+The MVP does not yet implement all approved governance rules. New SOPs currently publish
+immediately, authorization needs strengthening, and automated tests cover only a small part
+of the workflow. The [lifecycle specification](docs/SOP-LIFECYCLE-SPEC.md) defines target behavior
+and acceptance scenarios. It distinguishes confirmed decisions from remaining proposals;
+it is not a description of already implemented functionality.
 
-●  B1 code including inheritance, polymorphism, and encapsulation
------
-*** INHERITANCE An example of inheritance can be found at backend/main/java/com.woven/app/repository/SopRepository.java line 10. 
-                      Here you'll notice the repository is inheriting CRUD behavior from JpaRepository.  This give save(), findById(), delete(), paging, and sorting.
-                Another example can be found at backend/main/java/com.woven/app/service/user/AppUserDetails.java line 11.
-                      Here you will see that AppUserDetails inherits UserDetails from springframework.secuity.
+## Architecture
 
-*** POLYMORPHISM A good example of polymorphism can be found at backend/main/java/com.woven/app/service/ChangeRequestService.java line 413.
-                      Here the findAll() method uses variable type ChangeRequestRepository changeRequestRepository.  Spring uses this as a parent
-                      type and refers to a child implementation (SimpleJpaRepository) at runtime.
+| Component | Implementation |
+| --- | --- |
+| Browser application | Angular 14 and TypeScript |
+| API | Java 21 and Spring Boot 3.5.5 |
+| Persistence | MySQL, Spring Data JPA, and Flyway migrations |
+| Authentication | Spring Security, JWT, and BCrypt password hashing |
+| Build | Maven wrapper; repository-pinned Node 18.19.0 and npm 9.6.7 |
 
-*** ENCAPSULATION You'll find that this app uses several DTO layers to isolate the DB from API contracts.  Refer to backend/main/java/com.woven/app/SopDto.java. 
+Backend requests flow through controllers, services, and repositories. The frontend runs
+separately during local development and calls the backend at `http://localhost:8080`.
+The internal Maven project name is `woven1`, and the database name is `woven`.
 
-●  B2 search functionality with multiple row results and displays
------
-*** A search tool implementation can be found at fronted/src/app/features/admin/process-owners/process-owners.componenet.ts line 125.  
-      You may also navigate to the Process Owners page in the UI by selecting the Admin option in the main menu and then the Process Owners option.
-      Test by searching for "John" and also by "Anderson".  You see the list filter to all rows containing those values.
+The approved hosting direction is a separate application deployment, database, and private
+file storage with separate credentials for each client. All deployments share one codebase
+and release process. Automated client provisioning is future work.
 
-●  B3 a database component with the functionality to securely add, modify, and delete the data
------
-*** An example of this can be found in backend/main/java/com.woven/app/service/user/UsersService.java lines 52-93.
-    This service controls access, utilizes DTOs, and calls the repository safely in order to modify data in the database.
+## Repository layout
 
-●  B4 ability to generate reports with multiple columns, multiple rows, date-time stamps, and title
------
-*** Refer to backend/main/java/com.woven/app/service/report/ReportService.java lines 19-111.  Also, navigate to the Reports section using the UI main menu option.
+```text
+backend/          Spring Boot application, migrations, and Java tests
+frontend/         Angular application and browser tests
+scripts/dev.ps1   Local development commands for Windows PowerShell
+docs/             Product rules and architectural decisions
+DEVELOPMENT.md    Tool setup, startup instructions, and verified baseline
+compose.yaml      Existing container configuration; deployment validation pending
+```
 
-●  B5 validation functionality
------
-*** Example 1: backend/main/java/com.woven/app/dto/ProcessOwnerCreateDto.java.  This implements Jakarta validation annotation to prevent null/blank values.
-    Example 2: backend/main/java/com.woven/app/service/ChangeRequestService.java lines 124-135.  You'll find validators to check a change approval id, to make sure
-      the current user is a valid approver, and that the approval is in a valid status prior making modifications.
+## Local development
 
-●  B6 industry-appropriate security features
------
-*** Example 1: backend/main/java/com.woven/app/config/PasswordConfig.java where you'll see that I implement BCryptPasswordEncoder() to make sure passwords are encrypted 
-      and never stored in plain text.  
-    Example 2: backend/main/java/com.woven/app/service/userAuth/JwtService.java line 30.  Here I use JWT authentication by using a secure token exchange with expiration.
-    Example 3: backend/main/java/com.woven/app/service/ChangeRequestService.java line 174.  New SOP are not able to be published unless the current user is the original 
-      SOP's process owner for data integrity and a primary governance feature.
+For a fresh checkout, follow [DEVELOPMENT.md](DEVELOPMENT.md) to install the project-local
+Java and MySQL tools. The build command downloads Maven, Node/npm, and application dependencies.
+The commands below assume that tool setup has been completed.
 
-●  B7 design elements that make the application scalable
------
-*** Example 1: This is evident in my use of layered architecture that separate responsibilities. Each process flow includes 
-      Controller -> Service -> Repo -> Database.  I.e. ChangeRequestController -> ChangeRequestService -> ChangeRequestRepository -> MySQL Database.
-    Example 2: I also make consistent use of DTOs that prevent over-fetching data.  I.e. SopDto, SopPublishRequestDto, ProcessOwnerCreateDto, etc.
+From the repository root, start the database:
 
-●  B8 a user-friendly, functional GUI
------
-*** Some good examples of this can be found in frontend/src/app/features/sops/sops-form.component.ts.
-      Lines 240 - 514.  As the user selects values from drop menus, other drop menus will filter their values if related so that the menu options decrease as you select parent
-        options.  This also results in a quick experience if you pick the last child as each parent up the family tree will autofill.
-    Also, on the corresponding html (frontend/src/app/features/sops/sops-form.component.html) page, each field includes form validators as well as style validation on required fields.
+```powershell
+./scripts/dev.ps1 database
+```
+
+Wait for `ready for connections` in `.local/logs/mysql.err.log`. Then start the API and frontend
+in separate terminals:
+
+```powershell
+./scripts/dev.ps1 backend
+```
+
+```powershell
+./scripts/dev.ps1 frontend
+```
+
+Open [the application](http://localhost:4200). Check [API health](http://localhost:8080/actuator/health).
+MySQL listens on `127.0.0.1:3307`. Flyway applies migrations and seed data during backend startup.
+Local credentials and data live under ignored `.local/`; do not commit them. See DEVELOPMENT.md
+for the existing workspace's local login and fresh-database login requirements.
+
+Stop the API and frontend with Ctrl+C in their terminals, then stop MySQL:
+
+```powershell
+./scripts/dev.ps1 stop-database
+```
+
+### IntelliJ IDEA
+
+Open the repository's root `pom.xml` as a Maven project. Configure its project SDK and Maven
+runner JDK to use Java 21 (the local installation is under `.local/tools/jdk-*`). The scripts
+can be run from IntelliJ's PowerShell terminal. Named run/debug configurations and isolated
+test fixtures are planned in the testing-foundation milestone.
+
+## Build and verification
+
+```powershell
+./scripts/dev.ps1 build
+./scripts/dev.ps1 test-backend
+./scripts/dev.ps1 test-frontend
+```
+
+`build` packages the application with tests skipped. Run both test commands separately.
+Backend tests currently use the local development database; keep them away from client data.
+Moving integration tests to an isolated test database is part of the next testing milestone.
+Frontend tests use headless Chrome; set `CHROME_BIN` if Chrome is installed outside the default path.
+
+The verified setup baseline was:
+
+- Full build: passed.
+- Backend: 3 tests passed.
+- Frontend: 2 tests passed, 1 existing failure concerning null department subgroups.
+- Local API: health, login, current-user lookup, and authenticated SOP retrieval verified.
+
+These are baseline results, not a claim that all product workflows are tested. The inherited
+frontend failure and dependency audit findings are recorded in [DEVELOPMENT.md](DEVELOPMENT.md).
+
+## Development direction
+
+The [specification](docs/SOP-LIFECYCLE-SPEC.md) defines approval routing, explicit self-approval
+exceptions, immutable published revisions, historical ordering, side-by-side comparison, durable
+notifications, and audit/report visibility. Word and Google Docs intake and subscription foundations
+are planned features, not currently available capabilities.
+
+Changes should include relevant acceptance scenarios, automated verification, and a short manual
+walkthrough for architectural review. Planned verification includes business-rule tests, MySQL
+integration tests, permission/API tests, UI/accessibility checks, end-to-end scenarios, and CI reports.
+
+## Deployment status
+
+The repository contains Docker and Railway-related configuration, but the packaged deployment
+needs further verification. Known issues include frontend build inclusion and the path used to
+copy Angular output into the backend JAR. Production frontend configuration currently contains
+the existing Railway API address. Do not treat the local build result as deployment readiness.
+
+Deployment automation, per-client configuration, backups/restoration, and controlled releases
+will be established before a client pilot. See the specification for the agreed isolation model.

@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 
-/*** EVALUATOR - Task B1 - Encapsulation ***/
 public record SopDto(
 
         Integer sopId,
