@@ -6,6 +6,7 @@
     <patterns>
       <pattern testClass="com.woven.app.web.controller.test.AuthControllerTest" />
       <pattern testClass="com.woven.app.config.RequestLoggingFilterTest" />
+      <pattern testClass="com.woven.app.service.governance.ApprovalPolicyTest" />
     </patterns>
     <method v="2"><option name="Make" enabled="true" /></method>
   </configuration>

@@ -26,6 +26,13 @@ class AuthenticationApiTest extends DatabaseTest {
     @Autowired ObjectMapper json;
     @Autowired UserRepository users;
     @Autowired PasswordEncoder passwords;
+    @Autowired com.woven.app.service.userAuth.JwtService jwt;
+
+    @Test
+    void lifecycleEndpointsAreDisabledByDefault() throws Exception {
+        mvc.perform(get("/api/lifecycle/documents").header("Authorization", "Bearer " + jwt.generateToken("Admin")))
+                .andExpect(status().isNotFound());
+    }
 
     @BeforeEach
     void authorFixture() {

@@ -2,7 +2,58 @@
 
 This is the first testing-foundation increment. It verifies existing authentication, database
 isolation, department relationships, and request logging. It does not yet certify the planned
-approval lifecycle, self-approval policy, multi-client deployments, or document comparison.
+approval lifecycle, multi-client deployments, or document comparison. `ApprovalPolicyTest`
+now verifies the approved routing and self-approval rules in isolation. `LifecycleApiTest` verifies
+their integration into the new default-disabled API. The existing MVP APIs are not redirected;
+passing these tests does not establish governance enforcement in the current Angular screens.
+
+## Approval-policy learning exercise
+
+Run `./scripts/dev.ps1 test-backend -Test ApprovalPolicyTest` (this selected class needs no database),
+or use **Backend unit tests** in IntelliJ. Debug
+`changingSubmitterDoesNotEraseAnOwnersContribution`: the manager submits a candidate that the
+owner helped author. The owner is therefore excluded from normal approval, even though routing
+normally selects them. Only the explicit owner/admin exception can authorize a participant.
+
+The policy covers routing, participant exclusion, required self-approval reasons and recipient
+deduplication (A01-A06, A14, A24-A25, A29). The integration/API suites below add assignment
+revalidation, concurrency, atomic publication and API action visibility; frontend visibility remains pending.
+
+## Authenticated API walkthrough
+
+Run `./scripts/dev.ps1 test-backend -Test LifecycleApiTest` or debug that class in IntelliJ.
+Start with `authorReviewerEditorAndManagerCompleteWorkflowThroughHttp`. It creates a draft through
+HTTP, submits it as the author, creates/edits a private reviewer copy as the process owner,
+submits the replacement, verifies self-approval action visibility and then publishes as the manager.
+No test sends email. The isolated fixtures roll back after each test.
+
+The suite also checks client-wide published access and new-draft creation, author-only private
+draft editing (including an attempted caller-supplied actor ID), stale saves, command retries,
+rejection preservation, draft-only cancellation and publication while a reviewer copy is open.
+`AuthenticationApiTest.lifecycleEndpointsAreDisabledByDefault` verifies the default deployment
+has no new routes. See [LIFECYCLE-API.md](LIFECYCLE-API.md) for the opt-in development contract.
+
+## Lifecycle schema learning exercise
+
+Run `./scripts/dev.ps1 test-backend -Test LifecycleSchemaIntegrationTest`, or select that class
+in IntelliJ. It uses the isolated MySQL schema and rolls back its fixtures. V103 adds the new
+tables without changing the MVP tables. The full backend suite also checks authentication and
+the existing application against that expanded schema.
+
+Debug `candidateAndReviewerCopyMustBelongToSameRequestEvenWithinSameDocument`: a candidate
+from a different request is rejected by MySQL itself, even if both requests concern the same SOP.
+Debug `failureAfterSnapshotCreationRollsBackTheWholeTransaction` to see that a later failure
+removes the snapshot and document created in that transaction. Auto-increment IDs may have gaps
+after rollback; IDs are identities, not version numbers or chronological history positions.
+
+Other tests cover exact Unicode/newline preservation, snapshots independent of mutable copies,
+stale/cancelled copy rejection, duplicate capture prevention, foreign keys, history ordering-key
+uniqueness and official-guide keys. These verify storage prerequisites for A12 and A26-A31, not
+complete publication, participant inheritance, notifications or concurrent workflow execution.
+
+This foundation introduces no user-facing workflow. Its tutorial impact is tracked for the
+future Creating a draft, Reviewing suggested edits, and Comparing versions SOPs; those guides
+must be added/updated when the corresponding screens ship.
 
 ## Quick start on this Windows workspace
 
@@ -38,6 +89,36 @@ Run a single backend class or method:
 ```
 
 ## IntelliJ run and debug
+
+### Transactional workflow exercises
+
+Run these classes with the integration configuration, the gutter Run/Debug action, or:
+
+```powershell
+./scripts/dev.ps1 test-backend -Test LifecycleWorkflowIntegrationTest
+./scripts/dev.ps1 test-backend -Test WorkflowAtomicityIntegrationTest
+```
+
+The first exercises authenticated internal commands: submission, reviewer replacement, participant
+inheritance, independent/self approval, exact-candidate validation, configured-client scope,
+ownership/role changes, duplicate commands and durable audit/outbox recipients. It does not use
+HTTP controllers or an email provider. Debug `ownerEditsPreserveAuthorAndRerouteToManagerOrAdmin`
+to inspect why the editor loses their normal approval path.
+
+The second uses committed test-only fixtures and separate concurrent connections. It verifies
+one winner when publication races replacement, and one publication for concurrent retries of
+the same command. It also injects an outbox INSERT failure after other writes and verifies that
+publication/replacement state, audit and retry records roll back. Debug the two outbox-failure
+tests for A12/A31; avoid breakpoints in race workers unless you extend their bounded timeouts.
+Its cleanup removes only its fixture document and configuration in the isolated test schema;
+it does not disable foreign keys or touch development data. An interrupted test process may
+leave those fixtures behind; inspect them rather than bypassing the configuration uniqueness check.
+
+These tests cover internal service behavior for A12, A14, A20, A24-A25 and A27-A31. V105's API
+tests add reviewer-copy creation/editing, API visibility and rejection/cancellation. The atomicity
+suite also checks rejection rollback after outbox failure and content/version rollback after
+save-audit failure. UI visibility, email delivery and reassignment remain pending.
+Tutorial SOP content for these flows remains tied to the future UI release.
 
 Import the root Maven project and use Java 21 for the project SDK. Shared configurations under
 `.run/` should appear as **Backend unit tests** and **Backend integration tests**. They use the

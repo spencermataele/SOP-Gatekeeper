@@ -121,6 +121,17 @@ exceptions, immutable published revisions, historical ordering, side-by-side com
 notifications, and audit/report visibility. Word and Google Docs intake and subscription foundations
 are planned features, not currently available capabilities.
 
+The proposed [data model and migration plan](docs/LIFECYCLE-DATA-MODEL.md) describes the next
+increment, preservation of MVP records, concurrency rules, and architect review decisions.
+Run `./scripts/migration-preflight.ps1` for a read-only inventory of the local development database.
+
+The lifecycle foundation includes additive V103-V105 migrations, draft/reviewer-copy editing,
+submit/replace/approve/reject/cancel services, participant tracking, audit and queued notifications.
+The backend suite passes 81 tests, including authenticated HTTP workflows and concurrent MySQL
+transactions. The new [lifecycle API](docs/LIFECYCLE-API.md) is disabled by default pending UI/configuration
+cutover. The existing MVP screens/data remain unchanged. Notification delivery, tutorial seed
+replacement, rejected-work resubmission and reassignment remain subsequent increments.
+
 Changes should include relevant acceptance scenarios, automated verification, and a short manual
 walkthrough for architectural review. GitHub Actions runs component builds/tests and preserves
 reports on pushes and pull requests. The workflow still needs a hosted run after pushing, and

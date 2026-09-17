@@ -98,7 +98,7 @@ GRANT ALL PRIVILEGES ON `sop\_gatekeeper\_test`.* TO 'gatekeeper_test'@'127.0.0.
         Write-Host 'Prepared sop_gatekeeper_test with a dedicated account. No development tables changed.'
     }
     'test-unit' {
-        & ./backend/mvnw.cmd -f backend/pom.xml $repoOption '-Dtest=AuthControllerTest,RequestLoggingFilterTest' test
+        & ./backend/mvnw.cmd -f backend/pom.xml $repoOption '-Dtest=AuthControllerTest,RequestLoggingFilterTest,ApprovalPolicyTest' test
     }
     'test-backend' {
         $testOptions = @()

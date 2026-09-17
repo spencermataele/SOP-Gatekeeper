@@ -13,8 +13,10 @@ class Woven1ApplicationTests extends DatabaseTest {
     @Test
     void migrationsLoadIntoTheIsolatedTestDatabase() {
         assertEquals("sop_gatekeeper_test", jdbc.queryForObject("SELECT DATABASE()", String.class));
-        assertEquals(2, jdbc.queryForObject(
+        assertEquals(5, jdbc.queryForObject(
                 "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1", Integer.class));
+        assertEquals("105", jdbc.queryForObject(
+                "SELECT version FROM flyway_schema_history WHERE success = 1 ORDER BY installed_rank DESC LIMIT 1", String.class));
         assertTrue(jdbc.queryForObject("SELECT COUNT(*) FROM sop", Integer.class) > 0);
     }
 

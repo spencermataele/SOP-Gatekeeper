@@ -98,8 +98,10 @@ the self-approval policy. Concurrent decisions must result in only one final pub
 
 ### Proposed action matrix
 
-All actions are organization-scoped. Read access to sensitive process content may require a
-finer visibility policy before production; organization membership is not necessarily sufficient.
+All actions are organization-scoped. **Confirmed September 17:** every user in the client's
+deployment may view published SOPs and start drafts for any process. Only a draft's author
+edits it; assigned reviewers edit their own copies. Private working copies are not client-wide
+content. A finer process-membership visibility model is not the selected default.
 
 | Action | Ordinary author | Relevant process owner | Owner's manager | Administrator |
 | --- | --- | --- | --- | --- |
@@ -323,6 +325,22 @@ These are planned checks, not claims of implemented or passing behavior.
 
 ## 9. Verification and delivery discipline
 
+### Confirmed product tutorial SOPs
+
+The architect approved replacing the known MVP sample SOPs with product-managed tutorial SOPs.
+Retain prior Flyway migrations unchanged; use additive migrations and explicit seed provenance.
+Protect user-created or customized records rather than deleting by ID or title alone.
+
+Organize official guides under a Getting Started process. Users may copy a guide into their own
+SOP workflow; product releases may update the official guide but must not overwrite those copies.
+Identify the source as product documentation, not a client-approved operational SOP.
+
+Every feature's definition of done includes adding or updating the relevant tutorial SOP,
+verifying its steps against the delivered UI and permissions, and including that evidence in
+the feature review. Guides describe released functionality only. A backend-only foundation
+records its future guide impact without publishing instructions for unavailable screens.
+Guide revisions and release references must be tracked; unchanged guides need no artificial update.
+
 **Confirmed:** Testing and its evidence are part of development, visible in both console and IDE.
 
 - Unit tests: lifecycle rules, routing, eligibility, ordering, recipient calculation, and exceptions.
@@ -391,9 +409,10 @@ Confirmed in the architect's review:
    fresh routing/self-approval checks. Notify the author without requiring acceptance by default;
    serialize candidate replacement against publication and other reviewer submissions.
 
-The full proposed action matrix has not been explicitly approved as a whole. General pre-submission
-draft editing and read scope remain proposals; the assigned-reviewer copy-and-submit workflow above
-is confirmed. General coauthoring/delegation is deferred, not reviewer editing. Participant tracking
+The full action matrix has not been approved as a whole. The architect subsequently confirmed
+client-wide published-SOP visibility and draft creation for any process, author-only draft editing,
+and assigned reviewers editing their own copies. General coauthoring/delegation is deferred,
+not reviewer editing. Participant tracking
 applies to every submitted candidate regardless of whether broader collaboration is introduced later.
 
 Later design decisions: detailed process-level read visibility, source document conversion and
