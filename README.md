@@ -61,7 +61,7 @@ Wait for `ready for connections` in `.local/logs/mysql.err.log`. Then start the 
 in separate terminals:
 
 ```powershell
-./scripts/dev.ps1 backend
+./scripts/dev.ps1 backend-lifecycle
 ```
 
 ```powershell
@@ -102,11 +102,12 @@ Start local MySQL before `prepare-tests`, which provisions a separate test schem
 test account. Database-backed tests never fall back to application database credentials.
 Frontend tests use headless Chrome; set `CHROME_BIN` if Chrome is installed outside the default path.
 
-The testing-foundation verification results are:
+The current local verification results are:
 
-- Backend tests and package: passed; 11 tests cover authentication, database isolation,
-  department relationships, and request logging.
-- Frontend: 4 tests passed with a generated coverage report.
+- Backend: 89 tests passed, covering governance, authentication, database isolation,
+  transaction/concurrency behavior, and request logging.
+- Frontend: 11 tests passed with a generated coverage report.
+- Browser: author → owner edit → manager approval → publication walkthrough passed.
 - Isolation check: inherited Flyway connection settings cannot redirect the test database.
 
 These results do not mean all product workflows are tested. The inherited frontend failure was
@@ -115,6 +116,10 @@ parent enforcement. See [TESTING.md](docs/TESTING.md) for details. Initial depen
 remain recorded in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Development direction
+
+`main` is the reviewed application baseline. Feature work uses short-lived `codex/*` branches
+and pull requests. During the production transition, Railway remains on the preserved
+`working_branch` MVP baseline. See [version-control conventions](docs/VERSION-CONTROL.md).
 
 The [specification](docs/SOP-LIFECYCLE-SPEC.md) defines approval routing, explicit self-approval
 exceptions, immutable published revisions, historical ordering, side-by-side comparison, durable
@@ -125,12 +130,17 @@ The proposed [data model and migration plan](docs/LIFECYCLE-DATA-MODEL.md) descr
 increment, preservation of MVP records, concurrency rules, and architect review decisions.
 Run `./scripts/migration-preflight.ps1` for a read-only inventory of the local development database.
 
-The lifecycle foundation includes additive V103-V105 migrations, draft/reviewer-copy editing,
+The lifecycle foundation includes additive V103-V106 migrations, draft/reviewer-copy editing,
 submit/replace/approve/reject/cancel services, participant tracking, audit and queued notifications.
-The backend suite passes 81 tests, including authenticated HTTP workflows and concurrent MySQL
-transactions. The new [lifecycle API](docs/LIFECYCLE-API.md) is disabled by default pending UI/configuration
-cutover. The existing MVP screens/data remain unchanged. Notification delivery, tutorial seed
-replacement, rejected-work resubmission and reassignment remain subsequent increments.
+The backend suite passes 89 tests, including authenticated HTTP workflows and concurrent MySQL
+transactions. The local development UI now provides draft editing, review copies, approval,
+rejection/resubmission, side-by-side versions, activity, and recipient notification records.
+Follow the [workflow walkthrough](docs/WORKFLOW-WALKTHROUGH.md) to initialize practice accounts
+and four tutorial SOPs. Existing MVP records remain intact in their original tables.
+The [lifecycle API](docs/LIFECYCLE-API.md) is enabled by `backend-lifecycle`; its default remains
+off for a controlled production cutover. Rejected-work resubmission preserves contributor history;
+administrator reassignment archives old routing and records its reason. Email delivery, historical
+intake, and explicit stale-base reconciliation remain subsequent increments.
 
 Changes should include relevant acceptance scenarios, automated verification, and a short manual
 walkthrough for architectural review. GitHub Actions runs component builds/tests and preserves

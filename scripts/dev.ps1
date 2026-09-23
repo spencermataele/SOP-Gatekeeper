@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('database', 'stop-database', 'backend', 'frontend', 'prepare-tests', 'test-unit', 'test-backend', 'test-frontend', 'build')]
+    [ValidateSet('database', 'stop-database', 'backend', 'backend-lifecycle', 'frontend', 'prepare-tests', 'test-unit', 'test-backend', 'test-frontend', 'build')]
     [string]$Action = 'frontend',
     [string]$Test
 )
@@ -36,6 +36,10 @@ $repoOption = "-Dmaven.repo.local=$local/maven/repository"
 $node = "$root/frontend/node/node.exe"
 $ng = "$root/frontend/node_modules/@angular/cli/bin/ng.js"
 switch ($Action) {
+    'backend-lifecycle' {
+        $env:LIFECYCLE_API_ENABLED = 'true'
+        & "$PSScriptRoot/dev.ps1" backend
+    }
     'database' {
         $data = "$local/mysql-data"
         if (!(Test-Path $data)) {

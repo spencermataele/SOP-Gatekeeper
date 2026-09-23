@@ -1,17 +1,19 @@
-<div class="app-shell">
+<div class="app-shell" [class.lifecycle]="lifecycleEnabled">
 
   <aside class="sidebar">
 
     <div class="brand-logo">
-      <span class="brand-name">WOVEN</span>
+      <span class="brand-name">Gatekeeper</span>
       <span class="brand-sub">Process Governance</span>
     </div>
 
     <nav>
-      <a routerLink="/admin">Admin</a>
-      <a routerLink="/sops">SOPs</a>
-      <a routerLink="/change-requests">Change Dashboard</a>
-      <a routerLink="/reports">Reports</a>
+      <a routerLink="/sops">{{lifecycleEnabled ? 'SOP workspace' : 'SOPs'}}</a>
+      <ng-container *ngIf="!lifecycleEnabled">
+        <a routerLink="/admin">Admin</a>
+        <a routerLink="/change-requests">Change Dashboard</a>
+        <a routerLink="/reports">Reports</a>
+      </ng-container>
     </nav>
   </aside>
 
@@ -23,7 +25,7 @@
       </div>
       <span class="page-title">SOP Gatekeeper</span>
       <div class="header-right">
-        <span class="bell" (click)="goToChangeRequest()">
+        <span *ngIf="!lifecycleEnabled" class="bell" (click)="goToChangeRequest()">
           🔔
           <span class="badge" *ngIf="unreadCount > 0">
             {{ unreadCount }}

@@ -3,11 +3,25 @@
 Status: implementation design; seed replacement/tutorial policy approved, September 17, 2026.
 
 This implements the direction in [SOP-LIFECYCLE-SPEC.md](SOP-LIFECYCLE-SPEC.md).
-The additive schema increments are implemented in V103-V105 and verified in the isolated test
+The additive schema increments are implemented in V103-V106 and verified in the isolated test
 database. The MVP tables and application behavior remain intact. Data conversion and cutover
 remain future work; the preservation decisions below apply before changing client records.
 
 ## Implemented foundation
+
+### Rejected attempts and reassignment (V106)
+
+Rejected work now creates a new author-owned draft linked to the exact rejected request/revision.
+Initial submission copies participant evidence from that source; subsequent reviewer replacement
+continues to inherit it. Rejected snapshots/decisions are never reopened or overwritten. A changed
+publication base blocks automatic resubmission until explicit reconciliation is implemented.
+
+Administrators can refresh stale IN_REVIEW routing with a reason. The service calculates current
+eligible reviewers, archives old assignments, stores before/after routing fingerprints and the new
+owner/manager snapshot, increments the request version, and writes audit/outbox records atomically.
+This is recovery of invalidated routing, not arbitrary reviewer delegation. Old reviewer copies
+remain readable to their editor but cannot be submitted unless current eligibility/version checks pass.
+The new API actions, recovery visibility and remaining limitations are in LIFECYCLE-API.md.
 
 ### Editing and API increment (V105)
 
@@ -41,8 +55,8 @@ forward. Publication checks the base revision and writes approval, history posit
 pointer, request completion, audit, queued notification recipients and retry result atomically.
 
 Assignments carry a fingerprint of owner, owner-assignment version, manager and administrator
-membership. Changes to those facts conservatively block pending commands until audited reassignment
-is implemented. This includes an administrator added to the directory; the initial implementation
+membership. Changes to those facts conservatively block pending commands until an administrator
+performs V106's audited reassignment. This includes an administrator added to the directory; the implementation
 does not silently reinterpret an existing assignment. Shared locks keep those facts stable during
 the transaction. Future governance administration must validate reporting-line cycles and use
 compatible locking. Direct SQL configuration is for fixtures, not the future administrator UI.
@@ -54,7 +68,7 @@ QUEUED is persistence, not evidence of availability in the old UI or actual emai
 
 At the V104 stage, no HTTP endpoint was exposed. V105 adds default-disabled endpoints and the
 draft/edit/reject/cancel operations described above; the old MVP workflow is not redirected yet.
-Audited reassignment and the UI still need implementation. The V104 tests create working-copy
+V106 adds audited reassignment; the UI still needs implementation. The V104 tests create working-copy
 fixtures directly; V105 API tests exercise creation/editing through real authenticated requests.
 
 ### Storage increment (V103)
@@ -77,7 +91,7 @@ remain necessary. The storage API is an internal primitive, not an authorized su
 the V104 workflow service captures participants, marks the copy submitted, routes the candidate,
 and writes audit/outbox records together. Do not expose this repository as a controller.
 
-Flyway will apply V103-V105 on the next normal backend startup wherever this build is run. The running
+Flyway will apply V103-V106 on the next normal backend startup wherever this build is run. The running
 development server has not been restarted as part of this increment. Rehearsal against a fresh
 database, conversion validation and shared-environment release remain separate from the verified
 upgrade of the existing isolated test schema.

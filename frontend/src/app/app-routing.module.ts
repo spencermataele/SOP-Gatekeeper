@@ -12,6 +12,8 @@ import { BusinessProcessFamilyFormComponent} from "./features/admin/business-pro
 import { ChangeRequestPageComponent } from "./features/sops/change-requests/change-request-page/change-request-page.component";
 import {LoginComponent} from "./features/authorization/login.component";
 import {AuthGuard} from "./features/authorization/auth.guard";
+import {WorkflowComponent, WorkflowUnsavedGuard} from './features/workflows/workflow.component';
+import {environment} from '../environments/environment';
 import { SopViewComponent} from "./features/sops/sops-view/sop-view/sop-view.component";
 import {
   ChangeRequestReviewComponent
@@ -20,10 +22,16 @@ import {
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: 'login', component: LoginComponent },
-  { path: 'sops', component: SopsListComponent, canActivate: [AuthGuard] },
-  { path: 'sops/new', component: SopsFormComponent, canActivate: [AuthGuard] },
-  { path: 'sops/:id/edit', component: SopsFormComponent, canActivate: [AuthGuard] },
-  { path: 'sops/:id/view', component: SopViewComponent, canActivate: [AuthGuard] },
+  { path: 'sops', component: environment.lifecycleEnabled ? WorkflowComponent : SopsListComponent, canActivate: [AuthGuard], canDeactivate: environment.lifecycleEnabled ? [WorkflowUnsavedGuard] : [] },
+  ...(environment.lifecycleEnabled ? [
+    {path: 'sops/new', redirectTo: 'sops'},
+    {path: 'sops/:id/edit', redirectTo: 'sops'},
+    {path: 'sops/:id/view', redirectTo: 'sops'}
+  ] : [
+    {path: 'sops/new', component: SopsFormComponent, canActivate: [AuthGuard]},
+    {path: 'sops/:id/edit', component: SopsFormComponent, canActivate: [AuthGuard]},
+    {path: 'sops/:id/view', component: SopViewComponent, canActivate: [AuthGuard]}
+  ]),
   { path: 'admin', component: AdminHomeComponent, canActivate: [AuthGuard] },
   { path: 'admin/users', loadComponent: () => import('./features/admin/users/user-page.component').then(m => m.UsersPageComponent), canActivate: [AuthGuard] },
   { path: 'admin/orgs', loadComponent: () => import('./features/admin/orgs/orgs-page.component').then(m => m.OrgsPageComponent), canActivate: [AuthGuard] },
@@ -42,8 +50,13 @@ const routes: Routes = [
   { path: 'admin/business-process-families/new', component: BusinessProcessFamilyFormComponent, canActivate: [AuthGuard] },
   { path: 'admin/business-process-families/:id', component: BusinessProcessFamilyFormComponent, canActivate: [AuthGuard] },
 
-  { path: 'change-requests', component: ChangeRequestPageComponent, canActivate: [AuthGuard] },
-  { path: 'change-requests/:id/review', loadComponent: () => import('./features/sops/change-requests/change-request-review/change-request-review.component').then(m => m.ChangeRequestReviewComponent), canActivate: [AuthGuard] },
+  ...(environment.lifecycleEnabled ? [
+    {path: 'change-requests', redirectTo: 'sops'},
+    {path: 'change-requests/:id/review', redirectTo: 'sops'}
+  ] : [
+    {path: 'change-requests', component: ChangeRequestPageComponent, canActivate: [AuthGuard]},
+    {path: 'change-requests/:id/review', component: ChangeRequestReviewComponent, canActivate: [AuthGuard]}
+  ]),
 
   { path: 'reports', loadComponent: () => import('./features/reports/reports-home.component').then(m => m.ReportsHomeComponent), canActivate: [AuthGuard] },
   { path: 'reports/org-hierarchy', loadComponent: () => import('./features/reports/org-hierarchy-report.component').then(m => m.OrgHierarchyReportComponent), canActivate: [AuthGuard] },

@@ -68,6 +68,8 @@ class WorkflowAtomicityIntegrationTest extends DatabaseTest {
         new TransactionTemplate(transactions).executeWithoutResult(status -> {
             jdbc.update("DELETE n FROM notification_recipient n JOIN business_audit_event a USING(event_id) WHERE a.document_id = ?", document);
             jdbc.update("DELETE n FROM notification_event n JOIN business_audit_event a USING(event_id) WHERE a.document_id = ?", document);
+            jdbc.update("DELETE h FROM review_assignment_history h JOIN business_audit_event a ON h.reassignment_event_id = a.event_id WHERE a.document_id = ?", document);
+            jdbc.update("DELETE c FROM review_routing_change c JOIN business_audit_event a USING(event_id) WHERE a.document_id = ?", document);
             jdbc.update("DELETE FROM business_audit_event WHERE document_id = ?", document);
             jdbc.update("DELETE c FROM workflow_command c JOIN sop_work_item w USING(work_item_id) WHERE w.document_id = ?", document);
             jdbc.update("DELETE FROM publication_record WHERE document_id = ?", document);
@@ -76,7 +78,7 @@ class WorkflowAtomicityIntegrationTest extends DatabaseTest {
             }
             jdbc.update("DELETE FROM revision_history_position WHERE document_id = ?", document);
             jdbc.update("UPDATE sop_document SET current_revision_id = NULL WHERE document_id = ?", document);
-            jdbc.update("UPDATE sop_work_item SET current_candidate_id = NULL, base_revision_id = NULL, state = 'DRAFT' WHERE document_id = ?", document);
+            jdbc.update("UPDATE sop_work_item SET current_candidate_id = NULL, base_revision_id = NULL, prior_rejected_request_id = NULL, resubmission_revision_id = NULL, state = 'DRAFT' WHERE document_id = ?", document);
             jdbc.update("UPDATE sop_working_copy SET source_candidate_id = NULL WHERE document_id = ?", document);
             jdbc.update("UPDATE sop_revision SET predecessor_candidate_id = NULL WHERE document_id = ?", document);
             jdbc.update("DELETE FROM sop_revision WHERE document_id = ?", document);
@@ -103,6 +105,21 @@ class WorkflowAtomicityIntegrationTest extends DatabaseTest {
     private void failOutboxInsert() {
         doThrow(new DataIntegrityViolationException("Injected outbox persistence failure")).when(jdbc)
                 .update(eq("INSERT INTO notification_event (event_id) VALUES (?)"), any(Object[].class));
+    }
+
+    @Test
+    void outboxFailureRollsBackReassignmentAndPreservesOldRouting() {
+        String previous = jdbc.queryForObject("SELECT routing_fingerprint FROM sop_work_item WHERE work_item_id = ?", String.class, request);
+        jdbc.update("UPDATE process_governance SET owner_user_id = 3, lock_version = 1 WHERE business_process_id = 1");
+        actor(1);
+        failOutboxInsert();
+        assertThrows(DataIntegrityViolationException.class,
+                () -> workflow.reassign(request, candidate, 1, "Owner changed", UUID.randomUUID()));
+        assertEquals(previous, jdbc.queryForObject("SELECT routing_fingerprint FROM sop_work_item WHERE work_item_id = ?", String.class, request));
+        assertEquals(List.of(2), jdbc.queryForList("SELECT reviewer_id FROM review_assignment WHERE revision_id = ?", Integer.class, candidate));
+        assertEquals(0, count("review_assignment_history"));
+        assertEquals(0, count("review_routing_change"));
+        assertEquals(1, count("notification_event"));
     }
 
     @Test

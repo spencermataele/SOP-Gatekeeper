@@ -21,6 +21,15 @@ public class LifecycleController {
     private final LifecycleWorkflowService workflow;
     public LifecycleController(LifecycleWorkflowService workflow) { this.workflow = workflow; }
 
+    @GetMapping("/processes")
+    public List<Map<String, Object>> processes() { return workflow.processes(); }
+    @GetMapping("/requests")
+    public List<Map<String, Object>> inbox() { return workflow.inbox(); }
+    @GetMapping("/notifications")
+    public List<Map<String, Object>> notices() { return workflow.notices(); }
+    @GetMapping("/documents/{id}/history")
+    public List<Map<String, Object>> history(@PathVariable long id) { return workflow.publishedHistory(id); }
+
     public record Create(@Positive int processId, @NotNull @Size(max = 255) String title,
                          @NotNull String description, @NotNull String details, @NotNull UUID commandId) {}
     public record Start(@NotNull @Positive Long publishedRevisionId, @NotNull UUID commandId) {}
@@ -82,5 +91,15 @@ public class LifecycleController {
     @PostMapping("/requests/{id}/cancel")
     public Map<String, Long> cancel(@PathVariable long id, @Valid @RequestBody Cancel body) {
         return Map.of("version", workflow.cancel(id, body.requestVersion(), body.commandId()));
+    }
+
+    @PostMapping("/requests/{id}/revise")
+    public LifecycleWorkflowService.CopyResult revise(@PathVariable long id, @Valid @RequestBody Cancel body) {
+        return workflow.reviseRejected(id, body.requestVersion(), body.commandId());
+    }
+
+    @PostMapping("/requests/{id}/reassign")
+    public Map<String, Long> reassign(@PathVariable long id, @Valid @RequestBody Candidate body) {
+        return Map.of("candidateId", workflow.reassign(id, body.candidateId(), body.requestVersion(), body.reason(), body.commandId()));
     }
 }

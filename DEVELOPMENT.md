@@ -28,7 +28,7 @@ Run from this repository in PowerShell. Start the database once:
 Wait for `ready for connections` in `.local/logs/mysql.err.log`, then open two terminals:
 
 ```powershell
-./scripts/dev.ps1 backend
+./scripts/dev.ps1 backend-lifecycle
 ```
 
 ```powershell
@@ -37,7 +37,11 @@ Wait for `ready for connections` in `.local/logs/mysql.err.log`, then open two t
 
 Open http://localhost:4200. Backend health: http://localhost:8080/actuator/health.
 The database listens only on `127.0.0.1:3307`; the backend listens on `127.0.0.1:8080`.
-Flyway creates the schema and MVP seed records on the first backend startup.
+Flyway creates the schema and MVP seed records on the first backend startup. The governed UI
+uses its separate lifecycle tables. After startup, run `./scripts/prepare-workflow-demo.ps1`
+to initialize local practice accounts, process ownership, and tutorial SOPs. See
+[the walkthrough](docs/WORKFLOW-WALKTHROUGH.md). Use `backend` only for the previous MVP mode;
+the development frontend expects `backend-lifecycle`.
 The existing seeded Admin password must come from the original administrator guide;
 its hash in the migration cannot be used as a login password.
 For this workspace, a separate `LocalDeveloper` administrator was created in the local

@@ -35,6 +35,130 @@ public class LifecycleWorkflowService {
 
     public record CopyResult(long requestId, long copyId, long version) {}
 
+    public List<Map<String, Object>> processes() {
+        requireUser(actor());
+        return jdbc.queryForList("""
+                SELECT p.business_process_id AS id, p.business_process_name AS name, u.full_name AS owner
+                FROM business_process p JOIN process_governance pg USING (business_process_id)
+                JOIN users u ON u.id = pg.owner_user_id
+                JOIN business_process_family f ON f.business_process_family_id = p.business_process_family_id
+                JOIN department d ON d.department_id = f.department_id
+                JOIN org_group g ON g.org_group_id = d.org_group_id
+                JOIN client_configuration c ON c.org_id = g.org_id AND c.configuration_id = 1
+                ORDER BY p.business_process_name
+                """);
+    }
+
+    public List<Map<String, Object>> inbox() {
+        int actor = actor();
+        requireUser(actor);
+        var ids = jdbc.queryForList("""
+                SELECT w.work_item_id FROM sop_work_item w JOIN sop_document d USING(document_id)
+                JOIN client_configuration c ON c.org_id = d.org_id AND c.configuration_id = 1
+                WHERE w.original_author_id = ? OR EXISTS (SELECT 1 FROM review_assignment a
+                    WHERE a.revision_id = w.current_candidate_id AND a.reviewer_id = ?)
+                  OR EXISTS (SELECT 1 FROM revision_participant p WHERE p.revision_id = w.current_candidate_id AND p.user_id = ?)
+                  OR EXISTS (SELECT 1 FROM users u WHERE u.id = ? AND u.role = 'ADMIN')
+                ORDER BY w.work_item_id DESC LIMIT 100
+                """, Long.class, actor, actor, actor, actor);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (long id : ids) {
+            try {
+                var detail = readRequest(id);
+                Map<String, Object> summary = new LinkedHashMap<>();
+                for (String key : List.of("requestId", "documentId", "state", "version", "title", "author", "actions"))
+                    summary.put(key, detail.get(key));
+                result.add(summary);
+            } catch (SecurityException denied) {
+                // Candidate assignments are only a prefilter; current authorization is decisive.
+            }
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> notices() {
+        int actor = actor();
+        requireUser(actor);
+        return jdbc.queryForList("""
+                SELECT a.event_id AS id, a.work_item_id AS requestId, a.action, a.recorded_at AS recordedAt,
+                       r.title, u.full_name AS actor
+                FROM notification_recipient n JOIN business_audit_event a USING(event_id)
+                JOIN sop_document d ON d.document_id = a.document_id
+                JOIN client_configuration c ON c.org_id = d.org_id AND c.configuration_id = 1
+                JOIN sop_revision r ON r.revision_id = a.revision_id JOIN users u ON u.id = a.actor_id
+                WHERE n.user_id = ? AND n.channel = 'IN_APP' ORDER BY a.recorded_at DESC LIMIT 100
+                """, actor);
+    }
+
+    public List<Map<String, Object>> publishedHistory(long documentId) {
+        requireUser(actor());
+        var document = jdbc.queryForMap("SELECT * FROM sop_document WHERE document_id = ?", documentId);
+        int org = clientScope(((Number) document.get("business_process_id")).intValue());
+        if (org != ((Number) document.get("org_id")).intValue()) throw new SecurityException("Document outside client");
+        return jdbc.queryForList("""
+                SELECT r.revision_id AS id, r.title, r.description, r.details, r.provenance,
+                       r.source_label AS sourceLabel, r.recorded_at AS recordedAt
+                FROM revision_history_position h JOIN sop_revision r ON r.revision_id = h.revision_id
+                WHERE h.document_id = ? ORDER BY h.ordering_key DESC
+                """, documentId);
+    }
+
+    public CopyResult reviseRejected(long requestId, long requestVersion, UUID commandId) {
+        int actor = actor();
+        Work rejected = lock(requestId);
+        governance(rejected, actor);
+        if (rejected.author() != actor) throw new SecurityException("Only the original author may revise rejected work");
+        String fingerprint = fingerprint("REVISE_REJECTED", requestId, requestVersion);
+        var previous = replayCreation(commandId, actor, fingerprint);
+        if (previous != null) return copyResult(previous);
+        require(rejected.state().equals("REJECTED") && rejected.version() == requestVersion, "Rejected request changed or is not rejected");
+        require(Objects.equals(rejected.base(), rejected.published()), "Published version changed; explicit reconciliation is required before resubmission");
+        var source = snapshots.findAuthored(rejected.document(), rejected.candidate()).orElseThrow();
+        CopyResult created = createDraftRows(rejected.document(), rejected.process(), rejected.base(), actor,
+                source.title(), source.description(), source.details(), source.contentSchemaVersion(), commandId, fingerprint);
+        jdbc.update("UPDATE sop_work_item SET prior_rejected_request_id = ?, resubmission_revision_id = ? WHERE work_item_id = ?",
+                requestId, rejected.candidate(), created.requestId());
+        return created;
+    }
+
+    public long reassign(long requestId, long candidateId, long requestVersion, String reason, UUID commandId) {
+        int actor = actor();
+        Work work = lock(requestId);
+        Governance governance = governance(work, actor);
+        if (!governance.admins().contains(actor)) throw new SecurityException("Only an administrator may reassign review routing");
+        String fingerprint = fingerprint("REASSIGN", requestId, candidateId, requestVersion, reason);
+        Long previous = replay(commandId, work, actor, fingerprint);
+        if (previous != null) return previous;
+        require(work.state().equals("IN_REVIEW") && work.version() == requestVersion
+                && Objects.equals(work.candidate(), candidateId), "Review candidate changed or request is closed");
+        nonblank(reason, "Reassignment requires a reason");
+        require(!Objects.equals(work.routing(), governance.fingerprint()), "Review routing has not changed");
+        var context = context(governance, candidateId);
+        Set<Integer> reviewers = policy.independentReviewers(context);
+        require(!reviewers.isEmpty() || context.participantIds().stream().anyMatch(id -> policy.maySelfApprove(context, id)),
+                "No independent reviewer or authorized self-approval path is available");
+        var oldAssignments = jdbc.queryForList("SELECT * FROM review_assignment WHERE revision_id = ? FOR UPDATE", candidateId);
+        jdbc.update("DELETE FROM review_assignment WHERE revision_id = ?", candidateId);
+        for (int reviewer : reviewers) jdbc.update("""
+                INSERT INTO review_assignment (revision_id, reviewer_id, authority, routing_fingerprint) VALUES (?, ?, ?, ?)
+                """, candidateId, reviewer, policy.authorize(context, reviewer, ApprovalPolicy.Mode.NORMAL, null).name(), governance.fingerprint());
+        jdbc.update("UPDATE sop_work_item SET routing_fingerprint = ?, lock_version = lock_version + 1 WHERE work_item_id = ?",
+                governance.fingerprint(), work.id());
+        Set<Integer> recipients = new HashSet<>(reviewers);
+        recipients.add(work.author());
+        record(commandId, work, candidateId, actor, fingerprint, "REASSIGNED", reason, recipients);
+        jdbc.update("""
+                INSERT INTO review_routing_change (event_id, previous_fingerprint, new_fingerprint, owner_user_id, manager_user_id)
+                VALUES (?, ?, ?, ?, ?)
+                """, commandId.toString(), work.routing(), governance.fingerprint(), governance.owner(), governance.manager());
+        for (var old : oldAssignments) jdbc.update("""
+                INSERT INTO review_assignment_history (reassignment_event_id, revision_id, reviewer_id, authority,
+                    routing_fingerprint, assigned_at) VALUES (?, ?, ?, ?, ?, ?)
+                """, commandId.toString(), candidateId, old.get("reviewer_id"), old.get("authority"),
+                old.get("routing_fingerprint"), old.get("assigned_at"));
+        return candidateId;
+    }
+
     public CopyResult createSop(int processId, String title, String description, String details, UUID commandId) {
         int actor = actor();
         validateDraftContent(title, description, details);
@@ -126,6 +250,12 @@ public class LifecycleWorkflowService {
         Set<String> actions = new TreeSet<>();
         boolean permitted = work.author() == actor;
         if (work.state().equals("DRAFT") && permitted) actions.addAll(Set.of("EDIT", "SUBMIT", "CANCEL"));
+        if (work.state().equals("REJECTED") && permitted && Objects.equals(work.base(), work.published())) actions.add("REVISE_REJECTED");
+        if (work.state().equals("IN_REVIEW") && !Objects.equals(work.routing(), governance.fingerprint())
+                && governance.admins().contains(actor)) {
+            permitted = true;
+            actions.add("REASSIGN");
+        }
         if (work.candidate() != null) {
             var context = context(governance, work.candidate());
             boolean routingCurrent = Objects.equals(work.routing(), governance.fingerprint());
@@ -143,7 +273,31 @@ public class LifecycleWorkflowService {
         result.put("requestId", work.id()); result.put("documentId", work.document());
         result.put("version", work.version()); result.put("state", work.state());
         result.put("candidateId", work.candidate()); result.put("actions", actions);
+        result.put("priorRejectedRequestId", jdbc.queryForObject(
+                "SELECT prior_rejected_request_id FROM sop_work_item WHERE work_item_id = ?", Long.class, requestId));
         result.put("candidate", work.candidate() == null ? null : snapshots.findAuthored(work.document(), work.candidate()).orElseThrow());
+        result.put("author", jdbc.queryForObject("SELECT full_name FROM users WHERE id = ?", String.class, work.author()));
+        result.put("title", jdbc.queryForObject("""
+                SELECT COALESCE((SELECT title FROM sop_revision WHERE revision_id = ?),
+                    (SELECT title FROM sop_working_copy WHERE work_item_id = ? AND editor_id = ? ORDER BY working_copy_id LIMIT 1), 'Untitled SOP')
+                """, String.class, work.candidate(), requestId, work.author()));
+        result.put("ownCopies", jdbc.queryForList("""
+                SELECT working_copy_id AS copyId, state, lock_version AS version FROM sop_working_copy
+                WHERE work_item_id = ? AND editor_id = ? ORDER BY working_copy_id DESC
+                """, requestId, actor));
+        var published = work.published() == null ? List.of() : jdbc.queryForList(
+                "SELECT revision_id AS id, title, description, details FROM sop_revision WHERE revision_id = ?", work.published());
+        result.put("published", published.isEmpty() ? null : published.getFirst());
+        result.put("versions", jdbc.queryForList("""
+                SELECT revision_id AS id, title, description, details, recorded_at AS recordedAt
+                FROM sop_revision WHERE work_item_id = ? ORDER BY revision_id DESC
+                """, requestId));
+        result.put("activity", jdbc.queryForList("""
+                SELECT a.action, a.reason, a.recorded_at AS recordedAt, u.full_name AS actor
+                FROM business_audit_event a JOIN users u ON u.id = a.actor_id
+                WHERE a.work_item_id = ? AND (a.action NOT IN ('COPY_SAVED','REVIEW_COPY_CREATED') OR a.actor_id = ?)
+                ORDER BY a.recorded_at DESC
+                """, requestId, actor));
         return result;
     }
 
@@ -280,6 +434,11 @@ public class LifecycleWorkflowService {
         nonblank((String) copy.get("details"), "Procedure details are required");
 
         long revision = snapshots.captureAuthoredCopy(copyId, copyVersion, actor);
+        Long rejectedSource = jdbc.queryForObject("SELECT resubmission_revision_id FROM sop_work_item WHERE work_item_id = ?", Long.class, requestId);
+        if (!replacement && rejectedSource != null) jdbc.update("""
+                INSERT INTO revision_participant (revision_id, user_id, contribution_type)
+                SELECT ?, user_id, contribution_type FROM revision_participant WHERE revision_id = ?
+                """, revision, rejectedSource);
         if (replacement) jdbc.update("""
                 INSERT INTO revision_participant (revision_id, user_id, contribution_type)
                 SELECT ?, user_id, contribution_type FROM revision_participant WHERE revision_id = ?

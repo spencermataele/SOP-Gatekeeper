@@ -65,6 +65,43 @@ class LifecycleApiTest extends DatabaseTest {
         return Map.of("candidateId", candidate, "requestVersion", version, "mode", mode, "reason", reason, "commandId", UUID.randomUUID());
     }
 
+    @Test void workspaceListsRespectDraftPrivacyAndPublishedHistory() throws Exception {
+        JsonNode draft = draft();
+        call(4, get("/api/lifecycle/processes"), null).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1));
+        call(4, get("/api/lifecycle/requests"), null).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].requestId").value(draft.get("requestId").asLong()));
+        call(1, get("/api/lifecycle/requests"), null).andExpect(status().isOk()).andExpect(jsonPath("$").isEmpty());
+        call(2, get("/api/lifecycle/requests"), null).andExpect(status().isOk()).andExpect(jsonPath("$").isEmpty());
+        long candidate = submit(draft);
+        call(2, get("/api/lifecycle/requests"), null).andExpect(status().isOk()).andExpect(jsonPath("$[0].actions", hasItem("APPROVE")));
+        JsonNode view = result(call(2, get(path(draft)), null));
+        long document = view.get("documentId").asLong();
+        call(4, get("/api/lifecycle/documents/" + document + "/history"), null).andExpect(status().isOk()).andExpect(jsonPath("$").isEmpty());
+        call(2, get("/api/lifecycle/notifications"), null).andExpect(status().isOk()).andExpect(jsonPath("$[0].requestId").value(draft.get("requestId").asLong()));
+        call(3, get("/api/lifecycle/notifications"), null).andExpect(status().isOk()).andExpect(jsonPath("$").isEmpty());
+        call(2, post(path(draft) + "/approve"), approval(candidate, 1, "NORMAL", "Ready")).andExpect(status().isOk());
+        call(3, get("/api/lifecycle/documents/" + document + "/history"), null).andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(candidate));
+    }
+
+    @Test void requestDetailsDoNotExposeAnotherReviewersPrivateCopyOrActivity() throws Exception {
+        JsonNode draft = draft();
+        long candidate = submit(draft);
+        JsonNode copy = result(call(2, post(path(draft) + "/reviewer-copies"), candidate(candidate, 1, "")));
+        call(2, put(path(draft) + "/copies/" + copy.get("copyId").asLong()), Map.of("requestVersion", 1, "copyVersion", 0,
+                "title", "Private title", "description", "Private purpose", "details", "Private steps", "commandId", UUID.randomUUID())).andExpect(status().isOk());
+        JsonNode authorView = result(call(4, get(path(draft)), null));
+        assertFalse(authorView.toString().contains("Private title"));
+        for (JsonNode owned : authorView.get("ownCopies")) assertNotEquals(copy.get("copyId"), owned.get("copyId"));
+        for (JsonNode event : authorView.get("activity")) assertNotEquals("REVIEW_COPY_CREATED", event.get("action").asText());
+        call(2, get(path(draft)), null).andExpect(jsonPath("ownCopies[0].copyId").value(copy.get("copyId").asLong()));
+    }
+
+    @Test void governedDeploymentDisablesLegacyWorkflowControllers() throws Exception {
+        call(1, get("/sops"), null).andExpect(status().isNotFound());
+        call(1, get("/change-requests"), null).andExpect(status().isNotFound());
+    }
+
     @Test void authorReviewerEditorAndManagerCompleteWorkflowThroughHttp() throws Exception {
         JsonNode draft = draft();
         long first = submit(draft);
@@ -192,5 +229,66 @@ class LifecycleApiTest extends DatabaseTest {
         JsonNode draft = draft();
         call(4, post(path(draft) + "/submit"), Map.of("copyId", draft.get("copyId").asLong(), "commandId", UUID.randomUUID()))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test void rejectedAttemptResubmitsWithAllEarlierContributorsAndKeepsOldDecision() throws Exception {
+        JsonNode original = draft();
+        long first = submit(original);
+        JsonNode ownerCopy = result(call(2, post(path(original) + "/reviewer-copies"), candidate(first, 1, "")));
+        long edited = result(call(2, post(path(original) + "/submit"), Map.of("copyId", ownerCopy.get("copyId").asLong(),
+                "requestVersion", 1, "copyVersion", 0, "reason", "Owner contribution", "commandId", UUID.randomUUID())))
+                .get("candidateId").asLong();
+        call(3, post(path(original) + "/reject"), candidate(edited, 2, "Clarify this version")).andExpect(status().isOk());
+        var revise = Map.of("requestVersion", 3, "commandId", UUID.randomUUID());
+        JsonNode newAttempt = result(call(4, post(path(original) + "/revise"), revise));
+        assertEquals(newAttempt, result(call(4, post(path(original) + "/revise"), revise)));
+        call(4, get(path(newAttempt)), null).andExpect(jsonPath("priorRejectedRequestId").value(original.get("requestId").asLong()));
+        long submitted = submit(newAttempt);
+        assertEquals(java.util.Set.of(2, 4), java.util.Set.copyOf(jdbc.queryForList(
+                "SELECT DISTINCT user_id FROM revision_participant WHERE revision_id = ?", Integer.class, submitted)));
+        call(2, post(path(newAttempt) + "/approve"), approval(submitted, 1, "NORMAL", "")).andExpect(status().isForbidden());
+        call(2, post(path(newAttempt) + "/approve"), approval(submitted, 1, "SELF_APPROVAL", "Verified revised procedure"))
+                .andExpect(status().isOk());
+        call(4, get(path(original)), null).andExpect(jsonPath("state").value("REJECTED"));
+        assertEquals("REJECTED", jdbc.queryForObject("SELECT decision FROM approval_decision WHERE revision_id = ?", String.class, edited));
+    }
+
+    @Test void onlyOriginalAuthorCanReviseAndPublishedChangesRequireReconciliation() throws Exception {
+        JsonNode rejected = draft();
+        long candidate = submit(rejected);
+        call(2, post(path(rejected) + "/reject"), candidate(candidate, 1, "Needs work")).andExpect(status().isOk());
+        call(1, post(path(rejected) + "/revise"), Map.of("requestVersion", 2, "commandId", UUID.randomUUID()))
+                .andExpect(status().isForbidden());
+        long document = jdbc.queryForObject("SELECT document_id FROM sop_work_item WHERE work_item_id = ?", Long.class, rejected.get("requestId").asLong());
+        // Simulate another published baseline; the service must not silently stamp it onto old rejected content.
+        jdbc.update("UPDATE sop_document SET current_revision_id = ? WHERE document_id = ?", candidate, document);
+        call(4, post(path(rejected) + "/revise"), Map.of("requestVersion", 2, "commandId", UUID.randomUUID()))
+                .andExpect(status().isConflict());
+    }
+
+    @Test void administratorReassignmentArchivesOldOwnerAndEnablesNewReviewer() throws Exception {
+        JsonNode draft = draft();
+        long candidate = submit(draft);
+        jdbc.update("UPDATE process_governance SET owner_user_id = 3, lock_version = 1 WHERE business_process_id = 1");
+        call(1, get(path(draft)), null).andExpect(jsonPath("actions", hasItem("REASSIGN")));
+        call(2, post(path(draft) + "/reassign"), candidate(candidate, 1, "New owner")).andExpect(status().isForbidden());
+        call(1, post(path(draft) + "/reassign"), candidate(candidate, 1, " ")).andExpect(status().isBadRequest());
+        var body = candidate(candidate, 1, "New accountable owner appointed");
+        call(1, post(path(draft) + "/reassign"), body).andExpect(status().isOk());
+        call(1, post(path(draft) + "/reassign"), body).andExpect(status().isOk());
+        assertEquals(java.util.List.of(2), jdbc.queryForList("SELECT reviewer_id FROM review_assignment_history", Integer.class));
+        assertEquals(java.util.List.of(3), jdbc.queryForList("SELECT reviewer_id FROM review_assignment", Integer.class));
+        assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM review_routing_change", Integer.class));
+        call(2, post(path(draft) + "/approve"), approval(candidate, 2, "NORMAL", "")).andExpect(status().isForbidden());
+        call(3, post(path(draft) + "/approve"), approval(candidate, 2, "NORMAL", "Verified")).andExpect(status().isOk());
+    }
+
+    @Test void unchangedOrCompletedReviewCannotBeReassigned() throws Exception {
+        JsonNode draft = draft();
+        long candidate = submit(draft);
+        call(1, post(path(draft) + "/reassign"), candidate(candidate, 1, "Unnecessary")).andExpect(status().isConflict());
+        call(2, post(path(draft) + "/approve"), approval(candidate, 1, "NORMAL", "Verified")).andExpect(status().isOk());
+        jdbc.update("UPDATE process_governance SET owner_user_id = 3, lock_version = 1 WHERE business_process_id = 1");
+        call(1, post(path(draft) + "/reassign"), candidate(candidate, 2, "Too late")).andExpect(status().isConflict());
     }
 }

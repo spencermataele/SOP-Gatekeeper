@@ -1,11 +1,30 @@
 # Running and understanding the verification suite
 
-This is the first testing-foundation increment. It verifies existing authentication, database
-isolation, department relationships, and request logging. It does not yet certify the planned
-approval lifecycle, multi-client deployments, or document comparison. `ApprovalPolicyTest`
-now verifies the approved routing and self-approval rules in isolation. `LifecycleApiTest` verifies
-their integration into the new default-disabled API. The existing MVP APIs are not redirected;
-passing these tests does not establish governance enforcement in the current Angular screens.
+The current suite verifies authentication, database isolation, request logging, and governed
+SOP workflows. The September 22 local run passed 89 backend tests and 11 frontend tests.
+`ApprovalPolicyTest` checks routing in isolation; `LifecycleApiTest` checks authenticated commands,
+private-copy visibility, publication history, notification recipients, and legacy route shutdown.
+The development Angular workspace now uses that API. Production remains behind its rollout flags;
+these checks do not certify client deployment, email delivery, or document intake.
+
+## UI verification and learning exercise
+
+Follow [WORKFLOW-WALKTHROUGH.md](WORKFLOW-WALKTHROUGH.md) to run the same local practice workflow
+yourself. The browser walkthrough verified author submission, private owner edits, candidate
+replacement, manager approval, published-library visibility, and preserved candidate/activity history.
+This is a recorded manual smoke check; unattended browser regression tests are still a next step.
+
+Run `./scripts/dev.ps1 test-frontend` to see the 11 frontend tests, including seven workspace tests.
+In `workflow.component.spec.ts`, inspect the stale-save test: it asserts both request/copy versions
+are sent and the user's text survives a conflict. The retry test verifies the same command ID is
+reused after a network failure, preventing duplicate effects. Other tests cover self-approval
+visibility/reason requirements, older-candidate decision blocking, unsaved-navigation protection,
+and successful submission when recalculated routing ends the editor's access.
+
+Current local outputs are `.local/logs/workflow-ui-backend-tests.log`,
+`.local/logs/workflow-ui-frontend-tests.log`, and `.local/logs/workflow-ui-build.log`.
+Frontend coverage is intentionally not a claim of complete UI coverage; browser accessibility,
+network failure recovery beyond command retry, and broader navigation still need expansion.
 
 ## Approval-policy learning exercise
 
@@ -17,7 +36,7 @@ normally selects them. Only the explicit owner/admin exception can authorize a p
 
 The policy covers routing, participant exclusion, required self-approval reasons and recipient
 deduplication (A01-A06, A14, A24-A25, A29). The integration/API suites below add assignment
-revalidation, concurrency, atomic publication and API action visibility; frontend visibility remains pending.
+revalidation, concurrency, atomic publication and API action visibility; workspace tests verify frontend gating.
 
 ## Authenticated API walkthrough
 
@@ -26,6 +45,14 @@ Start with `authorReviewerEditorAndManagerCompleteWorkflowThroughHttp`. It creat
 HTTP, submits it as the author, creates/edits a private reviewer copy as the process owner,
 submits the replacement, verifies self-approval action visibility and then publishes as the manager.
 No test sends email. The isolated fixtures roll back after each test.
+
+For V106, debug `rejectedAttemptResubmitsWithAllEarlierContributorsAndKeepsOldDecision` to
+inspect why a prior owner-editor still needs explicit self-approval on a later attempt. Debug
+`administratorReassignmentArchivesOldOwnerAndEnablesNewReviewer` to follow the transition from
+an invalidated assignment to a newly eligible reviewer, including archived routing evidence.
+`outboxFailureRollsBackReassignmentAndPreservesOldRouting` verifies recovery is transactional.
+Explicit reconciliation when a rejected attempt's published base changed remains a blocked path,
+not an automatic rebase. The UI compares stored versions but does not reconcile stale bases.
 
 The suite also checks client-wide published access and new-draft creation, author-only private
 draft editing (including an attempted caller-supplied actor ID), stale saves, command retries,
@@ -51,9 +78,8 @@ stale/cancelled copy rejection, duplicate capture prevention, foreign keys, hist
 uniqueness and official-guide keys. These verify storage prerequisites for A12 and A26-A31, not
 complete publication, participant inheritance, notifications or concurrent workflow execution.
 
-This foundation introduces no user-facing workflow. Its tutorial impact is tracked for the
-future Creating a draft, Reviewing suggested edits, and Comparing versions SOPs; those guides
-must be added/updated when the corresponding screens ship.
+The workspace ships with four local tutorial SOPs sourced from `docs/tutorials/workflow-guides.json`.
+The demo initializer preserves their released revisions and appends new ones when content changes.
 
 ## Quick start on this Windows workspace
 
@@ -117,7 +143,7 @@ leave those fixtures behind; inspect them rather than bypassing the configuratio
 These tests cover internal service behavior for A12, A14, A20, A24-A25 and A27-A31. V105's API
 tests add reviewer-copy creation/editing, API visibility and rejection/cancellation. The atomicity
 suite also checks rejection rollback after outbox failure and content/version rollback after
-save-audit failure. UI visibility, email delivery and reassignment remain pending.
+save-audit failure. V106 adds reassignment coverage; UI visibility and email delivery remain pending.
 Tutorial SOP content for these flows remains tied to the future UI release.
 
 Import the root Maven project and use Java 21 for the project SDK. Shared configurations under
@@ -217,8 +243,7 @@ run does not establish that a hosted CI run passed.
 
 ## Next verification increments
 
-- Permission matrix and approved lifecycle tests, including self-approval and participant tracking.
-- Concurrent saves/publication and transaction/outbox failure injection.
+- Broader workflow combinations beyond the existing permission/concurrency/outbox scenarios.
 - Browser end-to-end and accessibility checks using controlled test personas.
 - Notification provider fakes, delivery retry scenarios, and client deployment isolation.
 - Migration and backup/restore validation before shared-environment changes.

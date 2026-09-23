@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  lifecycleEnabled: true,
   apiBaseUrl: 'http://localhost:8080'
 };
 

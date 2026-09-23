@@ -1,0 +1,10 @@
+.lifecycle{font-family:Arial,Helvetica,sans-serif;grid-template-columns:210px minmax(0,1fr)}
+.lifecycle .sidebar{background:#203e4b;padding:20px 12px}
+.lifecycle .brand-logo{display:flex;align-items:flex-start;background:transparent;border:0;box-shadow:none;padding:8px;margin:0 0 24px}
+.lifecycle .brand-name{font-size:25px;letter-spacing:-.03em;font-weight:700;color:white}
+.lifecycle .brand-sub{font-size:9px;color:#c1d5da;letter-spacing:.08em;margin-top:10px}
+.lifecycle .sidebar a{background:#2f5360;color:white;font-size:14px;padding:12px}
+.lifecycle .app-header{min-height:56px;box-sizing:border-box}
+.lifecycle .back-btn{background:white;color:#284e5b;border:1px solid #ced9de}
+.lifecycle .main{height:100vh;overflow:hidden}
+@media(max-width:700px){.lifecycle{grid-template-columns:minmax(0,1fr);height:auto}.lifecycle .sidebar{display:none}.lifecycle .content{padding:12px}}

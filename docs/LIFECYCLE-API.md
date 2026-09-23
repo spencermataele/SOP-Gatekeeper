@@ -1,15 +1,15 @@
 # Governed lifecycle API (development contract)
 
-These endpoints are implemented and tested but disabled by default. The current Angular screens
-still use the separate MVP endpoints/tables. Enabling the new API does not migrate client data,
-replace those screens, deliver email, or disable the old routes. Complete cutover must do all
-required routing/permission changes together; do not present the MVP endpoints as governed.
+These endpoints are implemented and tested and enabled by the local `backend-lifecycle` command.
+The development Angular workspace uses them. The production API flag still defaults to off and
+the production frontend keeps its previous routes until a coordinated cutover. Enabling the API
+disables the legacy SOP/change-request controllers; it does not migrate MVP content or send email.
 
 The API uses `/api/lifecycle`, bearer authentication and the explicitly configured client.
 `LIFECYCLE_API_ENABLED=true` enables it on backend startup. Client configuration, process owners
 and optional reporting lines must be configured first; no seed IDs are interpreted as authority.
 Automated API tests enable it only against `sop_gatekeeper_test` with isolated fixtures.
-The local development server has not been restarted or reconfigured for this increment.
+Use the [local walkthrough](WORKFLOW-WALKTHROUGH.md) for the practice configuration and UI scenarios.
 
 ## Approved access policy
 
@@ -34,6 +34,10 @@ editor, but cannot be saved/submitted after candidate replacement or request com
 
 | Method/path (under `/api/lifecycle`) | Purpose |
 | --- | --- |
+| `GET /processes` | Configured client processes and owner names for draft creation. |
+| `GET /requests` | Latest authorized work summaries; current permission checks filter candidates. |
+| `GET /notifications` | Latest 100 in-app notification records addressed to the caller. |
+| `GET /documents/{documentId}/history` | Published revision history in its stored order; no unpublished candidates. |
 | `GET /documents` | Current published content for this client; excludes unpublished drafts. |
 | `POST /documents` | Create a new document, request and author working copy; no publication. |
 | `POST /documents/{documentId}/drafts` | Copy the expected published revision into a new request authored by the caller. |
@@ -45,6 +49,8 @@ editor, but cannot be saved/submitted after candidate replacement or request com
 | `POST /requests/{requestId}/approve` | Independently approve or explicitly self-approve and publish. |
 | `POST /requests/{requestId}/reject` | Assigned independent reviewer rejects the exact candidate with a reason. |
 | `POST /requests/{requestId}/cancel` | Author cancels an unchanged DRAFT, preserving its content and audit. |
+| `POST /requests/{requestId}/revise` | Original author creates a linked new draft from a rejected candidate, retaining contributor evidence. |
+| `POST /requests/{requestId}/reassign` | Administrator refreshes stale routing using current governance, with a mandatory reason. |
 
 Mutation bodies carry a client-generated UUID `commandId`. Retry an uncertain request with the
 same ID and identical body. Do not reuse it for changed input or another actor. Responses to
@@ -52,6 +58,10 @@ retries describe the original operation, not necessarily the resource's latest s
 request/copy before further edits. New draft/copy/save results contain `requestId`, `copyId`,
 and copy `version`. Candidate transitions return `candidateId`; cancellation returns request
 `version`. Successful operations currently return HTTP 200.
+
+Revise uses `requestVersion`, `commandId` and returns the new request/copy. Reassign uses
+`candidateId`, `requestVersion`, `reason`, `commandId` and returns the unchanged candidate ID;
+GET the request for its incremented version. Callers cannot supply replacement reviewer IDs.
 
 Create body:
 
@@ -93,7 +103,22 @@ Opening a copy does not increment the request version or prevent publication; sa
 after a winner changes the request returns a conflict. Self-approval remains a separate explicit
 mode, never inferred from the actor's role.
 
-Revising rejected work as a linked new attempt, audited reassignment, governance administration,
+V106 links new attempts to their rejected source request and revision. Only the original author
+can revise. Its first submission inherits every source participant; changing the submitter cannot
+turn an earlier contributor into an independent reviewer. The old request, candidate and decision
+remain intact. If publication has changed since the rejected attempt's base, automatic resubmission
+is blocked pending an explicit reconciliation workflow rather than silently adopting the new base.
+
+Reassignment is limited to administrators and an IN_REVIEW request with changed routing. It
+archives prior assignments, stores old/new routing fingerprints and the new owner/manager snapshot,
+records the reason, and queues notifications to new reviewers and the author. Participants remain
+excluded from independent approval. Administrators may read a submitted request with stale routing
+to perform this recovery; this does not grant access to another author's private draft/copy or
+permission to approve the candidate. It exposes REASSIGN, not an automatic approval action.
+No-op reassignment and reassignment of closed work are rejected. All changes roll back together
+if audit/outbox persistence fails; same-command retries do not create extra history or notifications.
+
+Governance administration, explicit reconciliation against a newer publication,
 reporting-line cycle validation, workflow inbox/list pagination, arbitrary version comparisons,
 email/in-app delivery workers, tutorial seed replacement and UI integration remain future work.
 The published list is an initial unpaginated contract; add pagination before client-scale rollout.
