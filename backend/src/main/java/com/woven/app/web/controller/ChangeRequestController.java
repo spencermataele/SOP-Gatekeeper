@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.lifecycle.api-enabled", havingValue = "false", matchIfMissing = true)
 @RequestMapping("/change-requests")
 @RequiredArgsConstructor
 public class ChangeRequestController {
@@ -37,7 +38,6 @@ public class ChangeRequestController {
             @RequestParam(required = false) String comments,
             @AuthenticationPrincipal AppUserDetails currentUser) {
         // Verify correct approver
-        System.out.println("currentUser = " + currentUser.getUser().getUsername());
 
         changeRequestService.approve(
                 approvalId,

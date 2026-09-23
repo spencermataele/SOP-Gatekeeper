@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  apiBaseUrl: 'https://sop-gatekeeper-production.up.railway.app'
+  lifecycleEnabled: true,
+  apiBaseUrl: 'http://localhost:8080'
 };
 
 /*

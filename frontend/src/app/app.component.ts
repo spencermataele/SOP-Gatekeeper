@@ -1,18 +1,22 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {NotificationService} from "./features/notifications/notification.service";
-import {NavigationEnd, Router} from "@angular/router";
+import {NavigationEnd, Router, RouterOutlet} from "@angular/router";
+import {WorkflowComponent} from './features/workflows/workflow.component';
 import {filter} from "rxjs";
 import {AuthService} from "./features/authorization/auth.service";
 import {Location} from "@angular/common";
+import {environment} from '../environments/environment';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['../styles.css']
+  styleUrls: ['../styles.css', './workflow-shell.css']
 })
 export class AppComponent implements OnInit {
 
   unreadCount = 0;
+  lifecycleEnabled = environment.lifecycleEnabled;
+  @ViewChild(RouterOutlet) outlet?: RouterOutlet;
 
   constructor(
     private notificationService: NotificationService,
@@ -30,6 +34,7 @@ export class AppComponent implements OnInit {
   }
 
   private loadUnread() {
+    if (this.lifecycleEnabled) return;
     //If not logged in yet.  i.e. landing on the login page
     if (!localStorage.getItem('token')) {
       this.unreadCount = 0;
@@ -47,6 +52,11 @@ export class AppComponent implements OnInit {
   }
 
   public logout() {
+    const active = this.outlet?.isActivated ? this.outlet.component : undefined;
+    if (active instanceof WorkflowComponent) {
+      if (!active.canLeave()) return;
+      active.dirty = false;
+    }
     this.authService.logout();
     this.router.navigate(['/login']);
   }

@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local development tools, databases, and configuration
+/.local/
+/frontend/node/
+/.env.local

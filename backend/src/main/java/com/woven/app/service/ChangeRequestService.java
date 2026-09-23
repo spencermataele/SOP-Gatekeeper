@@ -115,13 +115,7 @@ public class ChangeRequestService {
             String comments,
             AppUserDetails user
     ) {
-        System.out.println(">>> APPROVE METHOD VERSION 2 <<<");
 
-        System.out.println("approvalId = " + approvalId);
-
-        System.out.println("currentUser.id = " + approverId);
-
-/*** EVALUATOR - Task B5 - Validation functionality ***/
         ChangeApproval approval = changeApprovalRepository.findById(approvalId).orElseThrow(
                 () -> new SecurityException("Approval not found for this user")
         );
@@ -155,9 +149,6 @@ public class ChangeRequestService {
             Long changeRequestId,
             AppUserDetails user
     ) {
-        // Smoke test
-        System.out.println(">>> ENTERED publish() for changeRequest " + changeRequestId);
-
         ChangeRequest changeRequest = changeRequestRepository.findById(changeRequestId).orElseThrow(() ->
                 new IllegalArgumentException("ChangeRequest not found " + changeRequestId));
 
@@ -170,7 +161,6 @@ public class ChangeRequestService {
 
         // Make sure correct process owner is the approver
         Integer ownerId = original.getCurrentProcessOwnerId();
-/*** EVALUATOR - Task B6 - Security feature ***/
         if (!ownerId.equals(user.getUser().getId())) {
             throw new SecurityException("You are not authorized to publish changes to this SOP");
         }
@@ -407,7 +397,6 @@ public class ChangeRequestService {
                 approvalId
         );
     }
-    /*** EVALUATOR - Task B1 - Polumorphism ***/
     // List all change requests
     @Transactional(readOnly = true)
     public List<ChangeRequestDto> listAll() {

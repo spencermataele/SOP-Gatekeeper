@@ -107,7 +107,6 @@ public class Sop {
 
     @PrePersist
     public void prePersist() {
-        System.out.println(">>> PrePersist fired. sopDescription before: " + sopDescription);
         if (this.sopDescription == null || this.sopDescription.isBlank()) {
             this.sopDescription = "N/A";
         }

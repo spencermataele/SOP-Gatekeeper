@@ -1,0 +1,26 @@
+[
+  {
+    "key": "gatekeeper.authoring",
+    "title": "Create and submit your first SOP",
+    "purpose": "Practice the authoring workflow using a private draft and a controlled submission.",
+    "procedure": "1. Open New SOP in the SOP workspace. Select the process the procedure describes. In the local practice environment, use Practice workflows.\n\n2. Enter a clear title, a purpose describing the expected outcome, and numbered procedure steps. Select Create draft. Only you can edit this draft.\n\n3. Make any additional changes and select Save copy. The saved draft is not published. You can return to it from My work & reviews.\n\n4. Complete all three content fields and select Submit for approval. Submission freezes a candidate, records your participation, and assigns eligible approvers.\n\n5. Follow the request's Activity and your Notifications. The published library changes only after approval. If your submission is rejected, use Revise rejected submission to create a linked new attempt when the published base has not changed.\n\nPractice exercise: sign in as demo.author and submit a procedure for checking a workstation before starting a shift. Sign out, then sign in as demo.owner to review it."
+  },
+  {
+    "key": "gatekeeper.reviewing",
+    "title": "Review a candidate and propose edits",
+    "purpose": "Use process expertise to review a submitted SOP without overwriting the author's snapshot.",
+    "procedure": "1. Open My work & reviews and select an assigned request. Read the submitted candidate and compare it with the published version when one exists.\n\n2. If the candidate is ready, select Approve & publish. If it needs to return to the author, enter a reason and select Reject with reason.\n\n3. To make the correction yourself, select Edit a private copy. Make changes and select Save copy. Other participants still see the submitted candidate, not your private edits.\n\n4. Enter the change reason, then select Submit revised candidate. The earlier candidate remains in version comparison. The new candidate becomes the one awaiting approval, and routing is recalculated using all recorded participants.\n\n5. After contributing, do not expect an ordinary approval action for your own work. When you are the relevant process owner, your manager or an eligible administrator can independently approve the revised candidate.\n\nPractice exercise: as demo.owner, edit a candidate submitted by demo.author. Submit the revised candidate, then sign in as demo.manager and approve it."
+  },
+  {
+    "key": "gatekeeper.self-approval",
+    "title": "Record an accountable self-approval",
+    "purpose": "Understand the restricted self-approval exception and its audit trail.",
+    "procedure": "1. Open a submitted request to which you contributed. Self-approval is offered only when you are the relevant process owner or an administrator and current routing permits it.\n\n2. Prefer independent review when appropriate. For a process owner's submission, the manager or an eligible administrator can approve. A manager's submission is reviewed by the process owner.\n\n3. When exercising the self-approval exception, enter a specific reason explaining why you are approving your own contribution. A blank reason is not accepted.\n\n4. Select Self-approve & publish. The decision records your identity, contribution, and reason. The designated approvers, manager, and administrators receive the applicable notifications, with duplicate recipients removed.\n\n5. Review Activity and Notifications. This local preview stores email notifications in the outbox but does not send email or provide a delivery report yet.\n\nPractice exercise: create and submit a separate SOP as demo.owner. Verify that self-approval is unavailable until you enter a reason."
+  },
+  {
+    "key": "gatekeeper.history",
+    "title": "Revise a published SOP and compare versions",
+    "purpose": "Keep the current publication stable while reviewing proposed changes and earlier versions.",
+    "procedure": "1. Select a client SOP in Published SOPs. Gatekeeper guides are maintained by the product and cannot be edited through client revision workflows.\n\n2. Select Start revision. Edit and save your private copy, then submit it for approval. The current publication stays visible throughout review.\n\n3. In the request, compare the candidate with the current publication. Use Compare from and Compare to to inspect any submitted candidate in this request.\n\n4. After approval, reopen the SOP in Published SOPs. Its version selectors include its published history, with the latest publication selected by default. Revision numbers are stable record identifiers, not chronological version labels.\n\n5. If another publication or routing change makes your screen stale, preserve any unsaved text and reload the request. The application blocks a stale save or decision instead of silently overwriting newer work.\n\nThis preview compares complete text side by side. Word-level highlighting, document intake, and historical imports will be added in later releases."
+  }
+]
