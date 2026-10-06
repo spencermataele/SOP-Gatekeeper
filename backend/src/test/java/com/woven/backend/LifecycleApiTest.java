@@ -23,6 +23,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.containsString;
+import static com.woven.support.StructuredFixtures.details;
 import static org.hamcrest.Matchers.not;
 
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE)
@@ -51,7 +53,7 @@ class LifecycleApiTest extends DatabaseTest {
     }
     private JsonNode draft() throws Exception {
         return result(call(4, post("/api/lifecycle/documents"), Map.of("processId", 1, "title", "Tutorial test",
-                "description", "Purpose", "details", "Original steps", "commandId", UUID.randomUUID())));
+                "description", "Purpose", "details", details("Original steps"), "commandId", UUID.randomUUID())));
     }
     private String path(JsonNode draft) { return "/api/lifecycle/requests/" + draft.get("requestId").asLong(); }
     private long submit(JsonNode draft) throws Exception {
@@ -63,6 +65,36 @@ class LifecycleApiTest extends DatabaseTest {
     }
     private Map<String, Object> approval(long candidate, long version, String mode, String reason) {
         return Map.of("candidateId", candidate, "requestVersion", version, "mode", mode, "reason", reason, "commandId", UUID.randomUUID());
+    }
+
+    @Test void onlyAdminsCanConfigureOwnershipAndChangesAreAudited() throws Exception {
+        var assignment = Map.of("ownerId", 2, "managerId", 3, "expectedVersion", 0,
+                "expectedManagerId", 3, "reason", "Confirmed reporting line");
+        call(4, get("/api/lifecycle/admin/setup"), null).andExpect(status().isForbidden());
+        call(4, put("/api/lifecycle/admin/processes/1/ownership"), assignment).andExpect(status().isForbidden());
+        call(1, put("/api/lifecycle/admin/processes/1/ownership"), assignment).andExpect(status().isOk())
+                .andExpect(jsonPath("$.activity[0].reason").value("Confirmed reporting line"));
+        assertEquals(1L, jdbc.queryForObject("SELECT lock_version FROM process_governance WHERE business_process_id=1", Long.class));
+        call(1, put("/api/lifecycle/admin/processes/1/ownership"), assignment).andExpect(status().isConflict());
+        assertEquals(1, jdbc.queryForObject("SELECT COUNT(*) FROM governance_configuration_audit", Integer.class));
+    }
+
+    @Test void incompleteTemplateIsSavedButCannotEnterReview() throws Exception {
+        String incomplete = details("Work").replace("Workstation", " ");
+        JsonNode saved = result(call(4, post("/api/lifecycle/documents"), Map.of("processId", 1,
+                "title", "Incomplete", "description", "Purpose", "details", incomplete, "commandId", UUID.randomUUID())));
+        call(4, post(path(saved) + "/submit"), Map.of("copyId", saved.get("copyId").asLong(),
+                "requestVersion", 0, "copyVersion", 0, "commandId", UUID.randomUUID())).andExpect(status().isBadRequest());
+        assertEquals("DRAFT", jdbc.queryForObject("SELECT state FROM sop_work_item WHERE work_item_id=?", String.class, saved.get("requestId").asLong()));
+    }
+
+    @Test void submissionFreezesServerControlledHierarchy() throws Exception {
+        JsonNode saved = draft();
+        long revision = submit(saved);
+        var content = json.readTree(jdbc.queryForObject("SELECT details FROM sop_revision WHERE revision_id=?", String.class, revision));
+        assertFalse(content.path("context").path("process").asText().isBlank());
+        assertEquals(jdbc.queryForObject("SELECT full_name FROM users WHERE id=2", String.class), content.path("context").path("processOwner").asText());
+        assertEquals(2, jdbc.queryForObject("SELECT content_schema_version FROM sop_revision WHERE revision_id=?", Integer.class, revision));
     }
 
     @Test void workspaceListsRespectDraftPrivacyAndPublishedHistory() throws Exception {
@@ -89,7 +121,7 @@ class LifecycleApiTest extends DatabaseTest {
         long candidate = submit(draft);
         JsonNode copy = result(call(2, post(path(draft) + "/reviewer-copies"), candidate(candidate, 1, "")));
         call(2, put(path(draft) + "/copies/" + copy.get("copyId").asLong()), Map.of("requestVersion", 1, "copyVersion", 0,
-                "title", "Private title", "description", "Private purpose", "details", "Private steps", "commandId", UUID.randomUUID())).andExpect(status().isOk());
+                "title", "Private title", "description", "Private purpose", "details", details("Private steps"), "commandId", UUID.randomUUID())).andExpect(status().isOk());
         JsonNode authorView = result(call(4, get(path(draft)), null));
         assertFalse(authorView.toString().contains("Private title"));
         for (JsonNode owned : authorView.get("ownCopies")) assertNotEquals(copy.get("copyId"), owned.get("copyId"));
@@ -108,9 +140,9 @@ class LifecycleApiTest extends DatabaseTest {
         JsonNode edited = result(call(2, post(path(draft) + "/reviewer-copies"), candidate(first, 1, "")));
         long copy = edited.get("copyId").asLong();
         call(2, put(path(draft) + "/copies/" + copy), Map.of("requestVersion", 1, "copyVersion", 0,
-                "title", "Tutorial test", "description", "Purpose", "details", "Corrected steps", "commandId", UUID.randomUUID()))
+                "title", "Tutorial test", "description", "Purpose", "details", details("Corrected steps"), "commandId", UUID.randomUUID()))
                 .andExpect(status().isOk()).andExpect(jsonPath("version").value(1));
-        call(4, get(path(draft)), null).andExpect(jsonPath("candidate.details").value("Original steps"));
+        call(4, get(path(draft)), null).andExpect(jsonPath("candidate.details").value(containsString("Original steps")));
         call(4, get(path(draft) + "/copies/" + copy), null).andExpect(status().isForbidden());
         long second = result(call(2, post(path(draft) + "/submit"), Map.of("copyId", copy, "requestVersion", 1,
                 "copyVersion", 1, "reason", "Corrected steps", "commandId", UUID.randomUUID()))).get("candidateId").asLong();
@@ -121,7 +153,7 @@ class LifecycleApiTest extends DatabaseTest {
         call(2, post(path(draft) + "/approve"), approval(second, 2, "SELF_APPROVAL", " " )).andExpect(status().isBadRequest());
         call(2, post(path(draft) + "/approve"), approval(second, 2, "NORMAL", "" )).andExpect(status().isForbidden());
         call(3, post(path(draft) + "/approve"), approval(second, 2, "NORMAL", "Verified" )).andExpect(status().isOk());
-        call(4, get("/api/lifecycle/documents"), null).andExpect(jsonPath("$[0].details").value("Corrected steps"));
+        call(4, get("/api/lifecycle/documents"), null).andExpect(jsonPath("$[0].details").value(containsString("Corrected steps")));
         assertEquals(2, jdbc.queryForObject("SELECT COUNT(*) FROM sop_revision", Integer.class));
     }
 
@@ -140,10 +172,10 @@ class LifecycleApiTest extends DatabaseTest {
     @Test void staleSaveCannotOverwriteAnotherSave() throws Exception {
         JsonNode draft = draft();
         var body = Map.of("requestVersion", 0, "copyVersion", 0, "title", "Saved title", "description", "Purpose",
-                "details", "New steps", "commandId", UUID.randomUUID());
+                "details", details("New steps"), "commandId", UUID.randomUUID());
         call(4, put(path(draft) + "/copies/" + draft.get("copyId").asLong()), body).andExpect(status().isOk());
         call(4, put(path(draft) + "/copies/" + draft.get("copyId").asLong()), Map.of("requestVersion", 0, "copyVersion", 0,
-                "title", "Stale title", "description", "Purpose", "details", "Old steps", "commandId", UUID.randomUUID()))
+                "title", "Stale title", "description", "Purpose", "details", details("Old steps"), "commandId", UUID.randomUUID()))
                 .andExpect(status().isConflict());
         call(4, get(path(draft) + "/copies/" + draft.get("copyId").asLong()), null).andExpect(jsonPath("title").value("Saved title"));
     }
@@ -152,7 +184,7 @@ class LifecycleApiTest extends DatabaseTest {
         JsonNode draft = draft();
         call(1, get(path(draft)), null).andExpect(status().isForbidden());
         call(1, put(path(draft) + "/copies/" + draft.get("copyId").asLong()), Map.of("requestVersion", 0, "copyVersion", 0,
-                "title", "Override", "description", "Purpose", "details", "Steps", "actorId", 4, "commandId", UUID.randomUUID()))
+                "title", "Override", "description", "Purpose", "details", details("Steps"), "actorId", 4, "commandId", UUID.randomUUID()))
                 .andExpect(status().isForbidden());
     }
 
@@ -163,7 +195,7 @@ class LifecycleApiTest extends DatabaseTest {
         call(2, post(path(draft) + "/reject"), body).andExpect(status().isOk());
         call(2, post(path(draft) + "/reject"), body).andExpect(status().isOk());
         call(4, get(path(draft)), null).andExpect(jsonPath("state").value("REJECTED"))
-                .andExpect(jsonPath("candidate.details").value("Original steps"));
+                .andExpect(jsonPath("candidate.details").value(containsString("Original steps")));
         call(2, post(path(draft) + "/approve"), approval(candidate, 2, "NORMAL", "")).andExpect(status().isConflict());
         assertEquals("REJECTED", jdbc.queryForObject("SELECT decision FROM approval_decision", String.class));
         assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM publication_record", Integer.class));
@@ -201,7 +233,7 @@ class LifecycleApiTest extends DatabaseTest {
         assertEquals(copy, result(call(2, post(path(draft) + "/reviewer-copies"), command)));
         call(2, post(path(draft) + "/approve"), approval(candidate, 1, "NORMAL", "Verified")).andExpect(status().isOk());
         call(2, put(path(draft) + "/copies/" + copy.get("copyId").asLong()), Map.of("requestVersion", 1, "copyVersion", 0,
-                "title", "Too late", "description", "Purpose", "details", "Steps", "commandId", UUID.randomUUID()))
+                "title", "Too late", "description", "Purpose", "details", details("Steps"), "commandId", UUID.randomUUID()))
                 .andExpect(status().isConflict());
     }
 
@@ -215,7 +247,7 @@ class LifecycleApiTest extends DatabaseTest {
         JsonNode revision = result(call(3, post("/api/lifecycle/documents/" + document + "/drafts"), command));
         assertEquals(revision, result(call(3, post("/api/lifecycle/documents/" + document + "/drafts"), command)));
         call(3, get(path(revision) + "/copies/" + revision.get("copyId").asLong()), null)
-                .andExpect(jsonPath("details").value("Original steps"));
+                .andExpect(jsonPath("details").value(containsString("Original steps")));
     }
 
     @Test void unassignedReviewerCannotCreateCopy() throws Exception {

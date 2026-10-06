@@ -21,12 +21,14 @@ public class LifecycleWorkflowService {
     private final JdbcTemplate jdbc;
     private final RevisionSnapshotStore snapshots;
     private final ObjectMapper json;
+    private final SopTemplate template;
     private final ApprovalPolicy policy = new ApprovalPolicy();
 
-    public LifecycleWorkflowService(JdbcTemplate jdbc, RevisionSnapshotStore snapshots, ObjectMapper json) {
+    public LifecycleWorkflowService(JdbcTemplate jdbc, RevisionSnapshotStore snapshots, ObjectMapper json, SopTemplate template) {
         this.jdbc = jdbc;
         this.snapshots = snapshots;
         this.json = json;
+        this.template = template;
     }
 
     private record Work(long id, long document, int process, Long published, Long base, Long candidate,
@@ -38,13 +40,17 @@ public class LifecycleWorkflowService {
     public List<Map<String, Object>> processes() {
         requireUser(actor());
         return jdbc.queryForList("""
-                SELECT p.business_process_id AS id, p.business_process_name AS name, u.full_name AS owner
+                SELECT p.business_process_id AS id, p.business_process_name AS name, u.full_name AS owner,
+                       g.org_id AS orgId, o.org_name AS orgName, g.org_group_id AS groupId, g.org_group_name AS groupName,
+                       d.department_id AS departmentId, d.department_name AS departmentName,
+                       f.business_process_family_id AS familyId, f.business_process_family_name AS familyName
                 FROM business_process p JOIN process_governance pg USING (business_process_id)
                 JOIN users u ON u.id = pg.owner_user_id
                 JOIN business_process_family f ON f.business_process_family_id = p.business_process_family_id
                 JOIN department d ON d.department_id = f.department_id
                 JOIN org_group g ON g.org_group_id = d.org_group_id
                 JOIN client_configuration c ON c.org_id = g.org_id AND c.configuration_id = 1
+                JOIN org o ON o.org_id = g.org_id
                 ORDER BY p.business_process_name
                 """);
     }
@@ -74,6 +80,18 @@ public class LifecycleWorkflowService {
             }
         }
         return result;
+    }
+
+    public List<Map<String,Object>> subgroups() {
+        requireUser(actor());
+        return jdbc.queryForList("""
+                SELECT s.dept_subgroup_id AS id,s.dept_subgroup_name AS name,ps.business_process_id AS processId
+                FROM dept_subgroup s JOIN business_process_dept_subgroup ps USING(dept_subgroup_id)
+                JOIN business_process p USING(business_process_id) JOIN business_process_family f USING(business_process_family_id)
+                JOIN department d ON d.department_id=f.department_id AND d.department_id=s.department_id
+                JOIN org_group g ON g.org_group_id=d.org_group_id JOIN client_configuration c ON c.org_id=g.org_id
+                ORDER BY s.dept_subgroup_name
+                """);
     }
 
     public List<Map<String, Object>> notices() {
@@ -171,7 +189,8 @@ public class LifecycleWorkflowService {
         if (saved != null) return copyResult(saved);
         jdbc.update("INSERT INTO sop_document (org_id, business_process_id) VALUES (?, ?)", org, processId);
         long document = jdbc.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
-        return createDraftRows(document, processId, null, actor, title, description, details, 1, commandId, fingerprint);
+        return createDraftRows(document, processId, null, actor, title, description, details,
+                template.validate(details, false) == null ? 1 : 2, commandId, fingerprint);
     }
 
     public CopyResult startRevision(long documentId, long expectedPublishedRevision, UUID commandId) {
@@ -273,6 +292,7 @@ public class LifecycleWorkflowService {
         result.put("requestId", work.id()); result.put("documentId", work.document());
         result.put("version", work.version()); result.put("state", work.state());
         result.put("candidateId", work.candidate()); result.put("actions", actions);
+        result.put("processId", work.process());
         result.put("priorRejectedRequestId", jdbc.queryForObject(
                 "SELECT prior_rejected_request_id FROM sop_work_item WHERE work_item_id = ?", Long.class, requestId));
         result.put("candidate", work.candidate() == null ? null : snapshots.findAuthored(work.document(), work.candidate()).orElseThrow());
@@ -341,9 +361,9 @@ public class LifecycleWorkflowService {
         if (((Number) copy.get("editor_id")).intValue() != actor) throw new SecurityException("Not your working copy");
         require(Objects.equals(number(copy.get("source_candidate_id")), review ? work.candidate() : null), "Copy candidate changed");
         require(jdbc.update("""
-                UPDATE sop_working_copy SET title = ?, description = ?, details = ?, lock_version = lock_version + 1
+                UPDATE sop_working_copy SET title = ?, description = ?, details = ?, content_schema_version=?, lock_version = lock_version + 1
                 WHERE working_copy_id = ? AND lock_version = ? AND state = 'EDITABLE'
-                """, title, description, details, copyId, copyVersion) == 1, "Working copy changed or is no longer editable");
+                """, title, description, details, template.validate(details,false)==null?1:2, copyId, copyVersion) == 1, "Working copy changed or is no longer editable");
         recordEdit(commandId, work, actor, fingerprint, "COPY_SAVED", copyId, copyVersion + 1);
         return new CopyResult(work.id(), copyId, copyVersion + 1);
     }
@@ -385,10 +405,11 @@ public class LifecycleWorkflowService {
         return requestVersion + 1;
     }
 
-    private static void validateDraftContent(String title, String description, String details) {
+    private void validateDraftContent(String title, String description, String details) {
         if (title == null || title.length() > 255 || description == null || details == null) {
             throw new IllegalArgumentException("Draft text is required; title must be at most 255 characters");
         }
+        template.validate(details, false);
     }
 
     private CopyResult copyResult(Map<String, Object> saved) {
@@ -432,6 +453,28 @@ public class LifecycleWorkflowService {
         nonblank((String) copy.get("title"), "Title is required");
         nonblank((String) copy.get("description"), "Description is required");
         nonblank((String) copy.get("details"), "Procedure details are required");
+
+        var content = template.validate((String) copy.get("details"), true);
+        var documentContext = jdbc.queryForMap("""
+                SELECT o.org_name AS organization, g.org_group_name AS organizationGroup,
+                       d.department_name AS department, f.business_process_family_name AS processFamily,
+                       p.business_process_name AS process, u.full_name AS processOwner
+                FROM business_process p JOIN business_process_family f USING(business_process_family_id)
+                JOIN department d USING(department_id) JOIN org_group g USING(org_group_id) JOIN org o USING(org_id)
+                JOIN process_governance pg USING(business_process_id) JOIN users u ON u.id=pg.owner_user_id
+                WHERE p.business_process_id=?
+                """, work.process());
+        if (content.hasNonNull("subgroupId")) {
+            var names = jdbc.queryForList("""
+                    SELECT s.dept_subgroup_name FROM dept_subgroup s JOIN business_process_dept_subgroup ps USING(dept_subgroup_id)
+                    JOIN business_process p USING(business_process_id) JOIN business_process_family f USING(business_process_family_id)
+                    WHERE p.business_process_id=? AND s.dept_subgroup_id=? AND s.department_id=f.department_id
+                    """, String.class, work.process(), content.get("subgroupId").asInt());
+            if (names.isEmpty()) throw new IllegalArgumentException("Subgroup must belong to the selected process and department.");
+            documentContext.put("subgroup", names.getFirst());
+        }
+        jdbc.update("UPDATE sop_working_copy SET details=?, content_schema_version=2 WHERE working_copy_id=? AND lock_version=? AND state='EDITABLE'",
+                template.withContext(content, documentContext), copyId, copyVersion);
 
         long revision = snapshots.captureAuthoredCopy(copyId, copyVersion, actor);
         Long rejectedSource = jdbc.queryForObject("SELECT resubmission_revision_id FROM sop_work_item WHERE work_item_id = ?", Long.class, requestId);
@@ -480,6 +523,7 @@ public class LifecycleWorkflowService {
         if (mode == ApprovalPolicy.Mode.NORMAL) assignedIndependentReviewer(work, governance, actor);
         ApprovalPolicy.Authority authority = policy.authorize(context, actor, mode, reason);
         require(Objects.equals(work.base(), work.published()), "Published version changed; reconcile and resubmit");
+        template.validate(jdbc.queryForObject("SELECT details FROM sop_revision WHERE revision_id=?",String.class,candidateId),true);
 
         jdbc.update("""
                 INSERT INTO approval_decision (revision_id, actor_id, authority, self_approval, reason)

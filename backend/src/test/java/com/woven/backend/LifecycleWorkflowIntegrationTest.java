@@ -57,8 +57,8 @@ class LifecycleWorkflowIntegrationTest extends DatabaseTest {
     private long copy(long requestId, int editor, Long source) {
         jdbc.update("""
                 INSERT INTO sop_working_copy (document_id, work_item_id, editor_id, source_candidate_id, title, description, details)
-                VALUES (?, ?, ?, ?, 'Test SOP', 'Test purpose', 'Verified steps')
-                """, document, requestId, editor, source);
+                VALUES (?, ?, ?, ?, 'Test SOP', 'Test purpose', ?)
+                """, document, requestId, editor, source, com.woven.support.StructuredFixtures.details("Verified steps"));
         return id();
     }
 

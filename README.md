@@ -10,9 +10,12 @@ The MVP includes authentication, organizational hierarchy and user administratio
 processes and owners, SOP authoring, change requests, approval/publication, in-app notifications,
 and an organizational hierarchy report.
 
-The MVP does not yet implement all approved governance rules. New SOPs currently publish
-immediately, authorization needs strengthening, and automated tests cover only a small part
-of the workflow. The [lifecycle specification](docs/SOP-LIFECYCLE-SPEC.md) defines target behavior
+The governed development workspace requires approval before publication, enforces participant-aware
+permissions, and preserves submitted candidates and published history. Admin hierarchy and ownership
+setup feed a structured Who/What/Where template with consistent preview and publication layouts.
+Backend integration and browser tests exercise this workflow. Production still uses the legacy
+routes until a coordinated cutover; document intake and email delivery/reporting remain future work.
+The [lifecycle specification](docs/SOP-LIFECYCLE-SPEC.md) defines target behavior
 and acceptance scenarios. It distinguishes confirmed decisions from remaining proposals;
 it is not a description of already implemented functionality.
 

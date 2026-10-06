@@ -9,10 +9,10 @@
 
     <nav>
       <a routerLink="/sops">{{lifecycleEnabled ? 'SOP workspace' : 'SOPs'}}</a>
+      <a *ngIf="authService.isAdmin()" routerLink="/admin">Admin</a>
+      <a routerLink="/reports">Reports</a>
       <ng-container *ngIf="!lifecycleEnabled">
-        <a routerLink="/admin">Admin</a>
         <a routerLink="/change-requests">Change Dashboard</a>
-        <a routerLink="/reports">Reports</a>
       </ng-container>
     </nav>
   </aside>
@@ -43,5 +43,3 @@
   </div>
 
 </div>
-
-

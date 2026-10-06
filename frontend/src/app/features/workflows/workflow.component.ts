@@ -6,29 +6,40 @@ import {HttpClient} from '@angular/common/http';
 import {firstValueFrom, forkJoin} from 'rxjs';
 import {environment} from '../../../environments/environment';
 import {AuthService} from '../authorization/auth.service';
+import {SopEditorComponent} from './sop-editor.component';
+import {SopContentComponent} from './sop-content.component';
+import {GovernedProcess, ProcessSelectorComponent} from './process-selector.component';
+import {blankTemplate, readyToSubmit} from './sop-template';
 
 interface Snapshot { id?: number; title: string; description: string; details: string; }
 interface Copy extends Snapshot { copyId: number; version: number; state: string; }
 interface RequestView {
-  requestId: number; documentId: number; version: number; state: string; title: string; author: string;
+  requestId: number; documentId: number; processId?: number; version: number; state: string; title: string; author: string;
   candidateId: number; candidate?: Snapshot; published?: Snapshot; actions: string[];
   ownCopies: {copyId: number; state: string; version: number}[];
   versions: Snapshot[]; activity: {action: string; actor: string; reason: string; recordedAt: string}[];
 }
 interface DocumentView extends Snapshot {documentId: number; revisionId: number; kind: string;}
 
-@Component({selector: 'app-workflow', standalone: true, imports: [CommonModule, FormsModule],
+@Component({selector: 'app-workflow', standalone: true, imports: [CommonModule, FormsModule, SopEditorComponent, SopContentComponent, ProcessSelectorComponent],
   templateUrl: './workflow.component.html', styleUrls: ['./workflow.component.css']})
 export class WorkflowComponent implements OnInit {
   readonly api = environment.apiBaseUrl + '/api/lifecycle';
   tab = 'library'; busy = false; error = ''; message = ''; creating = false; dirty = false;
   documents: DocumentView[] = []; requests: RequestView[] = [];
-  processes: {id: number; name: string; owner: string}[] = [];
+  processes: GovernedProcess[] = [];
+  subgroups: {id: number; name: string; processId: number}[] = [];
+  readyToSubmit = readyToSubmit;
   notices: {id: string; requestId: number; action: string; recordedAt: string; title: string; actor: string}[] = [];
   request?: RequestView; copy?: Copy; document?: DocumentView;
   history: Snapshot[] = []; left?: Snapshot; right?: Snapshot;
   processId = 0; title = ''; description = ''; details = ''; reason = '';
   private commands = new Map<string, string>();
+  get availableSubgroups(): {id: number; name: string}[] { return this.subgroups.filter(s=>s.processId === (this.creating ? this.processId : this.request?.processId)); }
+  processChanged(id: number): void {
+    this.processId = id; this.dirty = true;
+    const value=JSON.parse(this.details); value.subgroupId=null; this.details=JSON.stringify(value);
+  }
   constructor(private http: HttpClient, public auth: AuthService) {}
   ngOnInit(): void { void this.refresh(); }
   can(action: string): boolean { return !!this.request?.actions.includes(action); }
@@ -48,10 +59,10 @@ export class WorkflowComponent implements OnInit {
       documents: this.http.get<DocumentView[]>(this.api + '/documents'),
       requests: this.http.get<RequestView[]>(this.api + '/requests'),
       processes: this.http.get<typeof this.processes>(this.api + '/processes'),
+      subgroups: this.http.get<typeof this.subgroups>(this.api + '/subgroups'),
       notices: this.http.get<typeof this.notices>(this.api + '/notifications')
     }));
     Object.assign(this, data);
-    if (!this.processId && this.processes.length) this.processId = this.processes[0].id;
   }
   private leaveEditor(): boolean {
     return !this.dirty || window.confirm('Discard your unsaved changes? Saved drafts are kept.');
@@ -91,7 +102,8 @@ export class WorkflowComponent implements OnInit {
   newDraft(): void {
     if (!this.leaveEditor()) return;
     this.request = undefined; this.document = undefined; this.copy = undefined; this.creating = true;
-    this.title = ''; this.description = ''; this.details = ''; this.dirty = false; this.error = ''; this.message = '';
+    this.title = ''; this.description = ''; this.details = JSON.stringify(blankTemplate()); this.processId=0;
+    this.dirty = false; this.error = ''; this.message = '';
   }
   async create(): Promise<void> {
     await this.command('/documents', {processId: Number(this.processId), title: this.title, description: this.description, details: this.details}, 'Draft created.', true);

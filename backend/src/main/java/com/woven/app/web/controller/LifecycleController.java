@@ -23,6 +23,8 @@ public class LifecycleController {
 
     @GetMapping("/processes")
     public List<Map<String, Object>> processes() { return workflow.processes(); }
+    @GetMapping("/subgroups")
+    public List<Map<String, Object>> subgroups() { return workflow.subgroups(); }
     @GetMapping("/requests")
     public List<Map<String, Object>> inbox() { return workflow.inbox(); }
     @GetMapping("/notifications")

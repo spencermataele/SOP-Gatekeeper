@@ -3,24 +3,268 @@
     "key": "gatekeeper.authoring",
     "title": "Create and submit your first SOP",
     "purpose": "Practice the authoring workflow using a private draft and a controlled submission.",
-    "procedure": "1. Open New SOP in the SOP workspace. Select the process the procedure describes. In the local practice environment, use Practice workflows.\n\n2. Enter a clear title, a purpose describing the expected outcome, and numbered procedure steps. Select Create draft. Only you can edit this draft.\n\n3. Make any additional changes and select Save copy. The saved draft is not published. You can return to it from My work & reviews.\n\n4. Complete all three content fields and select Submit for approval. Submission freezes a candidate, records your participation, and assigns eligible approvers.\n\n5. Follow the request's Activity and your Notifications. The published library changes only after approval. If your submission is rejected, use Revise rejected submission to create a linked new attempt when the published base has not changed.\n\nPractice exercise: sign in as demo.author and submit a procedure for checking a workstation before starting a shift. Sign out, then sign in as demo.owner to review it."
+    "content": {
+      "template": "gatekeeper-sop",
+      "schemaVersion": 2,
+      "scope": "Using SOP Gatekeeper",
+      "references": "",
+      "steps": [
+        {
+          "what": "Open New SOP in the SOP workspace. Choose the organization group, department, process family, and process the procedure describes. In the local practice environment, use Practice workflows.",
+          "where": "SOP Gatekeeper",
+          "id": "f492a21e-1d5c-f339-6c9a-0b7d55c411fc",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Enter a clear title, a purpose describing the expected outcome, and procedure steps using Who, What, and Where. Use Add step as needed, and move steps to set their order. Gatekeeper numbers and formats them consistently. Select Create draft. Only you can edit this draft.",
+          "where": "SOP Gatekeeper",
+          "id": "5b076586-373e-b894-720c-dedb26062468",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Make any additional changes and select Save copy. The saved draft is not published. You can return to it from My work & reviews.",
+          "where": "SOP Gatekeeper",
+          "id": "e4f4d3c5-4d33-f6ae-5bb4-06cb45a8c038",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Complete the title, purpose, and Who, What, and Where for every step and select Submit for approval. Submission freezes a candidate, records your participation, and assigns eligible approvers.",
+          "where": "SOP Gatekeeper",
+          "id": "34febfb8-ed0a-d794-e8d3-d24fc6222cd7",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Follow the request's Activity and your Notifications. The published library changes only after approval. If your submission is rejected, use Revise rejected submission to create a linked new attempt when the published base has not changed.",
+          "where": "SOP Gatekeeper",
+          "id": "42108c73-74df-2275-0c7d-22902b7cb57a",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Practice exercise: sign in as demo.author and submit a procedure for checking a workstation before starting a shift. Sign out, then sign in as demo.owner to review it.",
+          "where": "SOP Gatekeeper",
+          "id": "def95c4f-1822-a1ce-bb8e-989eb7ca227a",
+          "notes": "",
+          "who": "SOP participant"
+        }
+      ]
+    }
   },
   {
     "key": "gatekeeper.reviewing",
     "title": "Review a candidate and propose edits",
     "purpose": "Use process expertise to review a submitted SOP without overwriting the author's snapshot.",
-    "procedure": "1. Open My work & reviews and select an assigned request. Read the submitted candidate and compare it with the published version when one exists.\n\n2. If the candidate is ready, select Approve & publish. If it needs to return to the author, enter a reason and select Reject with reason.\n\n3. To make the correction yourself, select Edit a private copy. Make changes and select Save copy. Other participants still see the submitted candidate, not your private edits.\n\n4. Enter the change reason, then select Submit revised candidate. The earlier candidate remains in version comparison. The new candidate becomes the one awaiting approval, and routing is recalculated using all recorded participants.\n\n5. After contributing, do not expect an ordinary approval action for your own work. When you are the relevant process owner, your manager or an eligible administrator can independently approve the revised candidate.\n\nPractice exercise: as demo.owner, edit a candidate submitted by demo.author. Submit the revised candidate, then sign in as demo.manager and approve it."
+    "content": {
+      "template": "gatekeeper-sop",
+      "schemaVersion": 2,
+      "scope": "Using SOP Gatekeeper",
+      "references": "",
+      "steps": [
+        {
+          "what": "Open My work & reviews and select an assigned request. Read the submitted candidate and compare it with the published version when one exists.",
+          "where": "SOP Gatekeeper",
+          "id": "4a1f00b0-8e9c-20e7-5f06-fa9f771febc3",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "If the candidate is ready, select Approve & publish. If it needs to return to the author, enter a reason and select Reject with reason.",
+          "where": "SOP Gatekeeper",
+          "id": "640f2475-6597-2439-d4f6-c486aa5df192",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "To make the correction yourself, select Edit a private copy. Make changes and select Save copy. Other participants still see the submitted candidate, not your private edits.",
+          "where": "SOP Gatekeeper",
+          "id": "930e34c0-82a3-6dfd-c4d3-ae0d883d9d6a",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Enter the change reason, then select Submit revised candidate. The earlier candidate remains in version comparison. The new candidate becomes the one awaiting approval, and routing is recalculated using all recorded participants.",
+          "where": "SOP Gatekeeper",
+          "id": "2c2f0c0e-f60b-1c80-1692-0d677c55e6cc",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "After contributing, do not expect an ordinary approval action for your own work. When you are the relevant process owner, your manager or an eligible administrator can independently approve the revised candidate.",
+          "where": "SOP Gatekeeper",
+          "id": "173d42af-e42b-9d80-41d5-807cb8527aa9",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Practice exercise: as demo.owner, edit a candidate submitted by demo.author. Submit the revised candidate, then sign in as demo.manager and approve it.",
+          "where": "SOP Gatekeeper",
+          "id": "2edaaf54-4028-1efd-e472-6e4ed090a08a",
+          "notes": "",
+          "who": "SOP participant"
+        }
+      ]
+    }
   },
   {
     "key": "gatekeeper.self-approval",
     "title": "Record an accountable self-approval",
     "purpose": "Understand the restricted self-approval exception and its audit trail.",
-    "procedure": "1. Open a submitted request to which you contributed. Self-approval is offered only when you are the relevant process owner or an administrator and current routing permits it.\n\n2. Prefer independent review when appropriate. For a process owner's submission, the manager or an eligible administrator can approve. A manager's submission is reviewed by the process owner.\n\n3. When exercising the self-approval exception, enter a specific reason explaining why you are approving your own contribution. A blank reason is not accepted.\n\n4. Select Self-approve & publish. The decision records your identity, contribution, and reason. The designated approvers, manager, and administrators receive the applicable notifications, with duplicate recipients removed.\n\n5. Review Activity and Notifications. This local preview stores email notifications in the outbox but does not send email or provide a delivery report yet.\n\nPractice exercise: create and submit a separate SOP as demo.owner. Verify that self-approval is unavailable until you enter a reason."
+    "content": {
+      "template": "gatekeeper-sop",
+      "schemaVersion": 2,
+      "scope": "Using SOP Gatekeeper",
+      "references": "",
+      "steps": [
+        {
+          "what": "Open a submitted request to which you contributed. Self-approval is offered only when you are the relevant process owner or an administrator and current routing permits it.",
+          "where": "SOP Gatekeeper",
+          "id": "7f7eca13-d0ff-55f0-f084-42f045338304",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Prefer independent review when appropriate. For a process owner's submission, the manager or an eligible administrator can approve. A manager's submission is reviewed by the process owner.",
+          "where": "SOP Gatekeeper",
+          "id": "9e8a930a-1443-10cd-ec1f-e7dc20ef27f7",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "When exercising the self-approval exception, enter a specific reason explaining why you are approving your own contribution. A blank reason is not accepted.",
+          "where": "SOP Gatekeeper",
+          "id": "fd0419aa-67e3-c621-e80a-61a03e624ab4",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Select Self-approve & publish. The decision records your identity, contribution, and reason. The designated approvers, manager, and administrators receive the applicable notifications, with duplicate recipients removed.",
+          "where": "SOP Gatekeeper",
+          "id": "b975c0ba-4c63-d4fb-5b16-350a5b76be6e",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Review Activity and Notifications. This local preview stores email notifications in the outbox but does not send email or provide a delivery report yet.",
+          "where": "SOP Gatekeeper",
+          "id": "72073ef4-9018-225b-166c-f1f4da0e93d7",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Practice exercise: create and submit a separate SOP as demo.owner. Verify that self-approval is unavailable until you enter a reason.",
+          "where": "SOP Gatekeeper",
+          "id": "68bac294-1ca6-0e85-9e59-b3003b794eab",
+          "notes": "",
+          "who": "SOP participant"
+        }
+      ]
+    }
   },
   {
     "key": "gatekeeper.history",
     "title": "Revise a published SOP and compare versions",
     "purpose": "Keep the current publication stable while reviewing proposed changes and earlier versions.",
-    "procedure": "1. Select a client SOP in Published SOPs. Gatekeeper guides are maintained by the product and cannot be edited through client revision workflows.\n\n2. Select Start revision. Edit and save your private copy, then submit it for approval. The current publication stays visible throughout review.\n\n3. In the request, compare the candidate with the current publication. Use Compare from and Compare to to inspect any submitted candidate in this request.\n\n4. After approval, reopen the SOP in Published SOPs. Its version selectors include its published history, with the latest publication selected by default. Revision numbers are stable record identifiers, not chronological version labels.\n\n5. If another publication or routing change makes your screen stale, preserve any unsaved text and reload the request. The application blocks a stale save or decision instead of silently overwriting newer work.\n\nThis preview compares complete text side by side. Word-level highlighting, document intake, and historical imports will be added in later releases."
+    "content": {
+      "template": "gatekeeper-sop",
+      "schemaVersion": 2,
+      "scope": "Using SOP Gatekeeper",
+      "references": "",
+      "steps": [
+        {
+          "what": "Select a client SOP in Published SOPs. Gatekeeper guides are maintained by the product and cannot be edited through client revision workflows.",
+          "where": "SOP Gatekeeper",
+          "id": "9927ee3f-6063-b16a-6eac-29e5c316fc13",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Select Start revision. If the SOP uses an earlier format, select Use standard template. Review the original text copied into the first What field, split it into steps, and complete Who and Where. Edit and save your private copy, then submit it for approval. The current publication stays visible throughout review.",
+          "where": "SOP Gatekeeper",
+          "id": "35b0d5bf-b145-fbc9-9428-e8dab3e1c8ac",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "In the request, compare the candidate with the current publication. Use Compare from and Compare to to inspect any submitted candidate in this request.",
+          "where": "SOP Gatekeeper",
+          "id": "509439a0-3f82-11a7-31f6-fa1a0ec66701",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "After approval, reopen the SOP in Published SOPs. Its version selectors include its published history, with the latest publication selected by default. Revision numbers are stable record identifiers, not chronological version labels.",
+          "where": "SOP Gatekeeper",
+          "id": "1ff408fe-2f40-30e6-9db4-d072c0d6d89a",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "If another publication or routing change makes your screen stale, preserve any unsaved text and reload the request. The application blocks a stale save or decision instead of silently overwriting newer work.",
+          "where": "SOP Gatekeeper",
+          "id": "82e68287-00d0-c6dd-f9a7-33e7b09741a4",
+          "notes": "",
+          "who": "SOP participant"
+        },
+        {
+          "what": "Structured versions use the same layout side by side with added, edited, and moved step indicators. Earlier publications retain their original format. Word-level highlighting, document intake, and historical imports will be added in later releases.",
+          "where": "SOP Gatekeeper",
+          "id": "c4f57a76-6251-1bad-7e30-71700fdadc71",
+          "notes": "",
+          "who": "SOP participant"
+        }
+      ]
+    }
+  },
+  {
+    "key": "gatekeeper.setup",
+    "title": "Set up organization and approval ownership",
+    "purpose": "Connect the organization hierarchy to SOP authoring and accountable approval routing.",
+    "content": {
+      "template": "gatekeeper-sop",
+      "schemaVersion": 2,
+      "scope": "Using SOP Gatekeeper",
+      "references": "",
+      "steps": [
+        {
+          "what": "Sign in as an administrator and open Admin. Create the organization, organization groups, departments, process families, and business processes in that order. Create user accounts for process owners and reviewers.",
+          "where": "SOP Gatekeeper",
+          "id": "c746bd33-8792-e5ff-6fe2-e88d000e2e21",
+          "notes": "",
+          "who": "Administrator"
+        },
+        {
+          "what": "Open Admin > Workflow setup. Select the deployment organization if it has not been configured. The client organization cannot be changed here after setup.",
+          "where": "SOP Gatekeeper",
+          "id": "bc8697ef-2c00-09ac-17a4-b4c07f17d7c6",
+          "notes": "",
+          "who": "Administrator"
+        },
+        {
+          "what": "Select a process, assign its owner account, and choose the direct manager. A manager is optional when an administrator will provide independent approval. A reporting line applies to every process owned by that person.",
+          "where": "SOP Gatekeeper",
+          "id": "ad681585-ae59-806a-c346-a75bd98137c4",
+          "notes": "",
+          "who": "Administrator"
+        },
+        {
+          "what": "Enter a reason and save the ownership assignment. Review the configuration activity record. If a concurrent change is reported, refresh and check the current values.",
+          "where": "SOP Gatekeeper",
+          "id": "01b97cb6-67cd-4282-5572-1ee9cf16ac21",
+          "notes": "",
+          "who": "Administrator"
+        },
+        {
+          "what": "Sign in as an author and select New SOP. Confirm that the process appears under its group, department, and family. If ownership changes during review, an administrator must recalculate approvers before a decision.",
+          "where": "SOP Gatekeeper",
+          "id": "13f841a9-7399-c0a4-7c43-f87bd6e8aa3e",
+          "notes": "",
+          "who": "Administrator"
+        }
+      ]
+    }
   }
 ]

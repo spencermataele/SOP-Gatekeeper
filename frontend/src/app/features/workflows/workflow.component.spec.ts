@@ -1,7 +1,10 @@
 import {ComponentFixture, TestBed, fakeAsync, tick} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {blankTemplate} from './sop-template';
 import {WorkflowComponent} from './workflow.component';
 import {AuthService} from '../authorization/auth.service';
+
+function structured(what: string): string { const value = blankTemplate(); value.steps[0] = {id:'00000000-0000-0000-0000-000000000001', who:'Operator',what,where:'Workstation',notes:''}; return JSON.stringify(value); }
 
 describe('Governed workflow workspace', () => {
   let fixture: ComponentFixture<WorkflowComponent>;
@@ -16,7 +19,7 @@ describe('Governed workflow workspace', () => {
   });
   afterEach(() => http.verify());
   function lists(): void {
-    for (const name of ['documents', 'requests', 'processes', 'notifications']) http.expectOne(component.api + '/' + name).flush([]);
+    for (const name of ['documents', 'requests', 'processes', 'notifications', 'subgroups']) http.expectOne(component.api + '/' + name).flush([]);
     tick(); fixture.detectChanges();
   }
   function start(): void { fixture.detectChanges(); lists(); }
@@ -24,7 +27,7 @@ describe('Governed workflow workspace', () => {
     component.request = {requestId: 9, documentId: 10, version: 3, state: 'IN_REVIEW', title: 'Procedure', author: 'Author', candidateId: 20,
       actions, ownCopies: [], versions: [], activity: [], candidate: {id: 20, title: 'Procedure', description: 'Purpose', details: 'Steps'}};
     component.right = component.request.candidate;
-    component.copy = {copyId: 7, version: 4, state: 'EDITABLE', title: 'Procedure', description: 'Purpose', details: 'My unsaved steps'};
+    component.copy = {copyId: 7, version: 4, state: 'EDITABLE', title: 'Procedure', description: 'Purpose', details: structured('My unsaved steps')};
   }
   function button(label: string): HTMLButtonElement | undefined {
     return Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find(b => b.textContent?.trim() === label);
@@ -44,7 +47,7 @@ describe('Governed workflow workspace', () => {
     const save = http.expectOne(component.api + '/requests/9/copies/7');
     expect(save.request.method).toBe('PUT'); expect(save.request.body.requestVersion).toBe(3); expect(save.request.body.copyVersion).toBe(4);
     save.flush({}, {status: 409, statusText: 'Conflict'}); tick();
-    expect(component.copy!.details).toBe('My unsaved steps'); expect(component.dirty).toBeTrue(); expect(component.error).toContain('reopen');
+    expect(component.copy!.details).toBe(structured('My unsaved steps')); expect(component.dirty).toBeTrue(); expect(component.error).toContain('reopen');
   }));
   it('reuses a command ID when retrying an uncertain save', fakeAsync(() => {
     start(); request(); component.dirty = true; void component.save();

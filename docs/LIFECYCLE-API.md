@@ -141,3 +141,27 @@ that ordinary authors do not receive self-approval actions (in separate cases).
 Tutorial impact: Creating/submitting an SOP, Reviewing/suggesting edits, Approving/self-approving,
 and Rejecting/cancelling need official guides when the corresponding UI is delivered. Backend
 API tests are not a substitute for verifying those guides against actual user screens.
+
+## Standard template and administration
+
+`details` remains a string in API envelopes, containing JSON for `template: "gatekeeper-sop"`,
+`schemaVersion: 2`, text `scope` and `references`, and `steps` with stable UUID `id` plus text
+`who`, `what`, `where`, and `notes`. Optional `subgroupId` must belong to the process and department.
+Drafts can be incomplete. Submission requires title, purpose, and 1–200 complete Who/What/Where
+steps. All text fields in template content are limited to 20,000 characters. Legacy text can be
+saved but must be converted before submission; existing published snapshots remain unchanged.
+The server replaces `context` with authoritative hierarchy/owner names at submission.
+
+`GET /processes` now returns hierarchy IDs/names; `GET /subgroups` returns process-linked options.
+`GET /admin/setup` returns configured organization, users, processes, and the latest 100 configuration
+audit entries. `PUT /admin/client` accepts `orgId` and a required `reason`, establishing the client
+once. `PUT /admin/processes/{id}/ownership` accepts `ownerId`, nullable `managerId`, nullable
+`expectedVersion` (null for first assignment), nullable `expectedManagerId` (the selected owner's
+current reporting line), and required `reason`. Stale values return 409 without partial changes.
+These configuration mutations use expected-state checks rather than workflow command IDs; after
+an uncertain response, reload setup before retrying. They are admin-only on both client and server.
+The old `/admin/**` and `/process-owners/**` endpoints also require the ADMIN role.
+
+V107 adds `governance_configuration_audit`. Ownership/reporting changes and their actor, reason,
+before/after values, and time commit together. Changing a reporting line affects every process
+owned by that person. Existing in-review work requires explicit routing recalculation if stale.

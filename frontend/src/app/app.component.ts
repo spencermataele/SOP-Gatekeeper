@@ -20,7 +20,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     private notificationService: NotificationService,
-    private authService: AuthService,
+    public authService: AuthService,
     private router: Router,
     private location: Location
   ) {}

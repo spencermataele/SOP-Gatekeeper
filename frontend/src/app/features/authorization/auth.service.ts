@@ -3,8 +3,8 @@ import {environment} from "../../../environments/environment";
 import {BehaviorSubject, Observable, tap} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 
-export interface AuthResponse { token: string; id: number; username: string; fullName: string; roles: string[] }
-export interface MeResponse { id: number; username: string; fullName: string; roles: string[] }
+export interface AuthResponse { token: string; id: number; username: string; fullName: string; roles: string | string[] }
+export interface MeResponse { id: number; username: string; fullName: string; roles: string | string[] }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
 
   constructor(private http: HttpClient) {
     const token = localStorage.getItem('token');
-    if (token) this.refreshMe().subscribe();
+    if (token) this.refreshMe().subscribe({error: () => this.logout()});
   }
 
   login(username: string, password: string): Observable<AuthResponse> {
@@ -42,5 +42,6 @@ export class AuthService {
   }
 
   currentUser(): MeResponse | null { return this.me$.value; }
+  isAdmin(): boolean { const roles=this.currentUser()?.roles; return Array.isArray(roles) ? roles.includes('ADMIN') : roles === 'ADMIN'; }
 
 }

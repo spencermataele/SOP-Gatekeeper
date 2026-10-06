@@ -11,6 +11,7 @@ import { BusinessProcessFamiliesPageComponent} from "./features/admin/business-p
 import { BusinessProcessFamilyFormComponent} from "./features/admin/business-process-families/business-process-family-form.component";
 import { ChangeRequestPageComponent } from "./features/sops/change-requests/change-request-page/change-request-page.component";
 import {LoginComponent} from "./features/authorization/login.component";
+import {AdminGuard} from './features/authorization/admin.guard';
 import {AuthGuard} from "./features/authorization/auth.guard";
 import {WorkflowComponent, WorkflowUnsavedGuard} from './features/workflows/workflow.component';
 import {environment} from '../environments/environment';
@@ -32,23 +33,24 @@ const routes: Routes = [
     {path: 'sops/:id/edit', component: SopsFormComponent, canActivate: [AuthGuard]},
     {path: 'sops/:id/view', component: SopViewComponent, canActivate: [AuthGuard]}
   ]),
-  { path: 'admin', component: AdminHomeComponent, canActivate: [AuthGuard] },
-  { path: 'admin/users', loadComponent: () => import('./features/admin/users/user-page.component').then(m => m.UsersPageComponent), canActivate: [AuthGuard] },
-  { path: 'admin/orgs', loadComponent: () => import('./features/admin/orgs/orgs-page.component').then(m => m.OrgsPageComponent), canActivate: [AuthGuard] },
-  { path: 'admin/org-groups', loadComponent: () => import('./features/admin/org-groups/org-groups-page.component').then(m => m.OrgGroupsPageComponent), canActivate: [AuthGuard] },
-  { path: 'admin/departments', loadComponent: () => import('./features/admin/departments/departments-page.component').then(m => m.DepartmentsPageComponent), canActivate: [AuthGuard] },
-  { path: 'admin/dept-subgroups', loadComponent: () => import('./features/admin/dept-subgroups/dept-subgroups-page.component').then(m => m.DeptSubgroupsPageComponent), canActivate: [AuthGuard] },
+  { path: 'admin/workflow-setup', loadComponent: () => import('./features/admin/workflow-setup.component').then(m => m.WorkflowSetupComponent), canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin', component: AdminHomeComponent, canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/users', loadComponent: () => import('./features/admin/users/user-page.component').then(m => m.UsersPageComponent), canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/orgs', loadComponent: () => import('./features/admin/orgs/orgs-page.component').then(m => m.OrgsPageComponent), canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/org-groups', loadComponent: () => import('./features/admin/org-groups/org-groups-page.component').then(m => m.OrgGroupsPageComponent), canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/departments', loadComponent: () => import('./features/admin/departments/departments-page.component').then(m => m.DepartmentsPageComponent), canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/dept-subgroups', loadComponent: () => import('./features/admin/dept-subgroups/dept-subgroups-page.component').then(m => m.DeptSubgroupsPageComponent), canActivate: [AuthGuard, AdminGuard] },
 
-  { path: 'admin/process-owners', component: ProcessOwnersComponent, canActivate: [AuthGuard] },
-  { path: 'admin/process-owners/new', component: ProcessOwnerCreateComponent, canActivate: [AuthGuard] },
+  { path: 'admin/process-owners', component: ProcessOwnersComponent, canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/process-owners/new', component: ProcessOwnerCreateComponent, canActivate: [AuthGuard, AdminGuard] },
 
-  { path: 'admin/business-processes', component: BusinessProcessesPageComponent, canActivate: [AuthGuard] },
-  { path: 'admin/business-processes/new', component: BusinessProcessFormComponent, canActivate: [AuthGuard] },
-  { path: 'admin/business-processes/:id', component: BusinessProcessFormComponent, canActivate: [AuthGuard] },
+  { path: 'admin/business-processes', component: BusinessProcessesPageComponent, canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/business-processes/new', component: BusinessProcessFormComponent, canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/business-processes/:id', component: BusinessProcessFormComponent, canActivate: [AuthGuard, AdminGuard] },
 
-  { path: 'admin/business-process-families', component: BusinessProcessFamiliesPageComponent, canActivate: [AuthGuard] },
-  { path: 'admin/business-process-families/new', component: BusinessProcessFamilyFormComponent, canActivate: [AuthGuard] },
-  { path: 'admin/business-process-families/:id', component: BusinessProcessFamilyFormComponent, canActivate: [AuthGuard] },
+  { path: 'admin/business-process-families', component: BusinessProcessFamiliesPageComponent, canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/business-process-families/new', component: BusinessProcessFamilyFormComponent, canActivate: [AuthGuard, AdminGuard] },
+  { path: 'admin/business-process-families/:id', component: BusinessProcessFamilyFormComponent, canActivate: [AuthGuard, AdminGuard] },
 
   ...(environment.lifecycleEnabled ? [
     {path: 'change-requests', redirectTo: 'sops'},

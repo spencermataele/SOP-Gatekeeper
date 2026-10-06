@@ -8,6 +8,9 @@
     </p>
 
   <div class="cards">
+    <a *ngIf="lifecycleEnabled" class="card" routerLink="/admin/workflow-setup">
+      <h3>Workflow setup</h3><p>Configure the client organization, process owners, and reporting lines. A process needs an owner before authors can select it.</p><span class="cta">Open Workflow setup →</span>
+    </a>
     <a class="card" [routerLink]="['/admin/users']">
       <h3>Users</h3>
       <p>View, edit, and create users.</p>
@@ -52,7 +55,7 @@
   </footer>
 
   <div class="cards">
-    <a class="card" [routerLink]="['/admin/process-owners']">
+    <a *ngIf="!lifecycleEnabled" class="card" [routerLink]="['/admin/process-owners']">
       <h3>Process Owners</h3>
       <p>Add process owners here.</p>
       <span class="cta">Open Process Owners →</span>
@@ -70,4 +73,3 @@
     </a>
   </div>
 </section>
-

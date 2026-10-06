@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@RestControllerAdvice(assignableTypes = LifecycleController.class)
+@RestControllerAdvice(assignableTypes = {LifecycleController.class, GovernanceAdminController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class LifecycleExceptionHandler {
     @ExceptionHandler(SecurityException.class)

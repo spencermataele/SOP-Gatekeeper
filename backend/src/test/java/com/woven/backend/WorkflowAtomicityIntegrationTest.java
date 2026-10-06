@@ -46,15 +46,15 @@ class WorkflowAtomicityIntegrationTest extends DatabaseTest {
             request = id();
             jdbc.update("""
                     INSERT INTO sop_working_copy (document_id, work_item_id, editor_id, title, description, details)
-                    VALUES (?, ?, 4, 'Atomicity fixture', 'Purpose', 'Original procedure')
-                    """, document, request);
+                    VALUES (?, ?, 4, 'Atomicity fixture', 'Purpose', ?)
+                    """, document, request, com.woven.support.StructuredFixtures.details("Original procedure"));
             long copy = id();
             actor(4);
             candidate = workflow.submit(request, copy, 0, 0, null, UUID.randomUUID());
             jdbc.update("""
                     INSERT INTO sop_working_copy (document_id, work_item_id, editor_id, source_candidate_id, title, description, details)
-                    VALUES (?, ?, 2, ?, 'Atomicity fixture', 'Purpose', 'Reviewer correction')
-                    """, document, request, candidate);
+                    VALUES (?, ?, 2, ?, 'Atomicity fixture', 'Purpose', ?)
+                    """, document, request, candidate, com.woven.support.StructuredFixtures.details("Reviewer correction"));
             reviewerCopy = id();
         });
         configured = true;
@@ -128,7 +128,7 @@ class WorkflowAtomicityIntegrationTest extends DatabaseTest {
                 .update(contains("INSERT INTO business_audit_event"), any(Object[].class));
         assertThrows(DataIntegrityViolationException.class, () -> workflow.saveCopy(
                 request, reviewerCopy, 1, 0, "Changed", "Purpose", "Changed procedure", UUID.randomUUID()));
-        assertEquals("Reviewer correction", jdbc.queryForObject("SELECT details FROM sop_working_copy WHERE working_copy_id = ?", String.class, reviewerCopy));
+        assertEquals(com.woven.support.StructuredFixtures.details("Reviewer correction"), jdbc.queryForObject("SELECT details FROM sop_working_copy WHERE working_copy_id = ?", String.class, reviewerCopy));
         assertEquals(0L, jdbc.queryForObject("SELECT lock_version FROM sop_working_copy WHERE working_copy_id = ?", Long.class, reviewerCopy));
         assertEquals(1, count("workflow_command"));
     }

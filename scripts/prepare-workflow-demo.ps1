@@ -52,15 +52,15 @@ COMMIT;
     $admin = Sql "SELECT id FROM users WHERE username='demo.admin';"
     $guides = Get-Content "$root/docs/tutorials/workflow-guides.json" -Raw | ConvertFrom-Json
     foreach ($guide in $guides) {
-        $key = TextSql $guide.key; $title = TextSql $guide.title; $purpose = TextSql $guide.purpose; $steps = TextSql $guide.procedure
+        $key = TextSql $guide.key; $title = TextSql $guide.title; $purpose = TextSql $guide.purpose; $steps = TextSql ($guide.content | ConvertTo-Json -Depth 10 -Compress)
         Sql @"
 START TRANSACTION;
 INSERT INTO sop_document (org_id,business_process_id,document_kind,product_key)
 SELECT 1,$process,'PRODUCT_GUIDE',$key WHERE NOT EXISTS (SELECT 1 FROM sop_document WHERE product_key=$key);
 SET @doc=(SELECT document_id FROM sop_document WHERE product_key=$key FOR UPDATE);
-SET @checksum=SHA2(CONVERT(JSON_ARRAY($title,$purpose,$steps,1) USING utf8mb4),256);
+SET @checksum=SHA2(CONVERT(JSON_ARRAY($title,$purpose,$steps,2) USING utf8mb4),256);
 INSERT INTO sop_revision (document_id,submitted_by_id,title,description,details,content_schema_version,content_checksum,provenance,source_label)
-SELECT @doc,$admin,$title,$purpose,$steps,1,@checksum,'PRODUCT_RELEASE','Workflow preview 2026-09'
+SELECT @doc,$admin,$title,$purpose,$steps,2,@checksum,'PRODUCT_RELEASE','Structured template preview 2026-09'
 WHERE NOT EXISTS (SELECT 1 FROM sop_document d JOIN sop_revision r ON r.revision_id=d.current_revision_id WHERE d.document_id=@doc AND r.content_checksum=@checksum);
 SET @revision=(SELECT MAX(revision_id) FROM sop_revision WHERE document_id=@doc);
 SET @position=(SELECT COALESCE(MAX(ordering_key),0)+1024 FROM revision_history_position WHERE document_id=@doc);

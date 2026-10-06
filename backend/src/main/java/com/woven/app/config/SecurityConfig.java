@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/auth/register").permitAll()
                         .requestMatchers("/auth/me").authenticated()
+                        .requestMatchers("/admin/**", "/api/lifecycle/admin/**", "/process-owners/**").hasRole("ADMIN")
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/notifications/**").authenticated()
                         .anyRequest().authenticated()
@@ -65,5 +66,3 @@ public class SecurityConfig {
     }
 
 }
-
-

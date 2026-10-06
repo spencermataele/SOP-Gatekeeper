@@ -27,14 +27,15 @@ backend and frontend:
 
 Do not start a second copy of a service that is already running. The demo initializer is
 restricted to the local `woven` database on port 3307. It creates practice users, process
-ownership, and four versioned product guides. Repeating it preserves unchanged guides and
+ownership, and five versioned product guides. Repeating it preserves unchanged guides and
 appends a revision when a guide's content changes. It does not delete or rewrite MVP seed data.
 It refuses to replace existing demo accounts when their credential file is missing.
 
 ## First walkthrough: author → owner edits → manager approves
 
 1. Sign in as `demo.author`. Read **Create and submit your first SOP** in Published SOPs.
-2. Choose **New SOP**, select **Practice workflows**, and enter a title, purpose, and procedure.
+2. Choose **New SOP**, follow the group → department → family selectors to **Practice workflows**,
+   and enter a title and purpose. Add steps with **Who**, **What**, and **Where**; move them to test numbering.
 3. Choose **Create draft**. Edit a step, then **Save copy**. Verify **Submit for approval** is
    unavailable while edits are unsaved. Submit the saved copy.
 4. Log out and sign in as `demo.owner`. Open **My work & reviews** and select the submission.
@@ -61,11 +62,11 @@ It refuses to replace existing demo accounts when their credential file is missi
 
 ## What this preview does and does not demonstrate
 
-The UI includes a plain-text template, complete-text side-by-side comparison, request activity,
+The UI includes a structured Who/What/Where template, consistently formatted side-by-side comparison, request activity,
 and each user's notification record. Email is queued but not sent; this is not a delivery-status
 report. Published history is client-wide; candidate history remains restricted to authorized
-request participants. Word-level highlighting, rich templates, document intake, historical
-imports, notification delivery/reporting, administration UI cutover, and stale-base reconciliation
+request participants. Word-level highlighting, document intake, historical
+imports, notification delivery/reporting, and stale-base reconciliation
 are later increments. Lists currently show the latest 100 eligible work candidates/notifications;
 pagination is still needed before larger-client use.
 
@@ -78,3 +79,20 @@ Tutorial source is `docs/tutorials/workflow-guides.json`. Update the relevant gu
 user-facing workflow behavior changes, rerun the local initializer, and verify the published
 guide and its preserved history. Production guide installation is not implemented by this local
 practice initializer.
+
+## Organization setup and format conversion
+
+Sign in as `demo.admin` and open **Admin**. The hierarchy screens manage organizations,
+groups, departments, process families, processes, and subgroups. **Workflow setup** connects
+processes to actual user accounts and their direct managers. Every ownership change requires
+a reason and appears in configuration activity. A manager change applies to every process
+owned by that user; active reviews may need **Recalculate approvers** afterward.
+
+Only processes in the configured client organization with an assigned owner appear in authoring.
+Optional subgroups must be linked to the selected process and belong to its department.
+The server freezes hierarchy names and the current process owner at submission.
+
+For an earlier plain-text SOP, **Start revision**, then **Use standard template**. Its original
+text is copied into the first What field. Split it into appropriate steps and complete Who and
+Where before submitting. The old publication remains unchanged, including after the replacement
+is approved. Structured comparisons identify added, edited, and moved steps by stable identifiers.
