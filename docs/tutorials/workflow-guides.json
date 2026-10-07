@@ -1,5 +1,38 @@
 [
   {
+    "key": "gatekeeper.changes",
+    "title": "Manage accepted changes and ticket references",
+    "purpose": "Track implementation separately from suggestion alignment and SOP publication approval.",
+    "content": {
+      "template": "gatekeeper-sop", "schemaVersion": 2,
+      "scope": "Process owners, implementation owners, and suggestion participants", "references": "",
+      "steps": [
+        {"id":"00000000-0000-0000-0004-000000000001","who":"Process owner","what":"Accept a suggestion. A planned change record is created automatically. The accepted suggestion displays an implementation summary and a Manage implementation link. N/A means no underlying concern applies; Undetermined means assessment is still needed.","where":"Suggestions & alignment","notes":"Existing accepted suggestions also receive a planned change record."},
+        {"id":"00000000-0000-0000-0004-000000000002","who":"Process owner","what":"Open the linked change, confirm the implementation owner, and record the plan and planned dates. Additional accepted suggestions for the same process can be linked. Only the process owner can reassign implementation ownership.","where":"Change management","notes":"Linked SOP revisions appear through their accepted suggestions."},
+        {"id":"00000000-0000-0000-0004-000000000003","who":"Implementation owner","what":"Add a ticket reference using its system name, ticket number, and full HTTP or HTTPS URL. Save with a progress update or reason. The saved ticket number opens the external ticket. These references are manually entered; no external ticket is created or synchronized automatically.","where":"Change management > Ticket references","notes":"Multiple ticket references are supported."},
+        {"id":"00000000-0000-0000-0004-000000000004","who":"Implementation owner","what":"Move through Planned, In progress, Ready for validation, Implemented, and Effectiveness verified as work completes. Record evidence for implementation and verification. Use Blocked or Cancelled with an explanation when appropriate. Resume blocked or cancelled work at an implementation stage before validation.","where":"Change management > Implementation","notes":"This status never approves an SOP publication or closes a linked suggestion or defect."},
+        {"id":"00000000-0000-0000-0004-000000000005","who":"Workflow participant","what":"Use the collapsed Activity log or Communication log at the bottom of a workflow when reviewing history. Expand it to read the smaller, scrollable entries. Return to the suggestion to document outcome verification and explicit submitter agreement.","where":"Workflow logs and Suggestions & alignment","notes":"History remains retained even though logs are collapsed during normal use."}
+      ]
+    }
+  },
+  {
+    "key": "gatekeeper.suggestions",
+    "title": "Suggest a change and reach verified alignment",
+    "purpose": "Raise an improvement, receive a documented response, and resolve the underlying concern through agreement and evidence.",
+    "content": {
+      "template": "gatekeeper-sop", "schemaVersion": 2,
+      "scope": "Suggestion submitters, process owners, managers, and administrators", "references": "",
+      "steps": [
+        {"id":"00000000-0000-0000-0003-000000000001","who":"Submitter","what":"Open Suggestions & alignment and choose Suggest a change. Drill through the organization hierarchy to the specific process. Optionally select a related published SOP. Enter a title, current problem or opportunity, proposed change, and expected benefit. Cost and ROI estimates are optional; include currency, timeframe, and assumptions when useful.","where":"Suggestions & alignment","notes":"You can also use Suggest a change from an open SOP to preselect its process and document."},
+        {"id":"00000000-0000-0000-0003-000000000002","who":"Process owner","what":"Open the submitted suggestion. Assess the underlying concern and explain the decision to the submitter. Accept for implementation, request clarification, or decline the proposed solution with a selected decline reason. Declining a solution does not close the concern.","where":"Suggestions & alignment","notes":"Acceptance is separate from SOP publication approval."},
+        {"id":"00000000-0000-0000-0003-000000000003","who":"Submitter","what":"Read the response. Provide requested clarification, agree with the explanation and next steps, or challenge it with an explanation. A challenge remains Alignment unresolved and is visible to the owner, their manager, and administrators for follow-up.","where":"Suggestion communication record","notes":"Opening a notification does not count as acknowledgment or agreement."},
+        {"id":"00000000-0000-0000-0003-000000000004","who":"Process owner","what":"Record a corrective action or training plan and effectiveness review date. Keep temporary containment explicitly marked. Document training and understanding evidence, defect correction evidence, or both as appropriate. After the effectiveness review, propose the verified resolution for the submitter's agreement.","where":"Corrective action or training","notes":"Unresolved defects have a separate queue and remain visible even when the proposed solution was declined."},
+        {"id":"00000000-0000-0000-0003-000000000005","who":"Submitter","what":"Review the resolution and evidence. Explicitly agree to close the concern, or challenge it if the issue remains. Reopen a closed concern if it recurs. Communication history retains decisions, messages, participants, timestamps, and in-app availability.","where":"Suggestions & alignment","notes":"In-app availability is not proof that someone read or agreed to a message. Email delivery is not enabled in this preview."},
+        {"id":"00000000-0000-0000-0003-000000000006","who":"Revision author","what":"Open a published client SOP in SOP Workspace and choose Start revision. Select an accepted suggestion and enter the change rationale. The relevant process owner may start directly with a rationale. Admins and managers need an accepted suggestion when they are not the process owner. Submit the draft through the existing publication approval workflow.","where":"SOP Workspace","notes":"Publishing the revision does not close the suggestion. New SOP creation remains available without a suggestion."}
+      ]
+    }
+  },
+  {
     "key": "gatekeeper.authoring",
     "title": "Create and submit your first SOP",
     "purpose": "Practice the authoring workflow using a private draft and a controlled submission.",
@@ -10,7 +43,7 @@
       "references": "",
       "steps": [
         {
-          "what": "Open New SOP in the SOP workspace. Choose the organization group, department, process family, and process the procedure describes. In the local practice environment, use Practice workflows.",
+          "what": "Open New SOP in the SOP workspace. Choose the organization group, department, subdepartment, process family, and process the procedure describes. In the local practice environment, use Practice workflows.",
           "where": "SOP Gatekeeper",
           "id": "f492a21e-1d5c-f339-6c9a-0b7d55c411fc",
           "notes": "",
@@ -196,7 +229,7 @@
           "who": "SOP participant"
         },
         {
-          "what": "After approval, reopen the SOP in Published SOPs. Its version selectors include its published history, with the latest publication selected by default. Revision numbers are stable record identifiers, not chronological version labels.",
+          "what": "After approval, reopen the SOP in Published SOPs. Its version selectors include its published history, with the latest publication selected by default. Comparison dropdowns show hierarchy codes, process family, process, SOP title, and publication version (v1, v2, and so on). Unpublished submissions use Candidate labels, with the current candidate identified.",
           "where": "SOP Gatekeeper",
           "id": "1ff408fe-2f40-30e6-9db4-d072c0d6d89a",
           "notes": "",
@@ -230,7 +263,7 @@
       "references": "",
       "steps": [
         {
-          "what": "Sign in as an administrator and open Admin. Create the organization, organization groups, departments, process families, and business processes in that order. Create user accounts for process owners and reviewers.",
+          "what": "Sign in as an administrator and open Admin. Create the organization, organization groups, departments, subdepartments, process families, and business processes in that order. Create user accounts for process owners and reviewers.",
           "where": "SOP Gatekeeper",
           "id": "c746bd33-8792-e5ff-6fe2-e88d000e2e21",
           "notes": "",
@@ -263,8 +296,77 @@
           "id": "13f841a9-7399-c0a4-7c43-f87bd6e8aa3e",
           "notes": "",
           "who": "Administrator"
+        },
+        {
+          "id": "00000000-0000-0000-0002-000000000001",
+          "notes": "",
+          "what": "When creating or editing hierarchy entries, select each parent in order. Each dropdown contains only children of the preceding selection. Changing a parent clears the selections beneath it. A process inherits its subdepartment through its required process family.",
+          "where": "Admin hierarchy forms",
+          "who": "Administrator"
+        },
+        {
+          "id": "00000000-0000-0000-0002-000000000002",
+          "notes": "",
+          "what": "Review any General (migration review) subdepartments. Open Business Process Families, edit the affected family, and select the correct subdepartment within its current department. Existing published snapshots retain their original contents.",
+          "where": "Admin > Business Process Families",
+          "who": "Administrator"
+        },
+        {
+          "id": "00000000-0000-0000-0002-000000000003",
+          "notes": "",
+          "what": "Find a hierarchy entry by selecting each parent in order. Options display code and name, sorted numerically by code; entries marked Needs code appear last alphabetically. Stop at the level you want to update, confirm the full path, enter its code and a reason, and save. Changing a parent clears all lower selections.",
+          "where": "Workflow setup > Library hierarchy codes",
+          "who": "Administrator"
         }
       ]
     }
+  },
+  {
+    "content": {
+      "schemaVersion": 2,
+      "steps": [
+        {
+          "notes": "",
+          "id": "00000000-0000-0000-0001-000000000001",
+          "where": "SOP Library",
+          "what": "Open SOP Library in the top navigation. This page lists published SOPs; drafts and review candidates remain in SOP Workspace. In the workspace Published SOPs tab, use the hierarchy dropdowns to filter publications at any level. Tiles show the standard hierarchy, title, and version format, ordered by hierarchy code numbers. The tile area scrolls after four rows; use Clear filters to show all publications again.",
+          "who": "SOP reader"
+        },
+        {
+          "notes": "",
+          "id": "00000000-0000-0000-0001-000000000002",
+          "where": "Browse organization",
+          "what": "Select your organization, then drill into groups, departments, subdepartments, process families, and processes. Every family has one required subdepartment parent. Selecting any parent shows all published SOPs beneath it. Use the path buttons to move back up.",
+          "who": "SOP reader"
+        },
+        {
+          "notes": "",
+          "id": "00000000-0000-0000-0001-000000000003",
+          "where": "Library results",
+          "what": "Search within the selected branch by title, purpose, hierarchy name, or code. Read the full hierarchy path below each result. The v number counts published versions, not review candidates.",
+          "who": "SOP reader"
+        },
+        {
+          "notes": "",
+          "id": "00000000-0000-0000-0001-000000000004",
+          "where": "SOP reader",
+          "what": "Open a result and read the current publication. Follow its purpose and ordered Who, What, and Where steps when executing the procedure.",
+          "who": "SOP reader"
+        },
+        {
+          "notes": "",
+          "id": "00000000-0000-0000-0001-000000000005",
+          "where": "SOP reader",
+          "what": "Use History & comparison when you need earlier publications. Historical versions are reference material; use the current publication to perform the procedure.",
+          "who": "SOP reader"
+        }
+      ],
+      "references": "",
+      "template": "gatekeeper-sop",
+      "scope": "All users who read and perform procedures"
+    },
+    "title": "Find and use a published SOP",
+    "purpose": "Locate the correct procedure through the organization hierarchy and use its current approved version.",
+    "key": "gatekeeper.library"
   }
 ]

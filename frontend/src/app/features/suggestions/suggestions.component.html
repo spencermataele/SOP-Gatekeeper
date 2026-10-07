@@ -1,0 +1,56 @@
+<h1>Suggestions &amp; alignment</h1>
+<p>Suggest a process improvement, follow the response, and agree on a verified outcome. Declining a solution does not dismiss the underlying concern.</p>
+<p role="alert" *ngIf="error">{{error}}</p><p role="status">{{message}}</p>
+<button (click)="creating=!creating" [disabled]="busy">{{creating ? 'Hide suggestion form' : 'Suggest a change'}}</button>
+<button (click)="load()" [disabled]="busy">Refresh list</button>
+<form *ngIf="creating" (ngSubmit)="submit()" #form="ngForm">
+ <h2>Suggest a change</h2>
+ <app-process-selector [processes]="processes" [value]="processId" (valueChange)="processChanged($event)" [disabled]="busy"></app-process-selector>
+ <label>Related SOP (optional)<select name="document" [(ngModel)]="documentId" [disabled]="!processId||busy"><option [ngValue]="null">Process-level suggestion</option><option *ngFor="let d of relatedDocuments" [ngValue]="d.documentId">{{d.title}} · v{{d.publishedVersion}}</option></select></label>
+ <label>Suggestion title<input name="title" [(ngModel)]="title" maxlength="255" required></label>
+ <label>Current problem or opportunity<textarea name="problem" [(ngModel)]="problem" maxlength="10000" required></textarea></label>
+ <label>Proposed change<textarea name="proposal" [(ngModel)]="proposal" maxlength="10000" required></textarea></label>
+ <label>Expected benefit<textarea name="benefit" [(ngModel)]="benefit" maxlength="10000" required></textarea></label>
+ <label>Estimated cost (optional)<textarea name="cost" [(ngModel)]="costEstimate" maxlength="2000" placeholder="Amount, currency, one-time or recurring, and assumptions"></textarea></label>
+ <label>Estimated savings or ROI (optional)<textarea name="roi" [(ngModel)]="roiEstimate" maxlength="2000" placeholder="Estimate, timeframe, and assumptions"></textarea></label>
+ <button [disabled]="busy||!processId||form.invalid">Submit suggestion</button>
+</form>
+<section><h2>Your suggestions &amp; assigned oversight</h2>
+ <label>Queue<select [(ngModel)]="queue"><option value="all">All accessible suggestions</option><option value="pending">Open suggestions and training</option><option value="defects">Unresolved process defects</option><option value="alignment">Alignment unresolved</option><option value="closed">Closed with agreement</option></select></label>
+ <p *ngIf="!visible.length">No suggestions in this queue.</p>
+ <button class="item" *ngFor="let s of visible" (click)="open(s.suggestion_id)" [disabled]="busy"><strong>{{s.title}}</strong><span>{{s.processName}} · {{s.submitter}}</span><span>{{label(s.state)}} · {{label(s.concern)}} · {{label(s.action_state)}}</span></button>
+</section>
+<section *ngIf="selected as s">
+ <h2>{{s.title}}</h2><p>Accountable process owner: {{s.owner}}</p><p>Decision: {{label(s.decision)}} · {{label(s.state)}} · {{label(s.concern)}} · {{label(s.action_state)}}</p>
+ <button (click)="open(s.suggestion_id)" [disabled]="busy">Reload suggestion</button>
+ <div *ngIf="s.decision==='ACCEPTED'" class="implementation-summary"><h3>Accepted for implementation</h3><p>Plan and track the work in Change management. Acceptance does not approve an SOP publication or close the underlying concern.</p><div *ngFor="let change of s.changes"><p><a [href]="'/changes?change='+change.id">Manage implementation: {{change.title}}</a> · {{label(change.state)}} · Owner: {{change.implementationOwner}}</p><p>Planned: {{change.plannedStart || 'Not scheduled'}} – {{change.plannedFinish || 'Not scheduled'}}</p><p *ngFor="let ticket of change.tickets">{{ticket.system}} · <a *ngIf="ticketUrl(ticket.url) as url" [href]="url" target="_blank" rel="noopener noreferrer">{{ticket.number}}</a> (manual link)</p></div></div>
+ <h3>Problem or opportunity</h3><p class="text">{{s.problem}}</p><h3>Proposed change</h3><p class="text">{{s.proposal}}</p><h3>Expected benefit</h3><p class="text">{{s.benefit}}</p>
+ <p *ngIf="s.cost_estimate">Estimated cost: {{s.cost_estimate}}</p><p *ngIf="s.roi_estimate">Estimated savings / ROI: {{s.roi_estimate}}</p>
+ <p *ngIf="s.decline_reason">Decline reason: {{label(s.decline_reason)}}</p>
+ <p *ngIf="s.action_plan">Action / training plan: {{s.action_plan}}</p><p *ngIf="s.evidence">Evidence: {{s.evidence}}</p><p *ngIf="s.review_date">Effectiveness review date: {{s.review_date}}</p>
+ <p *ngFor="let revision of s.revisions">Linked SOP change request #{{revision.requestId}} · {{label(revision.state)}}. Publication does not automatically close this suggestion.</p>
+ <div *ngIf="s.state!=='CLOSED';else closed">
+  <label>Message to participants (required)<textarea [(ngModel)]="response" maxlength="10000" placeholder="Explain your decision, response, or next steps. This message is retained in the communication history."></textarea></label>
+  <label *ngIf="s.canReview">Underlying concern<select [(ngModel)]="concern"><option *ngFor="let c of concerns" [value]="c">{{label(c)}}</option></select></label>
+  <div *ngIf="reviewable"><label>Decline reason<select [(ngModel)]="declineReason"><option value="">Choose a reason to decline</option><option *ngFor="let r of declines" [value]="r[0]">{{r[1]}}</option></select></label>
+   <button (click)="act('ACCEPT')" [disabled]="busy||!response.trim()">Accept for implementation</button><button (click)="act('CLARIFY')" [disabled]="busy||!response.trim()">Request clarification</button><button (click)="act('DECLINE')" [disabled]="busy||!response.trim()||!declineReason">Decline proposed solution</button>
+  </div>
+  <ng-container *ngIf="s.canRespond">
+   <button *ngIf="s.state==='NEEDS_CLARIFICATION'" (click)="act('RESPOND')" [disabled]="busy||!response.trim()">Submit clarification</button>
+   <button *ngIf="s.state==='DECLINED_AWAITING_RESPONSE'" (click)="act('AGREE_NEXT_STEPS')" [disabled]="busy||!response.trim()">Agree with explanation and next steps</button>
+   <button *ngIf="s.state==='AWAITING_AGREEMENT'" (click)="act('AGREE_RESOLUTION')" [disabled]="busy||!response.trim()">Agree resolution is verified — close</button>
+   <button (click)="act('CHALLENGE')" [disabled]="busy||!response.trim()">Challenge / request alignment</button>
+  </ng-container>
+  <button *ngIf="s.canEscalateReview&&s.state==='ALIGNMENT_UNRESOLVED'" (click)="act('ESCALATION_RESPONSE')" [disabled]="busy||!response.trim()">Record independent alignment review</button>
+  <div *ngIf="actionable"><h3>{{s.decision==='ACCEPTED' ? 'Outcome verification & alignment' : 'Corrective action or training'}}</h3>
+   <p *ngIf="s.decision==='ACCEPTED'">Track implementation and tickets in the linked change record above. Use this section when documenting the outcome and seeking submitter agreement.</p>
+   <label>{{s.decision==='ACCEPTED' ? 'Outcome verification plan' : 'Action / training plan'}}<textarea [(ngModel)]="plan" maxlength="10000"></textarea></label><label>Training / effectiveness evidence<textarea [(ngModel)]="evidence" maxlength="10000"></textarea></label><label>Effectiveness review date<input type="date" [(ngModel)]="reviewDate"></label>
+   <button (click)="act('PLAN')" [disabled]="busy||!response.trim()||!plan.trim()||!reviewDate">{{s.decision==='ACCEPTED' ? 'Record verification plan' : 'Record action plan'}}</button><button *ngIf="s.decision!=='ACCEPTED'||s.concern==='DEFECT'||s.concern==='BOTH'" (click)="act('CONTAIN')" [disabled]="busy||!response.trim()||!plan.trim()||!reviewDate">Record temporary containment</button><button (click)="act('PROPOSE_CLOSURE')" [disabled]="busy||!response.trim()||!plan.trim()||!evidence.trim()||!reviewDate">Propose verified resolution for agreement</button>
+  </div>
+  <button (click)="act('COMMENT')" [disabled]="busy||!response.trim()">Record communication / meeting summary</button>
+ </div>
+ <ng-template #closed><p>Closed with explicit submitter agreement. Reopen if the concern recurs.</p><ng-container *ngIf="s.canRespond||s.canReview"><label>Reason to reopen<textarea [(ngModel)]="response" maxlength="10000"></textarea></label><button (click)="act('REOPEN')" [disabled]="busy||!response.trim()">Reopen concern</button></ng-container></ng-template>
+ <details class="workflow-log"><summary>Communication log ({{s.communications.length}})</summary><p>In-app availability is not acknowledgment or agreement. Email delivery is not enabled.</p><div class="log-entries" tabindex="0" aria-label="Suggestion communication log">
+ <article *ngFor="let m of s.communications"><strong>{{label(m.action)}} · {{m.actor}}</strong><p>{{m.recorded_at | date:'medium'}} · {{label(m.channel)}}</p><p class="text">{{m.message}}</p><p>Recipients: {{recipients(m.communication_id)}}</p><details><summary>Recorded decision and action details</summary><p *ngFor="let detail of communicationDetails(m)"><strong>{{detail.label}}:</strong> {{detail.value}}</p></details></article>
+ </div></details>
+</section>

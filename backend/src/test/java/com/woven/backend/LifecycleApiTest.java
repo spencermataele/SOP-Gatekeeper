@@ -114,6 +114,37 @@ class LifecycleApiTest extends DatabaseTest {
         call(3, get("/api/lifecycle/notifications"), null).andExpect(status().isOk()).andExpect(jsonPath("$").isEmpty());
         call(2, post(path(draft) + "/approve"), approval(candidate, 1, "NORMAL", "Ready")).andExpect(status().isOk());
         call(3, get("/api/lifecycle/documents/" + document + "/history"), null).andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(candidate));
+        call(3, get("/api/lifecycle/documents"), null).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].publishedVersion").value(1)).andExpect(jsonPath("$[0].nodeKey").value("process:1"));
+    }
+
+    @Test void libraryHierarchyIsClientScopedAndCodesRequireAuditedAdminChange() throws Exception {
+        JsonNode nodes=result(call(4,get("/api/lifecycle/library/hierarchy"),null));
+        assertTrue(nodes.size()>0);
+        for(JsonNode node:nodes) assertFalse(node.path("nodeKey").asText().equals("org:2"));
+        String old=jdbc.queryForObject("SELECT display_code FROM hierarchy_display_code WHERE node_key='process:1'",String.class);
+        var body=Map.of("code","SETUP","expectedCode",old,"reason","Use meaningful process code");
+        call(4,put("/api/lifecycle/admin/hierarchy/process:1/code"),body).andExpect(status().isForbidden());
+        call(1,put("/api/lifecycle/admin/hierarchy/process:1/code"),body).andExpect(status().isOk());
+        call(1,put("/api/lifecycle/admin/hierarchy/process:1/code"),body).andExpect(status().isConflict());
+        assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM governance_configuration_audit WHERE action='HIERARCHY_CODE_CHANGED'",Integer.class));
+    }
+
+    @Test void adminCreatesFamilyUnderRequiredSubdepartmentAndProcessInheritsIt() throws Exception {
+        var parent=jdbc.queryForMap("SELECT dept_subgroup_id AS subgroup,department_id AS department FROM business_process_family WHERE business_process_family_id=1");
+        int subgroup=((Number)parent.get("subgroup")).intValue();
+        int department=((Number)parent.get("department")).intValue();
+        call(4,get("/admin/hierarchy"),null).andExpect(status().isForbidden());
+        call(1,post("/admin/business-process-families"),Map.of("businessProcessFamilyName","Missing parent")).andExpect(status().isBadRequest());
+        JsonNode family=result(call(1,post("/admin/business-process-families"),Map.of("businessProcessFamilyName","Hierarchy test","deptSubgroupId",subgroup)));
+        assertEquals(subgroup,family.get("deptSubgroupId").asInt());
+        assertEquals(department,family.get("departmentId").asInt());
+        JsonNode process=result(call(1,post("/admin/business-processes"),Map.of("businessProcessName","Test process","businessProcessFamilyId",family.get("businessProcessFamilyId").asInt(),"departmentId",department)));
+        assertEquals(subgroup,process.get("deptSubgroupIds").get(0).asInt());
+        call(1,post("/admin/business-processes"),Map.of("businessProcessName","Invalid branch","businessProcessFamilyId",family.get("businessProcessFamilyId").asInt(),"departmentId",999999)).andExpect(status().isBadRequest());
+        JsonNode hierarchy=result(call(1,get("/admin/hierarchy"),null));
+        String key="family:"+family.get("businessProcessFamilyId").asInt();
+        assertTrue(java.util.stream.StreamSupport.stream(hierarchy.spliterator(),false).anyMatch(n->n.path("nodeKey").asText().equals(key)&&n.path("parentKey").asText().equals("subgroup:"+subgroup)));
     }
 
     @Test void requestDetailsDoNotExposeAnotherReviewersPrivateCopyOrActivity() throws Exception {
@@ -237,16 +268,18 @@ class LifecycleApiTest extends DatabaseTest {
                 .andExpect(status().isConflict());
     }
 
-    @Test void anyClientUserCanStartNewDraftFromPublishedSop() throws Exception {
+    @Test void ownerCanStartRevisionButOtherUsersNeedAcceptedSuggestion() throws Exception {
         JsonNode draft = draft();
         long candidate = submit(draft);
         call(2, post(path(draft) + "/approve"), approval(candidate, 1, "NORMAL", "Verified")).andExpect(status().isOk());
         JsonNode published = result(call(3, get("/api/lifecycle/documents"), null));
         long document = published.get(0).get("documentId").asLong();
-        var command = Map.of("publishedRevisionId", candidate, "commandId", UUID.randomUUID());
-        JsonNode revision = result(call(3, post("/api/lifecycle/documents/" + document + "/drafts"), command));
-        assertEquals(revision, result(call(3, post("/api/lifecycle/documents/" + document + "/drafts"), command)));
-        call(3, get(path(revision) + "/copies/" + revision.get("copyId").asLong()), null)
+        var command = Map.of("publishedRevisionId", candidate, "commandId", UUID.randomUUID(),"rationale","Owner identified necessary correction");
+        call(3, post("/api/lifecycle/documents/" + document + "/drafts"), command).andExpect(status().isForbidden());
+        call(1, post("/api/lifecycle/documents/" + document + "/drafts"), command).andExpect(status().isForbidden());
+        JsonNode revision = result(call(2, post("/api/lifecycle/documents/" + document + "/drafts"), command));
+        assertEquals(revision, result(call(2, post("/api/lifecycle/documents/" + document + "/drafts"), command)));
+        call(2, get(path(revision) + "/copies/" + revision.get("copyId").asLong()), null)
                 .andExpect(jsonPath("details").value(containsString("Original steps")));
     }
 

@@ -1,3 +1,4 @@
+import {AdminParentSelectorComponent} from '../admin-parent-selector.component';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -12,20 +13,13 @@ import { OrgGroupDto } from '../models/org-group.model';
 @Component({
   selector: 'app-departments-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, AdminParentSelectorComponent],
   template: `
     <h2>Departments</h2>
 
     <!-- Create -->
     <form [formGroup]="createForm" (ngSubmit)="create()" class="form">
-      <label>Org Group
-        <select formControlName="orgGroupId">
-          <option [ngValue]="null">-- select --</option>
-          <option *ngFor="let g of orgGroups" [ngValue]="g.orgGroupId">
-            {{ g.orgGroupName }} (Org #{{ g.orgId }})
-          </option>
-        </select>
-      </label>
+      <app-admin-parent-selector target="group" formControlName="orgGroupId"></app-admin-parent-selector>
       <label>Department Name
         <input formControlName="departmentName" />
       </label>
@@ -43,9 +37,7 @@ import { OrgGroupDto } from '../models/org-group.model';
         <!-- Edit mode -->
         <ng-container *ngIf="editingId === d.departmentId; else viewRow">
           <form [formGroup]="editForm" (ngSubmit)="saveEdit(d.departmentId)" class="row edit">
-            <select formControlName="orgGroupId">
-              <option *ngFor="let g of orgGroups" [ngValue]="g.orgGroupId">{{ g.orgGroupName }}</option>
-            </select>
+            <app-admin-parent-selector target="group" formControlName="orgGroupId"></app-admin-parent-selector>
             <input formControlName="departmentName" />
             <button type="submit" [disabled]="editForm.invalid || savingEdit">Save</button>
             <button type="button" (click)="cancelEdit()">Cancel</button>
@@ -74,7 +66,7 @@ import { OrgGroupDto } from '../models/org-group.model';
     </ul>
 
     <p class="footer">
-      Manage: <a [routerLink]="['/admin/dept-subgroups']">Dept Subgroups</a>
+      Manage: <a [routerLink]="['/admin/dept-subgroups']">Subdepartments</a>
     </p>
   `,
   styleUrls: ['../../../../styles.css']
@@ -194,4 +186,3 @@ export class DepartmentsPageComponent implements OnInit {
     return err?.error?.message ?? err?.error?.detail ?? err?.message;
   }
 }
-

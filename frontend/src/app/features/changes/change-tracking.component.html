@@ -1,0 +1,28 @@
+<h1>Change management</h1>
+<p>Track accepted improvements from planning through effectiveness verification. SOP approval and submitter agreement remain separate.</p>
+<p role="alert" *ngIf="error">{{error}}</p><p role="status">{{message}}</p>
+<button (click)="load()" [disabled]="busy">Refresh changes</button>
+<label>Show<select [(ngModel)]="filter"><option value="ACTIVE">Active changes</option><option value="ALL">All changes</option><option *ngFor="let status of states" [value]="status">{{label(status)}}</option></select></label>
+<div class="change-list"><button *ngFor="let change of visible" (click)="open(change.change_id)" [disabled]="busy"><strong>{{change.title}}</strong><span>{{change.processName}} · {{change.implementationOwner}}</span><span>{{label(change.state)}}</span></button></div>
+<p *ngIf="!visible.length">No changes in this view. Accepting a suggestion creates a planned change.</p>
+<section *ngIf="selected as s"><h2>{{s.title}}</h2><p>{{label(s.state)}}</p><button (click)="open(s.change_id)" [disabled]="busy">Reload change</button>
+ <h3>Linked suggestions</h3><p *ngFor="let suggestion of s.suggestions"><a [href]="'/suggestions?suggestion='+suggestion.id">{{suggestion.title}}</a> · {{label(suggestion.state)}}</p>
+ <h3>Linked SOP revisions</h3><p *ngIf="!s.revisions.length">No SOP revisions linked yet.</p><p *ngFor="let revision of s.revisions">Change request #{{revision.id}} · {{label(revision.state)}}</p>
+ <h3>External tickets</h3><p>Manual links. Ticket creation and synchronization are not connected yet.</p>
+ <p *ngIf="!s.tickets.length">No ticket recorded.</p><p *ngFor="let ticket of s.tickets">{{ticket.system}} · <a *ngIf="safeUrl(ticket.url) as url" [href]="url" target="_blank" rel="noopener noreferrer">{{ticket.number}}</a></p>
+ <form *ngIf="s.canEdit;else readOnly" (ngSubmit)="save()" #form="ngForm"><fieldset [disabled]="busy"><legend>Implementation</legend>
+  <label>Title<input name="title" [(ngModel)]="title" maxlength="255" required></label>
+  <label>Implementation owner<select name="owner" [(ngModel)]="ownerId" [disabled]="!s.canAssign" required><option *ngFor="let user of s.users" [ngValue]="user.id">{{user.name}}</option></select></label>
+  <label>Status<select name="state" [(ngModel)]="state"><option *ngFor="let status of states" [value]="status">{{label(status)}}</option></select></label>
+  <div class="dates"><label>Planned start<input type="date" name="start" [(ngModel)]="plannedStart"></label><label>Planned finish<input type="date" name="finish" [(ngModel)]="plannedFinish"></label></div>
+  <label>Implementation plan<textarea name="plan" [(ngModel)]="plan" maxlength="10000" required></textarea></label>
+  <label>Implementation / effectiveness evidence<textarea name="evidence" [(ngModel)]="evidence" maxlength="10000"></textarea></label>
+  <h3>Ticket references</h3><div class="ticket" *ngFor="let ticket of tickets;let i=index"><label>System<input [name]="'system'+i" [(ngModel)]="ticket.system" maxlength="100" placeholder="Jira, ServiceNow, Azure DevOps…" required></label><label>Ticket number<input [name]="'number'+i" [(ngModel)]="ticket.number" maxlength="100" placeholder="TEAM-123" required></label><label>Ticket URL<input type="url" [name]="'url'+i" [(ngModel)]="ticket.url" maxlength="2000" placeholder="https://…" required></label><button type="button" (click)="tickets.splice(i,1)">Remove reference</button></div>
+  <button type="button" (click)="tickets.push({system:'',number:'',url:''})" [disabled]="tickets.length>=20">Add ticket reference</button>
+  <h3>Accepted suggestions for this process</h3><label *ngFor="let suggestion of s.eligibleSuggestions" class="check"><input type="checkbox" [name]="'suggestion'+suggestion.id" [ngModel]="suggestionIds.includes(suggestion.id)" (ngModelChange)="toggleSuggestion(suggestion.id,$event)" [disabled]="suggestion.id===s.origin_suggestion_id">{{suggestion.title}}</label>
+  <label>Progress update / reason for this change<textarea name="reason" [(ngModel)]="reason" maxlength="2000" required placeholder="Explain progress, a blocker, cancellation, or a changed plan."></textarea></label>
+  <button [disabled]="busy||form.invalid||!reason.trim()">Save change</button>
+ </fieldset></form>
+ <ng-template #readOnly><h3>Implementation plan</h3><p class="text">{{s.plan}}</p><p>Planned: {{s.planned_start || 'Not scheduled'}} – {{s.planned_finish || 'Not scheduled'}}</p><p class="text">{{s.evidence}}</p></ng-template>
+ <details class="workflow-log"><summary>Activity log ({{s.activity.length}})</summary><div class="log-entries" tabindex="0" aria-label="Change activity log"><article *ngFor="let event of s.activity"><span>{{event.recorded_at | date:'medium'}} · {{event.actor}}</span><p>{{event.reason}}</p></article></div></details>
+</section>

@@ -7,15 +7,7 @@
       <input formControlName="businessProcessFamilyName" maxlength="255">
     </label>
 
-    <label>
-      Department
-      <select formControlName="departmentId">
-        <option [ngValue]="null">Select…</option>
-        <option *ngFor="let d of departments" [ngValue]="d.departmentId">
-          {{ d.departmentName }}
-        </option>
-      </select>
-    </label>
+    <app-admin-parent-selector target="subgroup" formControlName="deptSubgroupId"></app-admin-parent-selector>
 
     <div class="actions">
       <button type="submit" [disabled]="saving || form.invalid">Save</button>

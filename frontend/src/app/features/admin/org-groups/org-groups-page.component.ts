@@ -1,3 +1,4 @@
+import {AdminParentSelectorComponent} from '../admin-parent-selector.component';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,18 +11,13 @@ import { OrgGroupDto } from '../models/org-group.model';
 @Component({
   selector: 'app-org-groups-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, AdminParentSelectorComponent],
   template: `
     <h2>Org Groups</h2>
 
     <!-- Create -->
     <form [formGroup]="createForm" (ngSubmit)="create()" class="form">
-      <label>Org
-        <select formControlName="orgId">
-          <option [ngValue]="null">-- select --</option>
-          <option *ngFor="let o of orgs" [ngValue]="o.orgId">{{ o.orgName }}</option>
-        </select>
-      </label>
+      <app-admin-parent-selector target="org" formControlName="orgId"></app-admin-parent-selector>
       <label>Org Group Name
         <input formControlName="orgGroupName" />
       </label>
@@ -35,9 +31,7 @@ import { OrgGroupDto } from '../models/org-group.model';
         <!-- Edit mode -->
         <ng-container *ngIf="editingId === g.orgGroupId; else viewRow">
           <form [formGroup]="editForm" (ngSubmit)="saveEdit(g.orgGroupId)" class="row edit">
-            <select formControlName="orgId">
-              <option *ngFor="let o of orgs" [ngValue]="o.orgId">{{ o.orgName }}</option>
-            </select>
+            <app-admin-parent-selector target="org" formControlName="orgId"></app-admin-parent-selector>
             <input formControlName="orgGroupName" />
             <button type="submit" [disabled]="editForm.invalid || savingEdit">Save</button>
             <button type="button" (click)="cancelEdit()">Cancel</button>
@@ -68,7 +62,7 @@ import { OrgGroupDto } from '../models/org-group.model';
 
     <p class="footer">
       Manage: <a [routerLink]="['/admin/departments']">Departments</a> →
-      <a [routerLink]="['/admin/dept-subgroups']">Dept Subgroups</a>
+      <a [routerLink]="['/admin/dept-subgroups']">Subdepartments</a>
     </p>
   `,
   styleUrls: ['../../../../styles.css']
@@ -188,4 +182,3 @@ export class OrgGroupsPageComponent implements OnInit {
     return err?.error?.message ?? err?.error?.detail ?? err?.message;
   }
 }
-

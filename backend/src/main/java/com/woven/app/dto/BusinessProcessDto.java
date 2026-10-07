@@ -12,7 +12,7 @@ public record BusinessProcessDto(
         String parentProcessName,
         Integer departmentId,
         String departmentName,
-        List<Integer> deptSubgroups,
+        List<Integer> deptSubgroupIds,
         List<String> deptSubgroupNames,
         Instant lastUpdatedTimestamp
 ) {}

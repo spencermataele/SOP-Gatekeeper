@@ -8,6 +8,8 @@ public record BusinessProcessFamilyDto(
         String businessProcessFamilyName,
         Integer departmentId,
         String departmentName,
+        Integer deptSubgroupId,
+        String deptSubgroupName,
         List<BusinessProcessDto> businessProcesses,
         Instant createdTimestamp,
         Instant lastUpdatedTimestamp

@@ -8,7 +8,7 @@ public record BusinessProcessFamilyCreateDto(
         @NotBlank @Size(max = 255)
         String businessProcessFamilyName,
         @NotNull
-        Integer departmentId
+        Integer deptSubgroupId
 
 ) {
 }

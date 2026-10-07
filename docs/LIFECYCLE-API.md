@@ -13,8 +13,11 @@ Use the [local walkthrough](WORKFLOW-WALKTHROUGH.md) for the practice configurat
 
 ## Approved access policy
 
-Every authenticated user in the client deployment may read published SOPs and start a draft for
-any configured process. This is client-wide access, not a process-membership model. Cross-client
+Every authenticated user in the client deployment may read published SOPs, submit suggestions,
+and start a new SOP draft for any configured process. Starting a revision of an existing SOP
+requires a change rationale and an accepted suggestion, except that the relevant process owner
+may start directly with a rationale. Admin and manager roles do not bypass this requirement.
+This is client-wide access, not a process-membership model. Cross-client
 and inconsistent organization/process references are rejected. Product-managed guides cannot
 be edited through client workflow commands.
 
@@ -76,7 +79,8 @@ Create body:
 ```
 
 Save requires `requestVersion`, `copyVersion`, `title`, `description`, `details`, `commandId`.
-Starting a revision requires `publishedRevisionId`, `commandId`. Submission requires `copyId`,
+Starting a revision requires `publishedRevisionId`, `commandId`, `rationale`, and (for non-owners)
+`suggestionId`. See [Suggestion workflow](SUGGESTION-WORKFLOW.md). Submission requires `copyId`,
 `requestVersion`, `copyVersion`, `commandId` and a nonblank `reason` for reviewer replacement.
 Suggest/reject require `candidateId`, `requestVersion`, `commandId`; rejection also needs a
 nonblank `reason`. Approval adds `mode` (`NORMAL` or `SELF_APPROVAL`), with a nonblank `reason`
@@ -165,3 +169,21 @@ The old `/admin/**` and `/process-owners/**` endpoints also require the ADMIN ro
 V107 adds `governance_configuration_audit`. Ownership/reporting changes and their actor, reason,
 before/after values, and time commit together. Changing a reporting line affects every process
 owned by that person. Existing in-review work requires explicit routing recalculation if stale.
+
+### Published library API
+
+`GET /library/hierarchy` returns the configured client's hierarchy, including empty branches,
+with `nodeKey`, `parentKey`, `kind`, `name`, and nullable persisted `code`. Documents include
+`nodeKey` and `publishedVersion` (the number of published/history entries, not candidate IDs).
+Drafts and other clients never appear in the library. V108 installs the hierarchy view and codes.
+`PUT /admin/hierarchy/{nodeKey}/code` accepts `code`, nullable `expectedCode`, and required `reason`.
+Codes are alphanumeric, up to 24 characters, and unique among siblings. A stale expected value
+returns 409. Code changes are serialized by the client configuration lock and audited atomically.
+
+### Required family subdepartment (V109)
+
+`GET /admin/hierarchy` supplies all hierarchy parents to the admin-only cascading selector.
+Family creation/update requires `deptSubgroupId`; department IDs/names remain derived response fields.
+Process response `deptSubgroupIds` contains the family's one inherited subdepartment. Arbitrary
+subgroup assignment is no longer supported. Submission derives and freezes subgroup ID/name from
+the current family, replacing legacy working-copy subgroup metadata. Old snapshots are not rewritten.

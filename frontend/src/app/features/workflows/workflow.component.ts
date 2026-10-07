@@ -1,5 +1,7 @@
+import {formattedSopTitle, SopHierarchyNode} from './sop-title';
 import {Component, HostListener, Injectable, OnInit} from '@angular/core';
 import {CanDeactivate} from '@angular/router';
+
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
@@ -19,7 +21,7 @@ interface RequestView {
   ownCopies: {copyId: number; state: string; version: number}[];
   versions: Snapshot[]; activity: {action: string; actor: string; reason: string; recordedAt: string}[];
 }
-interface DocumentView extends Snapshot {documentId: number; revisionId: number; kind: string;}
+interface DocumentView extends Snapshot {processId?: number; nodeKey?: string; publishedVersion?: number; isProcessOwner?: boolean; documentId: number; revisionId: number; kind: string;}
 
 @Component({selector: 'app-workflow', standalone: true, imports: [CommonModule, FormsModule, SopEditorComponent, SopContentComponent, ProcessSelectorComponent],
   templateUrl: './workflow.component.html', styleUrls: ['./workflow.component.css']})
@@ -30,8 +32,53 @@ export class WorkflowComponent implements OnInit {
   processes: GovernedProcess[] = [];
   subgroups: {id: number; name: string; processId: number}[] = [];
   readyToSubmit = readyToSubmit;
-  notices: {id: string; requestId: number; action: string; recordedAt: string; title: string; actor: string}[] = [];
+  notices: {id: string; requestId: number; suggestionId?:string; action: string; recordedAt: string; title: string; actor: string}[] = [];
   request?: RequestView; copy?: Copy; document?: DocumentView;
+  hierarchy: SopHierarchyNode[] = [];
+  librarySelection: string[] = [];
+  readonly libraryLevels = ['Organization', 'Organization group', 'Department', 'Subdepartment', 'Process family', 'Process'];
+  private readonly libraryKinds = ['org', 'group', 'department', 'subgroup', 'family', 'process'];
+  private readonly numericOrder = new Intl.Collator('en', {numeric: true, sensitivity: 'base'});
+  private compareNodes(a: SopHierarchyNode, b: SopHierarchyNode): number {
+    if (!!a.code !== !!b.code) return a.code ? -1 : 1;
+    return this.numericOrder.compare(a.code || '', b.code || '') || a.name.localeCompare(b.name);
+  }
+  libraryOptions(index: number): SopHierarchyNode[] {
+    if (index > 0 && !this.librarySelection[index - 1]) return [];
+    return this.hierarchy.filter(n => n.nodeKey.startsWith(this.libraryKinds[index] + ':') &&
+      (n.parentKey || '') === (index ? this.librarySelection[index - 1] : '')).sort((a,b) => this.compareNodes(a,b));
+  }
+  chooseLibraryLevel(index: number, key: string): void {
+    this.librarySelection = this.librarySelection.slice(0,index);
+    if (key) this.librarySelection.push(key);
+  }
+  private documentPath(doc: DocumentView): SopHierarchyNode[] {
+    const path: SopHierarchyNode[] = []; const seen = new Set<string>();
+    let node = this.hierarchy.find(n => n.nodeKey === (doc.nodeKey || `process:${doc.processId}`));
+    while (node && !seen.has(node.nodeKey)) {
+      seen.add(node.nodeKey); path.unshift(node);
+      const parent = node.parentKey; node = this.hierarchy.find(n => n.nodeKey === parent);
+    }
+    return path;
+  }
+  get filteredDocuments(): DocumentView[] {
+    const selected = this.librarySelection[this.librarySelection.length - 1];
+    return this.documents.map(doc => ({doc,path:this.documentPath(doc)}))
+      .filter(item => !selected || item.path.some(n => n.nodeKey === selected))
+      .sort((a,b) => {
+        for (let i=0;i<Math.max(a.path.length,b.path.length);i++) {
+          if (!a.path[i] || !b.path[i]) return a.path[i] ? -1 : 1;
+          const order = this.compareNodes(a.path[i],b.path[i]); if (order) return order;
+        }
+        return a.doc.title.localeCompare(b.doc.title) || a.doc.documentId-b.doc.documentId;
+      }).map(item => item.doc);
+  }
+  documentLabel(doc: DocumentView): string {
+    return formattedSopTitle(this.hierarchy, doc.nodeKey || `process:${doc.processId}`, doc.title,
+      doc.publishedVersion === undefined ? 'Published' : `v${doc.publishedVersion}`);
+  }
+  publicationVersions = new Map<number, number>();
+  revisionRationale=''; revisionSuggestion=''; eligibleSuggestions:{id:string;title:string}[]=[]; preparingRevision=false;
   history: Snapshot[] = []; left?: Snapshot; right?: Snapshot;
   processId = 0; title = ''; description = ''; details = ''; reason = '';
   private commands = new Map<string, string>();
@@ -56,6 +103,7 @@ export class WorkflowComponent implements OnInit {
   }
   private async loadLists(): Promise<void> {
     const data = await firstValueFrom(forkJoin({
+      hierarchy: this.http.get<SopHierarchyNode[]>(this.api + '/library/hierarchy'),
       documents: this.http.get<DocumentView[]>(this.api + '/documents'),
       requests: this.http.get<RequestView[]>(this.api + '/requests'),
       processes: this.http.get<typeof this.processes>(this.api + '/processes'),
@@ -74,6 +122,8 @@ export class WorkflowComponent implements OnInit {
   }
   private async loadRequest(id: number): Promise<void> {
     this.request = await firstValueFrom(this.http.get<RequestView>(`${this.api}/requests/${id}`));
+    const publications = await firstValueFrom(this.http.get<Snapshot[]>(`${this.api}/documents/${this.request.documentId}/history`));
+    this.setPublicationVersions(publications);
     this.copy = undefined; this.dirty = false; this.reason = ''; this.document = undefined; this.creating = false;
     this.history = this.request.versions || [];
     this.left = this.request.published || this.history.find(v => v.id !== this.request!.candidateId); this.right = this.request.candidate;
@@ -96,8 +146,24 @@ export class WorkflowComponent implements OnInit {
     try {
       const history = await firstValueFrom(this.http.get<Snapshot[]>(`${this.api}/documents/${doc.documentId}/history`));
       this.document = doc; this.request = undefined; this.copy = undefined; this.creating = false; this.dirty = false;
+      this.preparingRevision=false;
+      this.setPublicationVersions(history);
       this.history = history; this.left = history[1]; this.right = history[0];
     } catch (e) { this.fail(e); } finally { this.busy = false; }
+  }
+  private setPublicationVersions(publications: Snapshot[]): void {
+    this.publicationVersions = new Map(publications.filter(v=>v.id!==undefined).map((v,index)=>[v.id!,publications.length-index]));
+  }
+  snapshotLabel(snapshot: Snapshot | undefined): string {
+    if (!snapshot) return '';
+    const published = snapshot.id === undefined ? undefined : this.publicationVersions.get(snapshot.id);
+    const index = this.history.findIndex(v=>v.id===snapshot.id);
+    const candidateNumber = index >= 0 ? this.history.length-index : this.history.length || 1;
+    let version = published !== undefined ? `v${published}` : `Candidate ${candidateNumber}`;
+    if (snapshot.id === this.request?.candidateId) version += published !== undefined ? ' — Published candidate' : ' — Current candidate';
+    else if (snapshot.id === this.request?.published?.id || snapshot.id === this.document?.revisionId) version += ' — Current publication';
+    const nodeKey = this.document?.nodeKey || `process:${this.request?.processId ?? this.document?.processId}`;
+    return formattedSopTitle(this.hierarchy,nodeKey,snapshot.title,version);
   }
   newDraft(): void {
     if (!this.leaveEditor()) return;
@@ -109,8 +175,10 @@ export class WorkflowComponent implements OnInit {
     await this.command('/documents', {processId: Number(this.processId), title: this.title, description: this.description, details: this.details}, 'Draft created.', true);
   }
   async startRevision(): Promise<void> {
-    await this.command(`/documents/${this.document!.documentId}/drafts`, {publishedRevisionId: this.document!.revisionId}, 'Revision draft created.', true);
+    await this.command(`/documents/${this.document!.documentId}/drafts`, {publishedRevisionId: this.document!.revisionId,suggestionId:this.revisionSuggestion||null,rationale:this.revisionRationale}, 'Revision draft created.', true);
+    if(!this.error)this.preparingRevision=false;
   }
+  async prepareRevision():Promise<void>{this.busy=true;this.error='';try{this.eligibleSuggestions=await firstValueFrom(this.http.get<{id:string;title:string}[]>(this.api+'/suggestions/eligible?documentId='+this.document!.documentId));this.revisionRationale='';this.revisionSuggestion='';this.preparingRevision=true;}catch(e){this.fail(e);}finally{this.busy=false;}}
   async save(): Promise<void> {
     const c = this.copy!;
     await this.command(`/requests/${this.request!.requestId}/copies/${c.copyId}`, {

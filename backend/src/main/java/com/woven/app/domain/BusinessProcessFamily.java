@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "business_process_family", uniqueConstraints = @UniqueConstraint(columnNames = {"department_id", "process_family_name"}))
+@Table(name = "business_process_family")
 @Getter @Setter
 public class BusinessProcessFamily {
 
@@ -22,6 +22,10 @@ public class BusinessProcessFamily {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
     private Department department;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "dept_subgroup_id", nullable = false)
+    private DeptSubgroup deptSubgroup;
 
     @OneToMany(mappedBy = "businessProcessFamily", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<BusinessProcess> businessProcessList = new ArrayList<>();

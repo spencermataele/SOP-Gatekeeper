@@ -27,7 +27,7 @@ backend and frontend:
 
 Do not start a second copy of a service that is already running. The demo initializer is
 restricted to the local `woven` database on port 3307. It creates practice users, process
-ownership, and five versioned product guides. Repeating it preserves unchanged guides and
+ownership, and six versioned product guides. Repeating it preserves unchanged guides and
 appends a revision when a guide's content changes. It does not delete or rewrite MVP seed data.
 It refuses to replace existing demo accounts when their credential file is missing.
 
@@ -96,3 +96,60 @@ For an earlier plain-text SOP, **Start revision**, then **Use standard template*
 text is copied into the first What field. Split it into appropriate steps and complete Who and
 Where before submitting. The old publication remains unchanged, including after the replacement
 is approved. Structured comparisons identify added, edited, and moved steps by stable identifiers.
+
+## SOP Library (reader experience)
+
+Sign in and open **SOP Library** at `/library`. Select any hierarchy level to list every
+published SOP below it. Child cards provide progressive drill-down; breadcrumb buttons move
+back up. Search is scoped to the selected branch. Opening a result displays only the current
+publication; **History & comparison** is an optional secondary action.
+
+Listings use persisted hierarchy codes, process family, process, descriptive title, and a
+publication count (`v1`, `v2`, etc.), independent of revision database IDs. The full named path
+appears underneath. Initial codes are allocated once for existing hierarchy entries; an Admin
+can edit codes, or assign codes to newly created entries, under **Workflow setup → Library
+hierarchy codes**, with a reason and concurrency checks. `?` in a path means a code still needs
+assignment. Codes are unique among siblings. Subgroup filtering selects SOPs explicitly tagged
+with that subgroup; department selection includes the whole department.
+
+The library requires migration V108. Restart the backend after updating this checkout so Flyway
+applies the migration and the hierarchy endpoint becomes available. Authoring and review remain
+under **SOP Workspace** at `/sops`; workflow, report, and Admin navigation are grouped at the bottom.
+
+The organization browser follows Organization → Group → Department → Subgroup. Process families
+and processes remain in SOP identification but are not parallel organization navigation choices.
+Selecting a department includes every SOP below it, including SOPs without a subgroup.
+
+## Required subdepartment hierarchy (V109)
+
+The canonical path is Organization → Group → Department → Subdepartment → Process Family → Process → SOP.
+Process families require `deptSubgroupId`; their department is derived from that subdepartment.
+A composite database foreign key prevents mismatched family/subdepartment departments. Legacy
+process/subgroup association rows are retained for migration reference; current navigation,
+authoring, API process metadata, and submitted document context use the family's required parent.
+Library subgroup filtering now follows this canonical path, including earlier plain-text SOPs.
+
+Admin create/edit forms use cascading parent dropdowns. Changing any parent clears all descendants.
+Workflow ownership setup uses the same selector through Process. Organization creation has no parent.
+
+Migration V109 assigns unambiguous existing subgroup relationships, then departments' sole subgroup
+where available. Remaining families go into **General (migration review)** within their original
+department. `family_hierarchy_migration` records original placement and which entries needed review.
+Use **Admin → Business Process Families → Edit** to select the correct subdepartment. Populated
+families cannot be moved to another department using ordinary editing; that requires a separate
+reviewed migration. Existing publication snapshots are preserved. Assign display codes for newly
+created migration-review subdepartments through Workflow setup as needed.
+
+## Suggestions and alignment (V110)
+
+1. Sign in as `demo.author`. Open **Suggestions & alignment → Suggest a change** and drill down to **Practice workflows**. Submit a problem, proposed change, and expected benefit.
+2. As `demo.owner`, open the suggestion, classify the concern, choose a decline reason, and explain the proposed alternative. Select **Decline proposed solution**.
+3. As `demo.author`, confirm that it remains open. Choose **Challenge / request alignment** with an explanation. The record now appears under **Alignment unresolved** and, for defects, **Unresolved process defects**.
+4. As `demo.manager`, record an independent alignment review. This does not force agreement or close the record.
+5. As `demo.owner`, revisit the decision and accept the suggestion, or explain a revised decline. If declined again, the author must explicitly agree with the next steps before corrective follow-up.
+6. Record a plan and review date. Temporary containment cannot close the concern. After verification, enter evidence and propose resolution. As `demo.author`, agree to close or challenge. A closed concern can be reopened.
+7. For an accepted suggestion, open a published client SOP in **SOP Workspace → Start revision**. Non-owners must select the accepted suggestion and provide a rationale. Owners may start directly with a rationale. Publishing the revision leaves the suggestion open for effectiveness verification and agreement.
+
+See [SUGGESTION-WORKFLOW.md](SUGGESTION-WORKFLOW.md) for rules and current scope. The new **Suggest a change and reach verified alignment** tutorial is installed by `./scripts/prepare-workflow-demo.ps1`.
+
+Tests: `./scripts/dev.ps1 test-backend -Test SuggestionApiTest` and `./scripts/dev.ps1 test-frontend`. Latest run logs are under `.local/logs/suggestion-api-tests.log` and `.local/logs/suggestion-frontend-tests.log`.

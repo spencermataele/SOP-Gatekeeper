@@ -1,0 +1,27 @@
+<section class="library">
+  <header><p class="eyebrow">PUBLISHED PROCEDURES</p><h1>SOP Library</h1><p>Find the procedure you need, learn it, and use the current approved version.</p></header>
+  <p role="alert" *ngIf="error">{{error}} <button (click)="load()">Retry library</button></p>
+  <p role="status" *ngIf="loading">Loading published SOPs…</p>
+  <div class="browse" *ngIf="!loading">
+    <aside aria-label="Organization browser">
+      <h2>Browse organization</h2>
+      <nav aria-label="Organization path"><button (click)="choose('')" [attr.aria-current]="!branch ? 'location' : null">All SOPs</button><button *ngFor="let node of breadcrumbs" (click)="choose(node.nodeKey)" [attr.aria-current]="branch===node.nodeKey ? 'location' : null">{{node.code || '—'}} · {{node.name}}</button></nav>
+      <h3>Explore this level</h3><p *ngIf="!children.length">No further hierarchy levels. Browse the SOPs for this selection.</p>
+      <button class="child" *ngFor="let child of children" (click)="choose(child.nodeKey)"><small>{{child.kind === 'Subgroup' ? 'Subdepartment' : child.kind}} · {{child.code || 'Code not assigned'}}</small><strong>{{child.name}} →</strong></button>
+    </aside>
+    <div class="results">
+      <label>Search within {{breadcrumbs.length ? breadcrumbs[breadcrumbs.length-1].name : 'all SOPs'}}<input type="search" [(ngModel)]="search" placeholder="Title, hierarchy, code, or purpose"></label>
+      <p>{{filtered.length}} published SOP{{filtered.length===1?'':'s'}} · includes all descendants of this level</p>
+      <p *ngIf="!filtered.length">No published SOPs match this selection. Choose a broader level or clear your search.</p>
+      <div class="document-list"><button class="document" *ngFor="let doc of filtered" (click)="open(doc)" [attr.aria-pressed]="selected?.documentId===doc.documentId"><strong>{{label(doc)}}</strong><small>{{location(doc)}}</small><span>{{doc.description}}</span><small *ngIf="doc.kind==='PRODUCT_GUIDE'">Gatekeeper guide</small></button></div>
+    </div>
+  </div>
+  <section class="reader" #reader tabindex="-1" *ngIf="selected" aria-label="SOP reader">
+    <header><p class="eyebrow">CURRENT PUBLICATION · v{{selected.publishedVersion}}</p><p>{{location(selected)}}</p><button (click)="compare()" [disabled]="historyBusy">{{historyBusy?'Loading history…':'History & comparison'}}</button><button (click)="selected=undefined; showHistory=false">Close SOP</button></header>
+    <app-sop-content [snapshot]="selected"></app-sop-content>
+    <a [href]="'/suggestions?process='+selected.nodeKey.split(':')[1]+'&document='+selected.documentId">Suggest a change</a>
+  </section>
+  <section class="history" *ngIf="showHistory && selected"><h2>Published history & comparison</h2><p>Earlier versions are historical reference. Use the current publication above when performing the procedure.</p>
+    <div class="comparison"><article><label>Compare from<select [(ngModel)]="older"><option [ngValue]="undefined">No earlier publication</option><option *ngFor="let version of history" [ngValue]="version">v{{version.publishedVersion}} · {{version.title}}</option></select></label><app-sop-content *ngIf="older" [snapshot]="older"></app-sop-content></article><article><label>Compare to<select [(ngModel)]="newer"><option *ngFor="let version of history" [ngValue]="version">v{{version.publishedVersion}} · {{version.title}}</option></select></label><app-sop-content [snapshot]="newer" [compareWith]="older?.details"></app-sop-content></article></div>
+  </section>
+</section>

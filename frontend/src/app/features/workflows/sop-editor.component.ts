@@ -11,7 +11,7 @@ import {blankStep, blankTemplate, parseTemplate, SopTemplate} from './sop-templa
   <fieldset *ngIf="model" [disabled]="disabled">
     <p>Use Who, What, and Where for every step. Gatekeeper controls numbering and the published layout. Purpose and complete steps are required for submission; scope, references, and notes are optional.</p>
     <label>Scope (optional)<textarea [(ngModel)]="model.scope" [ngModelOptions]="{standalone:true}" (ngModelChange)="changed()" maxlength="20000"></textarea></label>
-    <label *ngIf="subgroups.length">Department subgroup (optional)<select [(ngModel)]="model.subgroupId" [ngModelOptions]="{standalone:true}" (ngModelChange)="changed()"><option [ngValue]="null">Entire process</option><option *ngFor="let subgroup of subgroups" [ngValue]="subgroup.id">{{subgroup.name}}</option></select></label>
+    <p *ngIf="subgroups.length">Subdepartment: {{subgroups[0].name}} · inherited from the selected process family.</p>
     <section *ngFor="let step of model.steps; let i=index; trackBy: trackStep" class="step-editor">
       <div class="step-heading"><h4>Step {{i + 1}}</h4><div><button type="button" (click)="move(i,-1)" [disabled]="i === 0" [attr.aria-label]="'Move step '+(i+1)+' up'">↑ Move up</button> <button type="button" (click)="move(i,1)" [disabled]="i === model.steps.length-1" [attr.aria-label]="'Move step '+(i+1)+' down'">↓ Move down</button> <button type="button" (click)="remove(i)" [attr.aria-label]="'Remove step '+(i+1)">Remove</button></div></div>
       <label>Who<input [(ngModel)]="step.who" [ngModelOptions]="{standalone:true}" (ngModelChange)="changed()" placeholder="Responsible role or team" maxlength="20000"></label>

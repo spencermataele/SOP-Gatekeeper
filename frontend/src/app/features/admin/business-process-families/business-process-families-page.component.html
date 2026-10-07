@@ -35,7 +35,7 @@
     <tr>
       <th>ID</th>
       <th>Name</th>
-      <th>Department</th>
+      <th>Department</th><th>Subdepartment</th>
       <th>Created</th>
       <th>Updated</th>
       <th>Actions</th>
@@ -45,7 +45,7 @@
     <tr *ngFor="let f of filtered">
       <td class="tbody td">{{ f.businessProcessFamilyId }}</td>
       <td>{{ f.businessProcessFamilyName }}</td>
-      <td>{{ f.departmentName }}</td>
+      <td>{{ f.departmentName }}</td><td>{{ f.deptSubgroupName }}</td>
       <td>{{ f.createdTimestamp }}</td>
       <td>{{ f.lastUpdatedTimestamp }}</td>
       <td>

@@ -1,98 +1,50 @@
 package com.woven.app.service;
 
-
 import com.woven.app.domain.BusinessProcessFamily;
 import com.woven.app.dto.BusinessProcessFamilyCreateDto;
 import com.woven.app.dto.BusinessProcessFamilyDto;
 import com.woven.app.repository.BusinessProcessFamilyRepository;
-import com.woven.app.repository.DepartmentRepository;
+import com.woven.app.repository.DeptSubgroupRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BusinessProcessFamilyService {
-    private final BusinessProcessFamilyRepository businessProcessFamilyRepository;
-    private final DepartmentRepository departmentRepository;
-
-    @Transactional
-    public BusinessProcessFamilyDto create(BusinessProcessFamilyCreateDto businessProcessFamilyCreateDto) {
-        var dept = departmentRepository.findById(
-                businessProcessFamilyCreateDto.departmentId()
-                ).orElseThrow();
-        var bpf = new BusinessProcessFamily();
-        bpf.setBusinessProcessFamilyName(businessProcessFamilyCreateDto.businessProcessFamilyName());
-        bpf.setDepartment(dept);
-        var saved = businessProcessFamilyRepository.save(bpf);
-        return new BusinessProcessFamilyDto(
-                saved.getBusinessProcessFamilyId(),
-                saved.getBusinessProcessFamilyName(),
-                dept.getDepartmentId(),
-                dept.getDepartmentName(),
-                List.of(),
-                saved.getCreatedTimestamp(),
-                saved.getLastUpdatedTimestamp()
-        );
+    private final BusinessProcessFamilyRepository families;
+    private final DeptSubgroupRepository subgroups;
+    public BusinessProcessFamilyDto create(BusinessProcessFamilyCreateDto dto) {
+        var family=new BusinessProcessFamily();
+        apply(family,dto);
+        return toDto(families.save(family));
     }
-
-    @Transactional(readOnly = true)
-    public List<BusinessProcessFamilyDto> list(){
-        return businessProcessFamilyRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .toList(); //Uses mapper
+    public BusinessProcessFamilyDto update(Integer id,BusinessProcessFamilyCreateDto dto) {
+        var family=find(id);
+        apply(family,dto);
+        return toDto(families.save(family));
     }
-
-    @Transactional(readOnly = true)
-    public BusinessProcessFamilyDto get(Integer id) {
-        var bpf = businessProcessFamilyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("BusinessProcessFamily not found: " + id));
-        return toDto(bpf);
+    private void apply(BusinessProcessFamily family,BusinessProcessFamilyCreateDto dto) {
+        var subgroup=subgroups.findById(dto.deptSubgroupId()).orElseThrow(()->new EntityNotFoundException("Subdepartment not found"));
+        if(family.getDepartment()!=null && !family.getBusinessProcessList().isEmpty()
+                && !family.getDepartment().getDepartmentId().equals(subgroup.getDepartment().getDepartmentId()))
+            throw new IllegalArgumentException("Move populated families only within their department. A cross-department move requires a reviewed data migration.");
+        family.setBusinessProcessFamilyName(dto.businessProcessFamilyName());
+        family.setDeptSubgroup(subgroup);
+        family.setDepartment(subgroup.getDepartment());
     }
-
-    @Transactional
-    public BusinessProcessFamilyDto update(Integer id, @Valid BusinessProcessFamilyCreateDto dto) {
-        var bpf = businessProcessFamilyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("BusinessProcessFamily not found: " + id));
-
-        // Update fields if provided
-        if (dto.businessProcessFamilyName() != null && !dto.businessProcessFamilyName().isBlank()) {
-            bpf.setBusinessProcessFamilyName(dto.businessProcessFamilyName());
-        }
-        if (dto.departmentId() != null) {
-            var dept = departmentRepository.findById(dto.departmentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Department not found: " + dto.departmentId()));
-            bpf.setDepartment(dept);
-        }
-
-        var saved = businessProcessFamilyRepository.save(bpf);
-        return toDto(saved);
-    }
-
-    @Transactional
-    public void delete(Integer id) {
-        if (!businessProcessFamilyRepository.existsById(id)) {
-            throw new EntityNotFoundException("BusinessProcessFamily not found: " + id);
-        }
-        businessProcessFamilyRepository.deleteById(id);
-    }
-
-    // Mapper
-    private BusinessProcessFamilyDto toDto(BusinessProcessFamily bpf) {
-        return new BusinessProcessFamilyDto(
-                bpf.getBusinessProcessFamilyId().intValue(),
-                bpf.getBusinessProcessFamilyName(),
-                bpf.getDepartment() != null ? bpf.getDepartment().getDepartmentId().intValue() : null,
-                bpf.getDepartment() != null ? bpf.getDepartment().getDepartmentName() : null,
-                List.of(),
-                bpf.getCreatedTimestamp(),
-                bpf.getLastUpdatedTimestamp()
-        );
-    }
-
+    private BusinessProcessFamily find(Integer id){return families.findById(id).orElseThrow(()->new EntityNotFoundException("Process family not found"));}
+    @Transactional(readOnly=true)
+    public BusinessProcessFamilyDto get(Integer id){return toDto(find(id));}
+    @Transactional(readOnly=true)
+    public List<BusinessProcessFamilyDto> list(){return families.findAll().stream().map(this::toDto).toList();}
+    public void delete(Integer id){families.delete(find(id));}
+    private BusinessProcessFamilyDto toDto(BusinessProcessFamily family){return new BusinessProcessFamilyDto(
+        family.getBusinessProcessFamilyId(),family.getBusinessProcessFamilyName(),
+        family.getDepartment().getDepartmentId(),family.getDepartment().getDepartmentName(),
+        family.getDeptSubgroup().getDeptSubgroupId(),family.getDeptSubgroup().getDeptSubgroupName(),
+        List.of(),family.getCreatedTimestamp(),family.getLastUpdatedTimestamp());}
 }

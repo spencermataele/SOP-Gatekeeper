@@ -1,3 +1,4 @@
+import {environment} from '../../../environments/environment';
 import {Component, OnInit} from "@angular/core";
 import {FormBuilder, Validators} from "@angular/forms";
 import {AuthService} from "./auth.service";
@@ -24,7 +25,7 @@ export class LoginComponent implements OnInit{
 
   ngOnInit(): void {
     if (this.authService.token()) {
-      this.router.navigate(['/sops']);
+      this.router.navigate([environment.lifecycleEnabled ? '/library' : '/sops']);
   }
   }
 
@@ -32,7 +33,7 @@ export class LoginComponent implements OnInit{
     if (this.form.invalid) return;
     const { username, password } = this.form.value as any;
     this.authService.login(username, password).subscribe({
-      next: () => this.router.navigate(['/sops']),
+      next: () => this.router.navigate([environment.lifecycleEnabled ? '/library' : '/sops']),
       error: () => this.err = 'Login failed'
     });
   }

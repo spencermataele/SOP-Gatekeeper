@@ -14,6 +14,6 @@ public record BusinessProcessCreateDto (
         Integer parentBusinessProcessId,
         @NotNull
         Integer departmentId,
-        List<Integer> deptSubGroupIds
+        @com.fasterxml.jackson.annotation.JsonAlias("deptSubgroupIds") List<Integer> deptSubGroupIds
 ){
 }

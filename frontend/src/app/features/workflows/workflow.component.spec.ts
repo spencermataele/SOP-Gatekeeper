@@ -19,7 +19,7 @@ describe('Governed workflow workspace', () => {
   });
   afterEach(() => http.verify());
   function lists(): void {
-    for (const name of ['documents', 'requests', 'processes', 'notifications', 'subgroups']) http.expectOne(component.api + '/' + name).flush([]);
+    for (const name of ['documents', 'requests', 'processes', 'notifications', 'subgroups', 'library/hierarchy']) http.expectOne(component.api + '/' + name).flush([]);
     tick(); fixture.detectChanges();
   }
   function start(): void { fixture.detectChanges(); lists(); }
@@ -32,6 +32,90 @@ describe('Governed workflow workspace', () => {
   function button(label: string): HTMLButtonElement | undefined {
     return Array.from(fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find(b => b.textContent?.trim() === label);
   }
+  it('filters published tiles through the hierarchy, clears descendants, and orders numeric codes', fakeAsync(() => {
+    start();
+    component.hierarchy=[{nodeKey:'org:1',parentKey:null,name:'Organization',code:'01'},
+      {nodeKey:'group:10',parentKey:'org:1',name:'Ten',code:'10'},
+      {nodeKey:'group:2',parentKey:'org:1',name:'Two',code:'2'},
+      {nodeKey:'process:10',parentKey:'group:10',name:'Process ten',code:'001'},
+      {nodeKey:'process:2',parentKey:'group:2',name:'Process two',code:'001'}];
+    component.documents=[10,2].map(id=>({documentId:id,revisionId:900+id,nodeKey:`process:${id}`,publishedVersion:3,kind:'CLIENT_SOP',title:'Initial Setup',description:'Purpose',details:''}));
+    fixture.detectChanges();tick();
+    const titles=()=>Array.from(fixture.nativeElement.querySelectorAll('.document-card strong') as NodeListOf<HTMLElement>).map(n=>n.textContent);
+    expect(titles()[0]).toBe('01-2-001 · Two | Process two | Initial Setup · v3');
+    component.chooseLibraryLevel(0,'org:1');component.chooseLibraryLevel(1,'group:10');fixture.detectChanges();
+    expect(titles().length).toBe(1);expect(titles()[0]).toContain('01-10-001');
+    const org=fixture.nativeElement.querySelector('.library-filters select') as HTMLSelectElement;
+    org.value='';org.dispatchEvent(new Event('change'));tick();fixture.detectChanges();
+    expect(component.librarySelection).toEqual([]);expect(titles().length).toBe(2);
+    expect(component.libraryOptions(2)).toEqual([]);
+  }));
+  it('limits the published tile region to four rows and scrolls additional tiles', fakeAsync(() => {
+    start();
+    component.documents=Array.from({length:30},(_,id)=>({documentId:id,revisionId:id,publishedVersion:1,kind:'CLIENT_SOP',title:'Long procedure title '.repeat(15),description:'Purpose '.repeat(40),details:''}));
+    fixture.detectChanges();
+    const region=fixture.nativeElement.querySelector('.published-cards') as HTMLElement;
+    region.style.width='600px';
+    const style=getComputedStyle(region);const card=region.querySelector('button') as HTMLElement;
+    expect(style.overflowY).toBe('auto');
+    expect(parseFloat(style.maxHeight)).toBeCloseTo(4*card.getBoundingClientRect().height+3*parseFloat(style.rowGap),0);
+    expect(region.scrollHeight).toBeGreaterThan(region.clientHeight);
+    expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth+1);
+  }));
+  it('filters published tiles through the hierarchy, clears descendants, and orders numeric codes', fakeAsync(() => {
+    start();
+    component.hierarchy=[{nodeKey:'org:1',parentKey:null,name:'Organization',code:'01'},
+      {nodeKey:'group:10',parentKey:'org:1',name:'Ten',code:'10'},
+      {nodeKey:'group:2',parentKey:'org:1',name:'Two',code:'2'},
+      {nodeKey:'process:10',parentKey:'group:10',name:'Process ten',code:'001'},
+      {nodeKey:'process:2',parentKey:'group:2',name:'Process two',code:'001'}];
+    component.documents=[10,2].map(id=>({documentId:id,revisionId:900+id,nodeKey:`process:${id}`,publishedVersion:3,kind:'CLIENT_SOP',title:'Initial Setup',description:'Purpose',details:''}));
+    fixture.detectChanges();tick();
+    const titles=()=>Array.from(fixture.nativeElement.querySelectorAll('.document-card strong') as NodeListOf<HTMLElement>).map(n=>n.textContent);
+    expect(titles()[0]).toBe('01-2-001 · Two | Process two | Initial Setup · v3');
+    component.chooseLibraryLevel(0,'org:1');component.chooseLibraryLevel(1,'group:10');fixture.detectChanges();
+    expect(titles().length).toBe(1);expect(titles()[0]).toContain('01-10-001');
+    const org=fixture.nativeElement.querySelector('.library-filters select') as HTMLSelectElement;
+    org.value='';org.dispatchEvent(new Event('change'));tick();fixture.detectChanges();
+    expect(component.librarySelection).toEqual([]);expect(titles().length).toBe(2);
+    expect(component.libraryOptions(2)).toEqual([]);
+  }));
+  it('limits the published tile region to four rows and scrolls additional tiles', fakeAsync(() => {
+    start();
+    component.documents=Array.from({length:30},(_,id)=>({documentId:id,revisionId:id,publishedVersion:1,kind:'CLIENT_SOP',title:'Long procedure title '.repeat(15),description:'Purpose '.repeat(40),details:''}));
+    fixture.detectChanges();
+    const region=fixture.nativeElement.querySelector('.published-cards') as HTMLElement;
+    region.style.width='600px';
+    const style=getComputedStyle(region);const card=region.querySelector('button') as HTMLElement;
+    expect(style.overflowY).toBe('auto');
+    expect(parseFloat(style.maxHeight)).toBeCloseTo(4*card.getBoundingClientRect().height+3*parseFloat(style.rowGap),0);
+    expect(region.scrollHeight).toBeGreaterThan(region.clientHeight);
+    expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth+1);
+  }));
+  it('labels both comparison menus with hierarchy, title, and publication version instead of revision IDs', fakeAsync(() => {
+    start();
+    component.hierarchy = [{nodeKey:'family:5',parentKey:null,name:'Governance',code:'01'},
+      {nodeKey:'process:7',parentKey:'family:5',name:'Admin How Tos',code:'002'}];
+    void component.openDocument({documentId:10,revisionId:902,processId:7,nodeKey:'process:7',kind:'CLIENT_SOP',title:'Initial Setup',description:'Purpose',details:'Latest'});
+    http.expectOne(component.api+'/documents/10/history').flush([
+      {id:902,title:'Initial Setup',description:'Purpose',details:'Latest'},
+      {id:57,title:'Initial Setup',description:'Purpose',details:'Earlier'}]);
+    tick();fixture.detectChanges();
+    const menus=fixture.nativeElement.querySelectorAll('.comparison select') as NodeListOf<HTMLSelectElement>;
+    expect(menus.length).toBe(2);
+    menus.forEach(menu=>{
+      expect(menu.textContent).toContain('01-002 · Governance | Admin How Tos | Initial Setup · v2');
+      expect(menu.textContent).toContain('Initial Setup · v1');
+      expect(menu.textContent).not.toContain('Revision #');
+      expect(menu.textContent).not.toContain('902');
+    });
+  }));
+  it('identifies unpublished candidates separately from published versions', fakeAsync(() => {
+    start();request();component.history=[component.request!.candidate!,{id:19,title:'Earlier candidate',description:'',details:''}];
+    expect(component.snapshotLabel(component.history[0])).toContain('Candidate 2 — Current candidate');
+    expect(component.snapshotLabel(component.history[1])).toContain('Candidate 1');
+    expect(component.snapshotLabel(component.history[0])).not.toContain('v2');
+  }));
   it('offers self-approval only when the server grants it and a reason is present', fakeAsync(() => {
     start(); request([]); fixture.detectChanges(); expect(button('Self-approve & publish')).toBeUndefined();
     component.request!.actions = ['SELF_APPROVE']; fixture.detectChanges(); expect(button('Self-approve & publish')!.disabled).toBeTrue();

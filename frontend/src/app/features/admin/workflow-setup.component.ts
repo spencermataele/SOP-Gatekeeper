@@ -1,3 +1,5 @@
+import {AdminParentSelectorComponent} from './admin-parent-selector.component';
+import {HierarchyCodesComponent} from './hierarchy-codes.component';
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
@@ -13,7 +15,7 @@ interface Setup {
   processes: {id:number;name:string;groupName:string;departmentName:string;familyName:string;ownerId:number|null;managerId:number|null;version:number|null}[];
   activity: {id:number;action:string;processId:number|null;actor:string;reason:string;previousValue:string;newValue:string;recordedAt:string}[];
 }
-@Component({selector:'app-workflow-setup',standalone:true,imports:[CommonModule,FormsModule,RouterModule],template:`
+@Component({selector:'app-workflow-setup',standalone:true,imports:[CommonModule,FormsModule,RouterModule,HierarchyCodesComponent,AdminParentSelectorComponent],template:`
   <section class="setup"><a routerLink="/admin">← Admin</a><h1>Workflow setup</h1>
     <p>Build the organization hierarchy in Admin, then assign ownership here. Configured processes appear in the SOP template's hierarchy selectors.</p>
     <p role="alert" class="error" *ngIf="error">{{error}}</p><p role="status" *ngIf="message">{{message}}</p>
@@ -25,7 +27,7 @@ interface Setup {
       </section>
       <section class="panel" *ngIf="data.clientOrgId"><h2>Process ownership and reporting line</h2>
         <p *ngIf="!data.processes.length">Create an organization group, department, process family, and business process using the Admin screens first.</p>
-        <form (ngSubmit)="save()"><label>Process<select name="process" [(ngModel)]="processId" (ngModelChange)="selectProcess()" [disabled]="busy"><option [ngValue]="0">Choose a process</option><option *ngFor="let process of data.processes" [ngValue]="process.id">{{process.groupName}} / {{process.departmentName}} / {{process.familyName}} / {{process.name}}{{process.ownerId ? '' : ' — needs owner'}}</option></select></label>
+        <form (ngSubmit)="save()"><app-admin-parent-selector target="process" name="process" [(ngModel)]="processId" (ngModelChange)="selectProcess()" [disabled]="busy"></app-admin-parent-selector>
           <ng-container *ngIf="processId"><label>Process owner<select name="owner" [(ngModel)]="ownerId" (ngModelChange)="selectOwner()" [disabled]="busy"><option [ngValue]="0">Choose an account</option><option *ngFor="let user of data.users" [ngValue]="user.id">{{user.name}} ({{user.username}})</option></select></label>
             <label>Owner's direct manager (optional)<select name="manager" [(ngModel)]="managerId" [disabled]="busy"><option [ngValue]="null">No manager assigned</option><ng-container *ngFor="let user of data.users"><option *ngIf="user.id !== ownerId" [ngValue]="user.id">{{user.name}} ({{user.username}})</option></ng-container></select></label>
             <p>The reporting line belongs to the owner account and applies to every process they own. A change invalidates affected pending review assignments; an administrator must recalculate those assignments in the SOP workspace. With no manager, eligible administrators can review the owner's submission.</p>
@@ -33,7 +35,7 @@ interface Setup {
           </ng-container>
         </form>
       </section>
-      <section class="panel"><h2>Configuration activity</h2><p *ngIf="!data.activity.length">No configuration changes recorded through this screen yet.</p><article *ngFor="let event of data.activity"><strong>{{event.action.split('_').join(' ')}}</strong><p>{{event.actor}} · {{event.recordedAt | date:'medium'}}<span *ngIf="event.processId"> · Process #{{event.processId}}</span></p><p>{{event.reason}}</p><details><summary>Recorded assignment values</summary><p>Before: {{event.previousValue || 'Not configured'}}</p><p>After: {{event.newValue}}</p></details></article></section>
+      <app-hierarchy-codes></app-hierarchy-codes><details class="workflow-log"><summary>Configuration log ({{data.activity.length}})</summary><div class="log-entries" tabindex="0" aria-label="Configuration activity log"><p *ngIf="!data.activity.length">No configuration changes recorded through this screen yet.</p><article *ngFor="let event of data.activity"><strong>{{event.action.split('_').join(' ')}}</strong><p>{{event.actor}} · {{event.recordedAt | date:'medium'}}<span *ngIf="event.processId"> · Process #{{event.processId}}</span></p><p>{{event.reason}}</p><details><summary>Recorded assignment values</summary><p>Before: {{event.previousValue || 'Not configured'}}</p><p>After: {{event.newValue}}</p></details></article></div></details>
     </ng-container>
   </section>`,styles:[`.setup{max-width:1000px;margin:auto}p{line-height:1.6}.panel{background:white;border:1px solid #d2dfe4;border-radius:8px;padding:24px;margin:24px 0}label{display:block;font-weight:bold;margin:16px 0}input,select,textarea{display:block;width:100%;box-sizing:border-box;padding:12px;border:1px solid #9fb3bd;border-radius:6px;font:inherit;margin-top:8px}button{background:#176458;color:white;border:0;padding:12px 18px;border-radius:6px;cursor:pointer}button:disabled{opacity:.5}.error{color:#8b2525}article{border-top:1px solid #d2dfe4;padding:16px 0}details{overflow-wrap:anywhere}`]})
 export class WorkflowSetupComponent implements OnInit {

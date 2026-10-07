@@ -39,8 +39,8 @@ UPDATE users SET role='ADMIN' WHERE username='demo.admin';
 SET @owner=(SELECT id FROM users WHERE username='demo.owner');
 SET @manager=(SELECT id FROM users WHERE username='demo.manager');
 INSERT INTO user_reporting_line (user_id,manager_user_id) SELECT @owner,@manager WHERE NOT EXISTS (SELECT 1 FROM user_reporting_line WHERE user_id=@owner);
-INSERT INTO business_process_family (business_process_family_name,department_id)
-SELECT 'Gatekeeper learning',10 WHERE NOT EXISTS (SELECT 1 FROM business_process_family WHERE business_process_family_name='Gatekeeper learning' AND department_id=10);
+INSERT INTO business_process_family (business_process_family_name,department_id,dept_subgroup_id)
+SELECT 'Gatekeeper learning',10,(SELECT MIN(dept_subgroup_id) FROM dept_subgroup WHERE department_id=10) WHERE NOT EXISTS (SELECT 1 FROM business_process_family WHERE business_process_family_name='Gatekeeper learning' AND department_id=10);
 SET @family=(SELECT MIN(business_process_family_id) FROM business_process_family WHERE business_process_family_name='Gatekeeper learning' AND department_id=10);
 INSERT INTO business_process (business_process_name,business_process_family_id)
 SELECT 'Practice workflows',@family WHERE NOT EXISTS (SELECT 1 FROM business_process WHERE business_process_name='Practice workflows' AND business_process_family_id=@family);

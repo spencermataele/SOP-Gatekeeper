@@ -660,3 +660,6 @@ form.form {
 
 
 
+
+/* Secondary, on-demand audit history shared by governed workflows. */
+.workflow-log{margin:24px 0;border:1px solid #dce4e8;border-radius:6px;padding:10px 14px;background:#f5f7f8;color:#465763;font-size:12px;line-height:1.45}.workflow-log summary{cursor:pointer;font:600 13px system-ui}.workflow-log .log-entries{max-height:260px;overflow:auto;margin-top:10px;font-family:ui-monospace,Consolas,monospace}.workflow-log article,.workflow-log .notice{padding:8px 0;border-top:1px solid #dce4e8}.workflow-log p{margin:4px 0;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.workflow-log strong{font-size:inherit}.workflow-log details summary{font-size:12px}.workflow-log :focus-visible{outline:2px solid #d99524;outline-offset:2px}

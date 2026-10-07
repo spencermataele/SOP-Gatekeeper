@@ -21,7 +21,7 @@ export interface BusinessProcess {
 export interface BusinessProcessCreate {
   businessProcessName: string;
   businessProcessFamilyId: number;
-  parentProcessId?: number | null;
+  parentBusinessProcessId?: number | null;
   departmentId: number;
   deptSubgroupIds?: number[];
 }

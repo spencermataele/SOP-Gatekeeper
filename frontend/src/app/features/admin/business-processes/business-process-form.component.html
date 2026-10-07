@@ -1,54 +1,8 @@
-<section class="container" *ngIf="!loading; else loadingTpl">
-  <h2>{{ id ? 'Edit' : 'Create' }} Business Process</h2>
-
-  <form [formGroup]="form" (ngSubmit)="save()">
-    <label>
-      Name
-      <input formControlName="businessProcessName" maxlength="255">
-    </label>
-
-    <label>
-      Business Process Family
-      <select formControlName="businessProcessFamilyId">
-        <option [ngValue]="null">Select…</option>
-        <option *ngFor="let f of families" [ngValue]="f.businessProcessFamilyId">
-          {{ f.businessProcessFamilyName }} (Dept: {{ f.departmentId }})
-        </option>
-      </select>
-    </label>
-
-    <label>
-      Parent Process
-      <select formControlName="parentBusinessProcessId">
-        <option [ngValue]="null">None</option>
-        <option *ngFor="let p of parents" [ngValue]="p.businessProcessId">
-          {{ p.businessProcessName }}
-        </option>
-      </select>
-    </label>
-
-    <label>
-      Department
-      <input formControlName="departmentId" [disabled]="true">
-    </label>
-
-    <label>
-      Dept Subgroups
-      <select formControlName="deptSubgroupIds">
-        <option [ngValue]="null">None</option>
-        <option *ngFor="let s of subgroups" [ngValue]="s.deptSubgroupId">
-          {{ s.deptSubgroupName }}
-        </option>
-      </select>
-    </label>
-
-    <div class="actions">
-      <button type="submit" [disabled]="saving || form.invalid">Save</button>
-      <button type="button" (click)="cancel()">Cancel</button>
-    </div>
-
-    <p class="error" *ngIf="error">{{ error }}</p>
-  </form>
-</section>
-
-<ng-template #loadingTpl>Loading…</ng-template>
+<section class="container"><h2>{{id?'Edit':'Create'}} Business Process</h2><p role="alert" *ngIf="error">{{error}}</p><p *ngIf="loading">Loading…</p>
+<form *ngIf="!loading" [formGroup]="form" (ngSubmit)="save()">
+ <label>Name<input formControlName="businessProcessName" maxlength="255"></label>
+ <app-admin-parent-selector target="family" formControlName="businessProcessFamilyId"></app-admin-parent-selector>
+ <p>The process inherits its subdepartment and department from its family.</p>
+ <label>Related parent process (optional, within this family)<select formControlName="parentBusinessProcessId"><option [ngValue]="null">None</option><option *ngFor="let p of parents" [ngValue]="p.businessProcessId">{{p.businessProcessName}}</option></select></label>
+ <div class="actions"><button [disabled]="saving || form.invalid">Save</button><button type="button" (click)="cancel()">Cancel</button></div>
+</form></section>

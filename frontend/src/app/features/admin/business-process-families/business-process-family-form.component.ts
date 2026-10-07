@@ -1,19 +1,17 @@
+import {AdminParentSelectorComponent} from '../admin-parent-selector.component';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BusinessProcessFamilyService } from '../services/business-process-family.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
 import { CommonModule } from "@angular/common";
 
-interface DepartmentLite { departmentId: number; departmentName: string; }
 
 @Component({
   selector: 'app-business-process-family-form',
   templateUrl: './business-process-family-form.component.html',
   imports: [
     ReactiveFormsModule,
-    CommonModule
+    CommonModule, AdminParentSelectorComponent
   ],
   standalone: true
 })
@@ -22,43 +20,37 @@ export class BusinessProcessFamilyFormComponent implements OnInit {
   loading = false;
   saving = false;
   error?: string;
-  departments: DepartmentLite[] = [];
 
   form = this.fb.group({
     businessProcessFamilyName: ['', [Validators.required, Validators.maxLength(255)]],
-    departmentId: [null as number | null, Validators.required],
+    deptSubgroupId: [null as number | null, Validators.required],
   });
 
   constructor(
     private fb: FormBuilder,
     private svc: BusinessProcessFamilyService,
-    private http: HttpClient,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit() {
-    this.loadDeps();
+
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam && idParam !== 'new') {
       this.id = +idParam;
       this.loading = true;
       this.svc.get(this.id).subscribe({
-        next: f => { this.form.patchValue({ businessProcessFamilyName: f.businessProcessFamilyName, departmentId: f.departmentId }); this.loading = false; },
+        next: f => { this.form.patchValue({ businessProcessFamilyName: f.businessProcessFamilyName, deptSubgroupId: f.deptSubgroupId }); this.loading = false; },
         error: () => { this.error = 'Failed to load.'; this.loading = false; }
       });
     }
   }
 
-  loadDeps() {
-    this.http.get<DepartmentLite[]>(`${environment.apiBaseUrl}/admin/departments`)
-      .subscribe({ next: d => this.departments = d });
-  }
 
   save() {
     if (this.form.invalid) return;
     this.saving = true;
-    const body = this.form.value as { businessProcessFamilyName: string; departmentId: number; };
+    const body = this.form.value as { businessProcessFamilyName: string; deptSubgroupId: number; };
 
     const req$ = this.id
       ? this.svc.update(this.id, body)
@@ -66,7 +58,7 @@ export class BusinessProcessFamilyFormComponent implements OnInit {
 
     req$.subscribe({
       next: () => { this.saving = false; this.router.navigate(['/admin/business-process-families']); },
-      error: () => { this.saving = false; this.error = 'Save failed.'; }
+      error: e => { this.saving = false; this.error = e.error?.message || 'Save failed.'; }
     });
   }
 

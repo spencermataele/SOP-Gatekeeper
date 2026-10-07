@@ -10,7 +10,7 @@ import {environment} from '../environments/environment';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['../styles.css', './workflow-shell.css']
+  styleUrls: ['../styles.css', './workflow-shell.css', './app.component.css']
 })
 export class AppComponent implements OnInit {
 

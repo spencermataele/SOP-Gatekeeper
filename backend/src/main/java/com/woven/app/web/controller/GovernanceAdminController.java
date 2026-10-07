@@ -22,6 +22,26 @@ public class GovernanceAdminController {
     private final ObjectMapper json;
     public GovernanceAdminController(JdbcTemplate jdbc, ObjectMapper json) { this.jdbc=jdbc; this.json=json; }
     public record Client(@Positive int orgId, @NotBlank @Size(max=2000) String reason) {}
+    public record Code(@NotBlank @jakarta.validation.constraints.Pattern(regexp="[A-Za-z0-9]{1,24}") String code,
+                       String expectedCode, @NotBlank @Size(max=2000) String reason) {}
+    @PutMapping("/hierarchy/{key}/code")
+    public Map<String,Object> code(@PathVariable String key,@Valid @RequestBody Code body) {
+        int actor=admin();
+        jdbc.queryForObject("SELECT h.node_key FROM sop_library_hierarchy h JOIN client_configuration c ON c.org_id=h.org_id WHERE h.node_key=?",String.class,key);
+        jdbc.queryForObject("SELECT configuration_id FROM client_configuration WHERE configuration_id=1 FOR UPDATE",Integer.class);
+        var codes=jdbc.queryForList("SELECT display_code FROM hierarchy_display_code WHERE node_key=?",String.class,key);
+        String previous=codes.isEmpty()?null:codes.getFirst();
+        if(!Objects.equals(previous,body.expectedCode())) throw new IllegalStateException("Code changed. Refresh before saving.");
+        int duplicates=jdbc.queryForObject("""
+            SELECT COUNT(*) FROM sop_library_hierarchy h JOIN hierarchy_display_code c USING(node_key)
+            WHERE h.parent_key <=> (SELECT parent_key FROM sop_library_hierarchy WHERE node_key=?)
+            AND h.node_key<>? AND c.display_code=?
+            """,Integer.class,key,key,body.code());
+        if(duplicates>0) throw new IllegalArgumentException("That code is already assigned to another child in this branch.");
+        jdbc.update("INSERT INTO hierarchy_display_code VALUES(?,?) ON DUPLICATE KEY UPDATE display_code=?",key,body.code(),body.code());
+        audit(actor,null,"HIERARCHY_CODE_CHANGED",previous,Map.of("nodeKey",key,"code",body.code()),body.reason());
+        return Map.of("code",body.code());
+    }
     public record Assignment(@Positive int ownerId, Integer managerId, Long expectedVersion,
                              Integer expectedManagerId, @NotBlank @Size(max=2000) String reason) {}
     private int admin() {

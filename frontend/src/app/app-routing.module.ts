@@ -21,8 +21,11 @@ import {
 } from "./features/sops/change-requests/change-request-review/change-request-review.component";
 
 const routes: Routes = [
+  ...(environment.lifecycleEnabled ? [{path:'changes',loadComponent:()=>import('./features/changes/change-tracking.component').then(m=>m.ChangeTrackingComponent),canActivate:[AuthGuard]}] : []),
+  ...(environment.lifecycleEnabled ? [{path:'suggestions',loadComponent:()=>import('./features/suggestions/suggestions.component').then(m=>m.SuggestionsComponent),canActivate:[AuthGuard]}] : []),
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: 'login', component: LoginComponent },
+  { path: 'library', loadComponent: () => import('./features/library/sop-library.component').then(m => m.SopLibraryComponent), canActivate: [AuthGuard] },
   { path: 'sops', component: environment.lifecycleEnabled ? WorkflowComponent : SopsListComponent, canActivate: [AuthGuard], canDeactivate: environment.lifecycleEnabled ? [WorkflowUnsavedGuard] : [] },
   ...(environment.lifecycleEnabled ? [
     {path: 'sops/new', redirectTo: 'sops'},

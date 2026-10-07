@@ -7,10 +7,16 @@
       <span class="brand-sub">Process Governance</span>
     </div>
 
-    <nav>
-      <a routerLink="/sops">{{lifecycleEnabled ? 'SOP workspace' : 'SOPs'}}</a>
-      <a *ngIf="authService.isAdmin()" routerLink="/admin">Admin</a>
-      <a routerLink="/reports">Reports</a>
+    <nav aria-label="Published procedures" *ngIf="lifecycleEnabled">
+      <a routerLink="/library" routerLinkActive="active">SOP Library</a>
+      <a routerLink="/suggestions" routerLinkActive="active">Suggestions</a>
+    </nav>
+    <nav class="workflow-nav" aria-label="Workflows and administration">
+      <span class="nav-label">Workflows &amp; administration</span>
+      <a *ngIf="lifecycleEnabled" routerLink="/changes" routerLinkActive="active">Change management</a>
+      <a routerLink="/sops" routerLinkActive="active">{{lifecycleEnabled ? 'SOP Workspace' : 'SOPs'}}</a>
+      <a routerLink="/reports" routerLinkActive="active">Reports</a>
+      <a *ngIf="authService.isAdmin()" routerLink="/admin" routerLinkActive="active">Admin</a>
       <ng-container *ngIf="!lifecycleEnabled">
         <a routerLink="/change-requests">Change Dashboard</a>
       </ng-container>

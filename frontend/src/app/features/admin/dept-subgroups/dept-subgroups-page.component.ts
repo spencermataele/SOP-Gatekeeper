@@ -1,3 +1,4 @@
+import {AdminParentSelectorComponent} from '../admin-parent-selector.component';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -12,24 +13,17 @@ import { DepartmentDto } from '../models/department.model';
 @Component({
   selector: 'app-dept-subgroups-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, AdminParentSelectorComponent],
   template: `
-    <h2>Department Subgroups</h2>
+    <h2>Subdepartments</h2>
 
     <!-- Create -->
     <form [formGroup]="createForm" (ngSubmit)="create()" class="form">
-      <label>Department
-        <select formControlName="departmentId">
-          <option [ngValue]="null">-- select --</option>
-          <option *ngFor="let d of departments" [ngValue]="d.departmentId">
-            {{ d.departmentName }}
-          </option>
-        </select>
-      </label>
+      <app-admin-parent-selector target="department" formControlName="departmentId"></app-admin-parent-selector>
       <label>Subgroup Name
         <input formControlName="deptSubgroupName" />
       </label>
-      <button type="submit" [disabled]="createForm.invalid || savingCreate">Add Subgroup</button>
+      <button type="submit" [disabled]="createForm.invalid || savingCreate">Add Subdepartment</button>
       <span class="error" *ngIf="errorCreate">{{ errorCreate }}</span>
     </form>
 
@@ -39,9 +33,7 @@ import { DepartmentDto } from '../models/department.model';
         <!-- Edit mode -->
         <ng-container *ngIf="editingId === s.deptSubgroupId; else viewRow">
           <form [formGroup]="editForm" (ngSubmit)="saveEdit(s.deptSubgroupId)" class="row edit">
-            <select formControlName="departmentId">
-              <option *ngFor="let d of departments" [ngValue]="d.departmentId">{{ d.departmentName }}</option>
-            </select>
+            <app-admin-parent-selector target="department" formControlName="departmentId"></app-admin-parent-selector>
             <input formControlName="deptSubgroupName" />
             <button type="submit" [disabled]="editForm.invalid || savingEdit">Save</button>
             <button type="button" (click)="cancelEdit()">Cancel</button>
@@ -186,4 +178,3 @@ export class DeptSubgroupsPageComponent implements OnInit {
     return err?.error?.message ?? err?.error?.detail ?? err?.message;
   }
 }
-

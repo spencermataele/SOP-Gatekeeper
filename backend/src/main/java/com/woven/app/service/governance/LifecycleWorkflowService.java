@@ -22,13 +22,15 @@ public class LifecycleWorkflowService {
     private final RevisionSnapshotStore snapshots;
     private final ObjectMapper json;
     private final SopTemplate template;
+    private final SuggestionService suggestions;
     private final ApprovalPolicy policy = new ApprovalPolicy();
 
-    public LifecycleWorkflowService(JdbcTemplate jdbc, RevisionSnapshotStore snapshots, ObjectMapper json, SopTemplate template) {
+    public LifecycleWorkflowService(JdbcTemplate jdbc, RevisionSnapshotStore snapshots, ObjectMapper json, SopTemplate template, SuggestionService suggestions) {
         this.jdbc = jdbc;
         this.snapshots = snapshots;
         this.json = json;
         this.template = template;
+        this.suggestions = suggestions;
     }
 
     private record Work(long id, long document, int process, Long published, Long base, Long candidate,
@@ -43,10 +45,12 @@ public class LifecycleWorkflowService {
                 SELECT p.business_process_id AS id, p.business_process_name AS name, u.full_name AS owner,
                        g.org_id AS orgId, o.org_name AS orgName, g.org_group_id AS groupId, g.org_group_name AS groupName,
                        d.department_id AS departmentId, d.department_name AS departmentName,
-                       f.business_process_family_id AS familyId, f.business_process_family_name AS familyName
+                       f.business_process_family_id AS familyId, f.business_process_family_name AS familyName, f.dept_subgroup_id AS subgroupId,
+                       s.dept_subgroup_name AS subgroupName
                 FROM business_process p JOIN process_governance pg USING (business_process_id)
                 JOIN users u ON u.id = pg.owner_user_id
                 JOIN business_process_family f ON f.business_process_family_id = p.business_process_family_id
+                JOIN dept_subgroup s ON s.dept_subgroup_id=f.dept_subgroup_id
                 JOIN department d ON d.department_id = f.department_id
                 JOIN org_group g ON g.org_group_id = d.org_group_id
                 JOIN client_configuration c ON c.org_id = g.org_id AND c.configuration_id = 1
@@ -85,9 +89,9 @@ public class LifecycleWorkflowService {
     public List<Map<String,Object>> subgroups() {
         requireUser(actor());
         return jdbc.queryForList("""
-                SELECT s.dept_subgroup_id AS id,s.dept_subgroup_name AS name,ps.business_process_id AS processId
-                FROM dept_subgroup s JOIN business_process_dept_subgroup ps USING(dept_subgroup_id)
-                JOIN business_process p USING(business_process_id) JOIN business_process_family f USING(business_process_family_id)
+                SELECT s.dept_subgroup_id AS id,s.dept_subgroup_name AS name,p.business_process_id AS processId
+                FROM business_process p JOIN business_process_family f USING(business_process_family_id)
+                JOIN dept_subgroup s ON s.dept_subgroup_id=f.dept_subgroup_id
                 JOIN department d ON d.department_id=f.department_id AND d.department_id=s.department_id
                 JOIN org_group g ON g.org_group_id=d.org_group_id JOIN client_configuration c ON c.org_id=g.org_id
                 ORDER BY s.dept_subgroup_name
@@ -97,7 +101,7 @@ public class LifecycleWorkflowService {
     public List<Map<String, Object>> notices() {
         int actor = actor();
         requireUser(actor);
-        return jdbc.queryForList("""
+        List<Map<String,Object>> result = new ArrayList<>(jdbc.queryForList("""
                 SELECT a.event_id AS id, a.work_item_id AS requestId, a.action, a.recorded_at AS recordedAt,
                        r.title, u.full_name AS actor
                 FROM notification_recipient n JOIN business_audit_event a USING(event_id)
@@ -105,7 +109,10 @@ public class LifecycleWorkflowService {
                 JOIN client_configuration c ON c.org_id = d.org_id AND c.configuration_id = 1
                 JOIN sop_revision r ON r.revision_id = a.revision_id JOIN users u ON u.id = a.actor_id
                 WHERE n.user_id = ? AND n.channel = 'IN_APP' ORDER BY a.recorded_at DESC LIMIT 100
-                """, actor);
+                """, actor));
+        result.addAll(suggestions.notices());
+        result.sort((a,b)->b.get("recordedAt").toString().compareTo(a.get("recordedAt").toString()));
+        return result;
     }
 
     public List<Map<String, Object>> publishedHistory(long documentId) {
@@ -193,20 +200,23 @@ public class LifecycleWorkflowService {
                 template.validate(details, false) == null ? 1 : 2, commandId, fingerprint);
     }
 
-    public CopyResult startRevision(long documentId, long expectedPublishedRevision, UUID commandId) {
+    public CopyResult startRevision(long documentId, long expectedPublishedRevision, UUID commandId, String suggestionId, String rationale) {
         int actor = actor();
         var document = jdbc.queryForMap("SELECT * FROM sop_document WHERE document_id = ? FOR UPDATE", documentId);
         int process = validateDocument(document);
         requireUser(actor);
         jdbc.queryForMap("SELECT * FROM process_governance WHERE business_process_id = ? FOR SHARE", process);
-        String fingerprint = fingerprint("START_REVISION", documentId, expectedPublishedRevision);
+        String fingerprint = fingerprint("START_REVISION", documentId, expectedPublishedRevision, suggestionId, rationale);
         var saved = replayCreation(commandId, actor, fingerprint);
         if (saved != null) return copyResult(saved);
+        suggestions.authorizeRevision(process, documentId, suggestionId, rationale);
         require(Objects.equals(number(document.get("current_revision_id")), expectedPublishedRevision), "Published revision changed");
         var revision = jdbc.queryForMap("SELECT * FROM sop_revision WHERE document_id = ? AND revision_id = ?", documentId, expectedPublishedRevision);
-        return createDraftRows(documentId, process, expectedPublishedRevision, actor, (String) revision.get("title"),
+        CopyResult created = createDraftRows(documentId, process, expectedPublishedRevision, actor, (String) revision.get("title"),
                 (String) revision.get("description"), (String) revision.get("details"),
                 ((Number) revision.get("content_schema_version")).intValue(), commandId, fingerprint);
+        suggestions.linkRevision(suggestionId, created.requestId(), rationale);
+        return created;
     }
 
     private CopyResult createDraftRows(long document, int process, Long base, int actor, String title,
@@ -239,14 +249,26 @@ public class LifecycleWorkflowService {
         return jdbc.queryForList("""
                 SELECT d.document_id AS documentId, d.business_process_id AS processId,
                        d.document_kind AS kind, d.current_revision_id AS revisionId,
-                       r.title, r.description, r.details, r.provenance, r.source_label AS sourceLabel
+                       EXISTS(SELECT 1 FROM process_governance pg WHERE pg.business_process_id=d.business_process_id AND pg.owner_user_id=?) AS isProcessOwner,
+                       r.title, r.description, r.details, r.provenance, r.source_label AS sourceLabel,
+                       CONCAT('process:',p.business_process_id) AS nodeKey,
+                       (SELECT COUNT(*) FROM revision_history_position h WHERE h.document_id=d.document_id) AS publishedVersion
                 FROM sop_document d JOIN sop_revision r ON r.document_id = d.document_id AND r.revision_id = d.current_revision_id
                 JOIN business_process p ON p.business_process_id = d.business_process_id
                 JOIN business_process_family f ON f.business_process_family_id = p.business_process_family_id
                 JOIN department dept ON dept.department_id = f.department_id
                 JOIN org_group g ON g.org_group_id = dept.org_group_id
                 WHERE d.org_id = ? AND g.org_id = ? ORDER BY d.document_id
-                """, org, org);
+                """, actor(), org, org);
+    }
+
+    public List<Map<String,Object>> libraryHierarchy() {
+        requireUser(actor());
+        return jdbc.queryForList("""
+                SELECT h.node_key AS nodeKey,h.parent_key AS parentKey,h.name,h.kind,c.display_code AS code
+                FROM sop_library_hierarchy h JOIN client_configuration client ON client.org_id=h.org_id AND client.configuration_id=1
+                LEFT JOIN hierarchy_display_code c ON c.node_key=h.node_key ORDER BY h.name,h.node_key
+                """);
     }
 
     public Map<String, Object> readCopy(long requestId, long copyId) {
@@ -293,6 +315,8 @@ public class LifecycleWorkflowService {
         result.put("version", work.version()); result.put("state", work.state());
         result.put("candidateId", work.candidate()); result.put("actions", actions);
         result.put("processId", work.process());
+        result.put("initiationReason",jdbc.queryForObject("SELECT initiation_reason FROM sop_work_item WHERE work_item_id=?",String.class,requestId));
+        result.put("suggestions",jdbc.queryForList("SELECT s.suggestion_id AS id,s.title FROM suggestion_revision_link l JOIN process_suggestion s ON s.suggestion_id=l.suggestion_id WHERE l.work_item_id=?",requestId));
         result.put("priorRejectedRequestId", jdbc.queryForObject(
                 "SELECT prior_rejected_request_id FROM sop_work_item WHERE work_item_id = ?", Long.class, requestId));
         result.put("candidate", work.candidate() == null ? null : snapshots.findAuthored(work.document(), work.candidate()).orElseThrow());
@@ -464,15 +488,9 @@ public class LifecycleWorkflowService {
                 JOIN process_governance pg USING(business_process_id) JOIN users u ON u.id=pg.owner_user_id
                 WHERE p.business_process_id=?
                 """, work.process());
-        if (content.hasNonNull("subgroupId")) {
-            var names = jdbc.queryForList("""
-                    SELECT s.dept_subgroup_name FROM dept_subgroup s JOIN business_process_dept_subgroup ps USING(dept_subgroup_id)
-                    JOIN business_process p USING(business_process_id) JOIN business_process_family f USING(business_process_family_id)
-                    WHERE p.business_process_id=? AND s.dept_subgroup_id=? AND s.department_id=f.department_id
-                    """, String.class, work.process(), content.get("subgroupId").asInt());
-            if (names.isEmpty()) throw new IllegalArgumentException("Subgroup must belong to the selected process and department.");
-            documentContext.put("subgroup", names.getFirst());
-        }
+        var subgroup=jdbc.queryForMap("SELECT s.dept_subgroup_id AS id,s.dept_subgroup_name AS name FROM business_process p JOIN business_process_family f USING(business_process_family_id) JOIN dept_subgroup s ON s.dept_subgroup_id=f.dept_subgroup_id WHERE p.business_process_id=?",work.process());
+        content.put("subgroupId",((Number)subgroup.get("id")).intValue());
+        documentContext.put("subgroup",subgroup.get("name"));
         jdbc.update("UPDATE sop_working_copy SET details=?, content_schema_version=2 WHERE working_copy_id=? AND lock_version=? AND state='EDITABLE'",
                 template.withContext(content, documentContext), copyId, copyVersion);
 

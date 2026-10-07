@@ -23,6 +23,8 @@ public class LifecycleController {
 
     @GetMapping("/processes")
     public List<Map<String, Object>> processes() { return workflow.processes(); }
+    @GetMapping("/library/hierarchy")
+    public List<Map<String,Object>> hierarchy() { return workflow.libraryHierarchy(); }
     @GetMapping("/subgroups")
     public List<Map<String, Object>> subgroups() { return workflow.subgroups(); }
     @GetMapping("/requests")
@@ -34,7 +36,8 @@ public class LifecycleController {
 
     public record Create(@Positive int processId, @NotNull @Size(max = 255) String title,
                          @NotNull String description, @NotNull String details, @NotNull UUID commandId) {}
-    public record Start(@NotNull @Positive Long publishedRevisionId, @NotNull UUID commandId) {}
+    public record Start(@NotNull @Positive Long publishedRevisionId, @NotNull UUID commandId,
+                        UUID suggestionId, @jakarta.validation.constraints.NotBlank @Size(max=2000) String rationale) {}
     public record Save(@NotNull @PositiveOrZero Long requestVersion, @NotNull @PositiveOrZero Long copyVersion,
                        @NotNull @Size(max = 255) String title, @NotNull String description,
                        @NotNull String details, @NotNull UUID commandId) {}
@@ -56,7 +59,7 @@ public class LifecycleController {
 
     @PostMapping("/documents/{id}/drafts")
     public LifecycleWorkflowService.CopyResult start(@PathVariable long id, @Valid @RequestBody Start body) {
-        return workflow.startRevision(id, body.publishedRevisionId(), body.commandId());
+        return workflow.startRevision(id, body.publishedRevisionId(), body.commandId(), body.suggestionId()==null?null:body.suggestionId().toString(), body.rationale());
     }
 
     @GetMapping("/requests/{id}")

@@ -250,3 +250,11 @@ run does not establish that a hosted CI run passed.
 
 References: [Spring Boot testing](https://docs.spring.io/spring-boot/3.5/reference/testing/spring-boot-applications.html)
 and [GitHub workflow artifacts](https://docs.github.com/en/actions/tutorials/store-and-share-data).
+
+## Reader library checks
+
+The browser suite covers descendant filtering, branch-scoped search, persisted code/version labels,
+and opening a single current SOP before explicitly requesting history. Navigation regression tests
+instantiate the Departments, Subgroups, and Org Hierarchy Report screens and load their initial data.
+The API suite checks client-scoped hierarchy, published-only listing/version count, and admin-only,
+audited, concurrency-protected code changes. Logs for this increment are under `.local/logs/library-*`.
